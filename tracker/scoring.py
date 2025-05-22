@@ -37,4 +37,4 @@ def calculate_daily_score(data: dict) -> int:
             score += w[key]
 
     # Cap at max_score
-    return int(round(min(score, w["max_score"])))
+    return int(round(min(score, w["max_score"]))) 
