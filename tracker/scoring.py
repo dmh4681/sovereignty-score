@@ -10,19 +10,6 @@ with open(CONFIG_FILE, "r") as f:
     WEIGHTS = json.load(f)
 
 def calculate_daily_score(data: dict) -> int:
-    """
-    Calculate a simple Sovereignty Score based on daily habits.
-    Expects keys:
-      home_cooked_meals: int
-      junk_food: bool
-      exercise_minutes: int
-      strength_training: bool
-      no_spending: bool
-      invested_bitcoin: bool
-      meditation: bool
-      gratitude: bool
-    """
-
     w = WEIGHTS
     score = 0
 
@@ -54,5 +41,3 @@ def calculate_daily_score(data: dict) -> int:
 
     # cap at configured max
     return int(round(min(score, w["max_score"])))
-
-
