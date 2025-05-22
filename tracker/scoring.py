@@ -1,4 +1,13 @@
 ﻿# scoring.py
+import json
+import os
+
+# locate config
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONFIG_FILE = os.path.join(BASE_DIR, "config", "weights.json")
+
+with open(CONFIG_FILE, "r") as f:
+    WEIGHTS = json.load(f)
 
 def calculate_daily_score(data: dict) -> int:
     """
@@ -14,40 +23,36 @@ def calculate_daily_score(data: dict) -> int:
       gratitude: bool
     """
 
+    w = WEIGHTS
     score = 0
 
-    # 1) Home-cooked meals (max 3):  ∴ 20 pts total → ~6.66 pts/meal
-    meals = min(data.get("home_cooked_meals", 0), 3)
-    score += meals * (20/3)
+    # 1) Home-cooked meals
+    hc_cfg = w["home_cooked_meals"]
+    meals = min(data.get("home_cooked_meals", 0), hc_cfg["max_units"])
+    score += meals * hc_cfg["points_per_unit"]
 
-    # 2) Junk food penalty: 0 pts if yes, 10 if no
+    # 2) No junk food
     if not data.get("junk_food", False):
-        score += 10
+        score += w["no_junk_food"]
 
-    # 3) Aerobic exercise: max 15 pts (30 min = full points)
-    mins = data.get("exercise_minutes", 0)
-    score += min(mins, 30) * (15/30)
+    # 3) Exercise minutes
+    ex_cfg = w["exercise_minutes"]
+    mins = min(data.get("exercise_minutes", 0), ex_cfg["max_units"])
+    score += mins * ex_cfg["points_per_unit"]
 
-    # 4) Strength training: +15 pts if yes
+    # 4–8) flat booleans
     if data.get("strength_training", False):
-        score += 15
-
-    # 5) No discretionary spending: +10 pts
+        score += w["strength_training"]
     if data.get("no_spending", False):
-        score += 10
-
-    # 6) Invest in Bitcoin: +10 pts
+        score += w["no_spending"]
     if data.get("invested_bitcoin", False):
-        score += 10
-
-    # 7) Meditation: +10 pts
+        score += w["invested_bitcoin"]
     if data.get("meditation", False):
-        score += 10
-
-    # 8) Gratitude practice: +10 pts
+        score += w["meditation"]
     if data.get("gratitude", False):
-        score += 10
+        score += w["gratitude"]
 
-    return int(round(min(score, 100)))
+    # cap at configured max
+    return int(round(min(score, w["max_score"])))
 
 
