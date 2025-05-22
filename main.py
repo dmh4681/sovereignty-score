@@ -20,7 +20,7 @@ FIELDS = [
     ("junk_food",         "Did you eat any junk food today? (y/n) ",               lambda x: x.lower().startswith('y')),
     ("exercise_minutes",  "How many minutes of exercise did you do? (number) ",    int),
     ("strength_training", "Did you do strength training today? (y/n) ",          lambda x: x.lower().startswith('y')),
-    ("no_spending",       "Did you avoid all spending today? (y/n) ",             lambda x: x.lower().startswith('y')),
+    ("no_spending",       "Did you avoid all extraspending today? (y/n) ",             lambda x: x.lower().startswith('y')),
     ("invested_bitcoin",  "Did you invest in Bitcoin today? (y/n) ",             lambda x: x.lower().startswith('y')),
     ("meditation",        "Did you meditate today? (y/n) ",                      lambda x: x.lower().startswith('y')),
     ("gratitude",         "Did you practice gratitude today? (y/n) ",            lambda x: x.lower().startswith('y'))
@@ -32,6 +32,11 @@ def parse_args():
         "--history",
         action="store_true",
         help="Show your past sovereignty scores and exit"
+    )
+    p.add_argument(
+        "--clear-history",
+        action="store_true",
+        help="Erase all saved history (data/history.csv) and exit"
     )
     return p.parse_args()
 
@@ -87,8 +92,17 @@ def main():
 
 if __name__ == "__main__":
     args = parse_args()
-    if args.history:
+
+    if args.clear_history:
+        # remove the history file
+        if os.path.isfile(HISTORY_FILE):
+            os.remove(HISTORY_FILE)
+            print(f"✔️  Cleared {HISTORY_FILE}")
+        else:
+            print("ℹ️  No history file to clear.")
+
+    elif args.history:
         show_history()
+
     else:
         main()
-
