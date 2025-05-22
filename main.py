@@ -1,7 +1,26 @@
-﻿import csv
+﻿import argparse
+import csv
 import os
 import sys
 from datetime import datetime
+
+def parse_args():
+    p = argparse.ArgumentParser(description="Sovereignty Score Tracker")
+    p.add_argument(
+        "--history",
+        action="store_true",
+        help="Show your past sovereignty scores and exit"
+    )
+    return p.parse_args()
+
+def show_history():
+    """Simply dump the contents of data/history.csv to the console."""
+    history_file = os.path.join(BASE_DIR, "data", "history.csv")
+    if not os.path.exists(history_file):
+        print("No history file found yet.")
+        return
+    with open(history_file, newline="") as f:
+        print(f.read())
 
 # Make sure Python can import tracker/scoring.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -67,6 +86,9 @@ def main():
     print(f"✔️  Saved to {HISTORY_FILE}\n")
 
 if __name__ == "__main__":
-    main()
-# main execution starts here
+    args = parse_args()
+    if args.history:
+        show_history()
+    else:
+        main()
 
