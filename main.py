@@ -4,6 +4,19 @@ import os
 import sys
 from datetime import datetime
 
+def list_available_paths():
+    paths_file = os.path.join(BASE_DIR, "config", "paths.json")
+    if not os.path.exists(paths_file):
+        print("❌ paths.json not found.")
+        return
+    import json
+    with open(paths_file, "r") as f:
+        paths = json.load(f)
+    print("📂 Available scoring paths:")
+    for key in paths:
+        print(f" - {key}")
+
+
 # Make sure Python can import tracker/scoring.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TRACKER_DIR = os.path.join(BASE_DIR, "tracker")
@@ -29,23 +42,12 @@ FIELDS = [
 
 def parse_args():
     p = argparse.ArgumentParser(description="Sovereignty Score Tracker")
-    p.add_argument(
-        "--history",
-        action="store_true",
-        help="Show your past sovereignty scores and exit"
-    )
-    p.add_argument(
-        "--clear-history",
-        action="store_true",
-        help="Erase all saved history (data/history.csv) and exit"
-    )
-    p.add_argument(
-        "--path",
-        type=str,
-        default="default",
-        help="Choose a scoring path (default, financial_path, mental_resilience, physical_optimization, spiritual_growth)"
-    )
+    p.add_argument("--history", action="store_true", help="Show past sovereignty scores")
+    p.add_argument("--clear-history", action="store_true", help="Erase all saved history")
+    p.add_argument("--path", type=str, help="Scoring profile to use (e.g., 'default', 'financial_path')")
+    p.add_argument("--list-paths", action="store_true", help="List available scoring paths and exit")
     return p.parse_args()
+
 
 
 def show_history():
@@ -90,7 +92,7 @@ def main(path="default"):
     print("\n=== Sovereignty Score Tracker ===\n")
     print(f"📌 Using scoring path: {path}\n")
     daily_data = prompt_user()
-    score = calculate_daily_score(daily_data, path=path)
+    score = calculate_daily_score(daily_data, path=args.path or "default")
     print(f"\n💪 Your Sovereignty Score for today: {score}\n")
     ensure_history_file()
     append_to_history(daily_data, score)
@@ -105,7 +107,12 @@ if __name__ == "__main__":
             print(f"✔️  Cleared {HISTORY_FILE}")
         else:
             print("ℹ️  No history file to clear.")
+
     elif args.history:
         show_history()
+
+    elif args.list_paths:
+        list_available_paths()
+
     else:
-        main(path=args.path)
+        main(args.path or "default")
