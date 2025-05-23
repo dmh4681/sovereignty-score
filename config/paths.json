@@ -33,22 +33,22 @@
       "max_score": 100
     },
     "mental_resilience": {
-      "meditation": 15,
-      "gratitude": 15,
+      "meditation": 25,
+      "gratitude": 20,
       "read_or_learned": 20,
       "exercise_minutes": {
         "points_per_unit": 0.5,
-        "max_units": 20
+        "max_units": 30
       },
-      "no_junk_food": 10,
+      "no_junk_food": 20,
       "max_score": 100
     },
     "physical_optimization": {
       "home_cooked_meals": {
-        "points_per_unit": 6.6667,
+        "points_per_unit": 10,
         "max_units": 3
       },
-      "no_junk_food": 10,
+      "no_junk_food": 15,
       "exercise_minutes": {
         "points_per_unit": 1,
         "max_units": 30
