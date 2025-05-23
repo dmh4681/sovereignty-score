@@ -37,6 +37,8 @@ def calculate_daily_score(data: dict) -> int:
         score += w["meditation"]
     if data.get("gratitude", False):
         score += w["gratitude"]
+    if data.get("read_or_learned", False):
+        score += w["read_or_learned"]
 
     # cap at configured max
     return int(round(min(score, w["max_score"])))

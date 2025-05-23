@@ -30,6 +30,7 @@ spend  = st.checkbox("No discretionary spending?")
 btc    = st.checkbox("Invested in Bitcoin?")
 med    = st.checkbox("Meditated?")
 grat   = st.checkbox("Gratitude practice?")
+learn = st.checkbox("Read a book or learned something new?")
 
 if st.button("Submit & Save"):
     data = {
@@ -40,7 +41,8 @@ if st.button("Submit & Save"):
         "no_spending": spend,
         "invested_bitcoin": btc,
         "meditation": med,
-        "gratitude": grat
+        "gratitude": grat,
+        "read_or_learned": learn
     }
     score = calculate_daily_score(data)
     st.success(f"💪 Your score: **{score} / 100**")

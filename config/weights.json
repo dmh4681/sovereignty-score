@@ -1,12 +1,12 @@
 {
     "home_cooked_meals": { "points_per_unit": 6.6667, "max_units": 3 },
     "no_junk_food": 10,
-    "exercise_minutes": { "points_per_unit": 0.5, "max_units": 30 },
+    "exercise_minutes": { "points_per_unit": 0.5, "max_units": 20 },
     "strength_training": 15,
     "no_spending": 10,
     "invested_bitcoin": 10,
     "meditation": 10,
     "gratitude": 10,
+    "read_or_learned": 10,
     "max_score": 100
   }
-  
