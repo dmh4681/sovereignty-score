@@ -21,6 +21,18 @@ if not os.path.isfile(HIST_FILE):
 st.title("🏰 Sovereignty Score Tracker")
 st.markdown("Fill out today’s habits and hit **Submit** to see your score.")
 
+st.sidebar.title("Choose Your Sovereignty Path")
+path_options = {
+    "Default (Balanced)": "default",
+    "Financial Path": "financial_path",
+    "Mental Resilience": "mental_resilience",
+    "Physical Optimization": "physical_optimization",
+    "Spiritual Growth": "spiritual_growth"
+}
+selected_path_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys()))
+selected_path = path_options[selected_path_label]
+
+
 # --- Input widgets ---
 meals  = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
 junk   = st.checkbox("No junk food today?")
@@ -44,8 +56,9 @@ if st.button("Submit & Save"):
         "gratitude": grat,
         "read_or_learned": learn
     }
-    score = calculate_daily_score(data)
+    score = calculate_daily_score(data, path=selected_path)
     st.success(f"💪 Your score: **{score} / 100**")
+    st.info(f"Path used: **{selected_path_label}**")
 
     # Append to CSV
     with open(HIST_FILE, "a", newline="") as f:

@@ -8,3 +8,6 @@ timestamp,home_cooked_meals,junk_food,exercise_minutes,strength_training,no_spen
 2025-05-22T00:10:25.368140,3,False,60,True,True,True,True,True,100
 2025-05-22T08:02:47.486064,3,False,60,True,True,True,True,True,100
 2025-05-22T20:50:13.162031,3,False,30,False,True,True,True,True,85
+2025-05-22T21:23:51.407896,3,False,0,False,True,True,True,True,True,80
+2025-05-22T21:41:18.828020,3,False,15,True,True,True,True,True,True,100
+2025-05-22T21:47:22.469163,3,False,15,True,True,True,True,True,True,88

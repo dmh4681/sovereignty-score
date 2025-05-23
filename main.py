@@ -23,7 +23,8 @@ FIELDS = [
     ("no_spending",       "Did you avoid all extraspending today? (y/n) ",             lambda x: x.lower().startswith('y')),
     ("invested_bitcoin",  "Did you invest in Bitcoin today? (y/n) ",             lambda x: x.lower().startswith('y')),
     ("meditation",        "Did you meditate today? (y/n) ",                      lambda x: x.lower().startswith('y')),
-    ("gratitude",         "Did you practice gratitude today? (y/n) ",            lambda x: x.lower().startswith('y'))
+    ("gratitude",         "Did you practice gratitude today? (y/n) ",            lambda x: x.lower().startswith('y')),
+    ("read_or_learned",   "Did you read a book or learn a new skill today? (y/n) ",    lambda x: x.lower().startswith('y'))
 ]
 
 def parse_args():
@@ -38,7 +39,14 @@ def parse_args():
         action="store_true",
         help="Erase all saved history (data/history.csv) and exit"
     )
+    p.add_argument(
+        "--path",
+        type=str,
+        default="default",
+        help="Choose a scoring path (default, financial_path, mental_resilience, physical_optimization, spiritual_growth)"
+    )
     return p.parse_args()
+
 
 def show_history():
     """Simply dump the contents of data/history.csv to the console."""
@@ -78,14 +86,12 @@ def append_to_history(data: dict, score: int):
         writer = csv.writer(f)
         writer.writerow(row)
 
-def main():
+def main(path="default"):
     print("\n=== Sovereignty Score Tracker ===\n")
-    # 1) Gather daily inputs
+    print(f"📌 Using scoring path: {path}\n")
     daily_data = prompt_user()
-    # 2) Compute the score
-    score = calculate_daily_score(daily_data)
+    score = calculate_daily_score(daily_data, path=path)
     print(f"\n💪 Your Sovereignty Score for today: {score}\n")
-    # 3) Persist to history
     ensure_history_file()
     append_to_history(daily_data, score)
     print(f"✔️  Saved to {HISTORY_FILE}\n")
@@ -94,15 +100,12 @@ if __name__ == "__main__":
     args = parse_args()
 
     if args.clear_history:
-        # remove the history file
         if os.path.isfile(HISTORY_FILE):
             os.remove(HISTORY_FILE)
             print(f"✔️  Cleared {HISTORY_FILE}")
         else:
             print("ℹ️  No history file to clear.")
-
     elif args.history:
         show_history()
-
     else:
-        main()
+        main(path=args.path)

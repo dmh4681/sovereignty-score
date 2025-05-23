@@ -1,0 +1,71 @@
+{
+    "default": {
+      "home_cooked_meals": {
+        "points_per_unit": 6.6667,
+        "max_units": 3
+      },
+      "no_junk_food": 10,
+      "exercise_minutes": {
+        "points_per_unit": 0.5,
+        "max_units": 20
+      },
+      "strength_training": 10,
+      "no_spending": 10,
+      "invested_bitcoin": 5,
+      "meditation": 10,
+      "gratitude": 5,
+      "read_or_learned": 10,
+      "max_score": 100
+    },
+    "financial_path": {
+      "home_cooked_meals": {
+        "points_per_unit": 7,
+        "max_units": 3
+      },
+      "no_spending": 15,
+      "invested_bitcoin": 20,
+      "exercise_minutes": {
+        "points_per_unit": 0.25,
+        "max_units": 20
+      },
+      "gratitude": 5,
+      "read_or_learned": 10,
+      "max_score": 100
+    },
+    "mental_resilience": {
+      "meditation": 15,
+      "gratitude": 15,
+      "read_or_learned": 20,
+      "exercise_minutes": {
+        "points_per_unit": 0.5,
+        "max_units": 20
+      },
+      "no_junk_food": 10,
+      "max_score": 100
+    },
+    "physical_optimization": {
+      "home_cooked_meals": {
+        "points_per_unit": 6.6667,
+        "max_units": 3
+      },
+      "no_junk_food": 10,
+      "exercise_minutes": {
+        "points_per_unit": 1,
+        "max_units": 30
+      },
+      "strength_training": 20,
+      "no_spending": 5,
+      "max_score": 100
+    },
+    "spiritual_growth": {
+      "meditation": 20,
+      "gratitude": 20,
+      "read_or_learned": 15,
+      "no_junk_food": 10,
+      "exercise_minutes": {
+        "points_per_unit": 0.5,
+        "max_units": 20
+      },
+      "max_score": 100
+    }
+  }
