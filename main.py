@@ -4,18 +4,6 @@ import os
 import sys
 from datetime import datetime
 
-def list_available_paths():
-    paths_file = os.path.join(BASE_DIR, "config", "paths.json")
-    if not os.path.exists(paths_file):
-        print("❌ paths.json not found.")
-        return
-    import json
-    with open(paths_file, "r") as f:
-        paths = json.load(f)
-    print("📂 Available scoring paths:")
-    for key in paths:
-        print(f" - {key}")
-
 
 # Make sure Python can import tracker/scoring.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +27,18 @@ FIELDS = [
     ("gratitude",         "Did you practice gratitude today? (y/n) ",            lambda x: x.lower().startswith('y')),
     ("read_or_learned",   "Did you read a book or learn a new skill today? (y/n) ",    lambda x: x.lower().startswith('y'))
 ]
+
+def list_available_paths():
+    paths_file = os.path.join(BASE_DIR, "config", "paths.json")
+    if not os.path.exists(paths_file):
+        print("❌ paths.json not found.")
+        return
+    import json
+    with open(paths_file, "r") as f:
+        paths = json.load(f)
+    print("📂 Available scoring paths:")
+    for key in paths:
+        print(f" - {key}")
 
 def parse_args():
     p = argparse.ArgumentParser(description="Sovereignty Score Tracker")
@@ -92,7 +92,7 @@ def main(path="default"):
     print("\n=== Sovereignty Score Tracker ===\n")
     print(f"📌 Using scoring path: {path}\n")
     daily_data = prompt_user()
-    score = calculate_daily_score(daily_data, path=args.path or "default")
+    score = calculate_daily_score(daily_data, path=path)
     print(f"\n💪 Your Sovereignty Score for today: {score}\n")
     ensure_history_file()
     append_to_history(daily_data, score)
@@ -107,12 +107,11 @@ if __name__ == "__main__":
             print(f"✔️  Cleared {HISTORY_FILE}")
         else:
             print("ℹ️  No history file to clear.")
-
     elif args.history:
         show_history()
-
     elif args.list_paths:
         list_available_paths()
-
     else:
-        main(args.path or "default")
+        selected_path = args.path if args.path else "default"
+        main(path=selected_path)
+
