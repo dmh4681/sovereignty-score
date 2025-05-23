@@ -58,13 +58,13 @@
       "max_score": 100
     },
     "spiritual_growth": {
-      "meditation": 20,
-      "gratitude": 20,
-      "read_or_learned": 15,
+      "meditation": 25,
+      "gratitude": 25,
+      "read_or_learned": 20,
       "no_junk_food": 10,
       "exercise_minutes": {
         "points_per_unit": 0.5,
-        "max_units": 20
+        "max_units": 40
       },
       "max_score": 100
     }
