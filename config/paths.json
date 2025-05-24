@@ -7,13 +7,13 @@
       "no_junk_food": 10,
       "exercise_minutes": {
         "points_per_unit": 0.5,
-        "max_units": 20
+        "max_units": 40
       },
       "strength_training": 10,
-      "no_spending": 10,
+      "no_spending": 5,
       "invested_bitcoin": 5,
       "meditation": 10,
-      "gratitude": 5,
+      "gratitude": 10,
       "read_or_learned": 10,
       "max_score": 100
     },
