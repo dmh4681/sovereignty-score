@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import csv, os, json
 from datetime import datetime
@@ -65,15 +66,14 @@ selected_path = path_options[selected_label]
 
 
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    st.markdown(f"**Profile:** {selected_label}")  # user‐friendly label
-    cfg = ALL_PATHS[selected_path]
-
-    # 2a) Show the human description, if present
-    desc = cfg.get("description")
+    # 1) Title & description
+    st.markdown(f"**Profile:** {selected_label}")
+    desc = ALL_PATHS[selected_path].get("description", "")
     if desc:
         st.markdown(f"*{desc}*")
 
-    # 2b) Build a metrics table from the rest of the keys
+    # 2) Build a tiny DataFrame of just the scoring metrics
+    cfg = ALL_PATHS[selected_path]
     metrics = {k: v for k, v in cfg.items() if k != "description"}
     flat = {}
     for m, v in metrics.items():
@@ -82,28 +82,30 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
                 flat[f"{m}.{subk}"] = subv
         else:
             flat[m] = v
-
     df_scoring = pd.DataFrame.from_records(
         list(flat.items()), columns=["metric", "value"]
     )
 
-    # 2c) Convert to HTML & inject small‐font CSS
+    # 3) Convert to HTML + inject small-font CSS
     html = df_scoring.to_html(index=False, classes="scoring-table", border=0)
-    st.markdown(f"""
+    components.html(
+        f"""
         <style>
-          .scoring-table {{ 
-            font-size: 0.75em; 
-            line-height:1.2em; 
-            width:100%;
+          .scoring-table {{
+            font-size: 0.75rem;
             border-collapse: collapse;
+            width: 100%;
           }}
           .scoring-table th, .scoring-table td {{
-            padding:4px 6px;
+            padding: 4px 6px;
             text-align: left;
+            border-bottom: 1px solid #444;
           }}
         </style>
         {html}
-    """, unsafe_allow_html=True)
+        """,
+        height= (len(df_scoring) + 2) * 25  # auto-height
+    )
 
 
 
