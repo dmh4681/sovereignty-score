@@ -95,11 +95,12 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
             font-size: 0.85rem;
             border-collapse: collapse;
             width: 100%;
+            color: inherit;
           }}
           .scoring-table th, .scoring-table td {{
             padding: 4px 6px;
             text-align: left;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid currentColor;
           }}
         </style>
         {html}
