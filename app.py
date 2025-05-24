@@ -92,7 +92,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
         f"""
         <style>
           .scoring-table {{
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             border-collapse: collapse;
             width: 100%;
           }}
