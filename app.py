@@ -101,6 +101,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
             padding: 4px 6px;
             text-align: left;
             border-bottom: 1px solid currentColor;
+            color: inherit;
           }}
         </style>
         {html}
