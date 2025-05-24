@@ -13,11 +13,14 @@ sys.path.insert(0, TRACKER_DIR)
 from scoring import calculate_daily_score
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
-HISTORY_FILE = os.path.join(DATA_DIR, "history.csv")
+def get_history_file(username: str) -> str:
+    return os.path.join(DATA_DIR, f"history_{username.lower().strip()}.csv")
+
 
 # Define the questions, their keys, and how to cast the answer
 FIELDS = [
-    ("home_cooked_meals",  "How many home-cooked meals did you have today? (number) ", int),
+    ("username",          "Enter your username: ", str),
+    ("home_cooked_meals", "How many home-cooked meals did you have today? (number) ", int),
     ("junk_food",         "Did you eat any junk food today? (y/n) ",               lambda x: x.lower().startswith('y')),
     ("exercise_minutes",  "How many minutes of exercise did you do? (number) ",    int),
     ("strength_training", "Did you do strength training today? (y/n) ",          lambda x: x.lower().startswith('y')),
@@ -43,6 +46,7 @@ def list_available_paths():
 def parse_args():
     p = argparse.ArgumentParser(description="Sovereignty Score Tracker")
     p.add_argument("--history", action="store_true", help="Show past sovereignty scores")
+    p.add_argument("--user", type=str, help="Specify username for --history")
     p.add_argument("--clear-history", action="store_true", help="Erase all saved history")
     p.add_argument("--path", type=str, help="Scoring profile to use (e.g., 'default', 'financial_path')")
     p.add_argument("--list-paths", action="store_true", help="List available scoring paths and exit")
@@ -50,14 +54,18 @@ def parse_args():
 
 
 
-def show_history():
-    """Simply dump the contents of data/history.csv to the console."""
-    history_file = os.path.join(BASE_DIR, "data", "history.csv")
+def show_history(username=None):
+    """Print the user's history file."""
+    if username is None:
+        print("❗ Please specify a username with --user=<name>")
+        return
+    history_file = get_history_file(username)
     if not os.path.exists(history_file):
-        print("No history file found yet.")
+        print("No history file found for this user yet.")
         return
     with open(history_file, newline="") as f:
         print(f.read())
+
 
 def prompt_user() -> dict:
     """Ask each question in turn, validate & cast responses."""
@@ -72,19 +80,19 @@ def prompt_user() -> dict:
                 print(f"❗ Invalid input for {key!r}. Please try again.")
     return answers
 
-def ensure_history_file():
+def ensure_history_file(history_file):
     """Create history.csv with a header row if it doesn't yet exist."""
     if not os.path.isdir(DATA_DIR):
         os.makedirs(DATA_DIR)
-    if not os.path.isfile(HISTORY_FILE):
-        with open(HISTORY_FILE, "w", newline="") as f:
+    if not os.path.isfile(history_file):
+        with open(history_file, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["timestamp"] + [k for k, _, _ in FIELDS] + ["score"])
 
-def append_to_history(data: dict, score: int):
+def append_to_history(history_file, data: dict, score: int):
     """Append today's responses + computed score."""
     row = [datetime.now().isoformat()] + [data[key] for key, *_ in FIELDS] + [score]
-    with open(HISTORY_FILE, "a", newline="") as f:
+    with open(history_file, "a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(row)
 
@@ -92,11 +100,13 @@ def main(path="default"):
     print("\n=== Sovereignty Score Tracker ===\n")
     print(f"📌 Using scoring path: {path}\n")
     daily_data = prompt_user()
+    username = daily_data["username"]
     score = calculate_daily_score(daily_data, path=path)
     print(f"\n💪 Your Sovereignty Score for today: {score}\n")
-    ensure_history_file()
-    append_to_history(daily_data, score)
-    print(f"✔️  Saved to {HISTORY_FILE}\n")
+    history_file = get_history_file(username)
+    ensure_history_file(history_file)
+    append_to_history(history_file, daily_data, score)
+    print(f"✔️  Saved to {history_file}\n")
 
 if __name__ == "__main__":
     args = parse_args()
@@ -108,7 +118,7 @@ if __name__ == "__main__":
         else:
             print("ℹ️  No history file to clear.")
     elif args.history:
-        show_history()
+        show_history(args.user)
     elif args.list_paths:
         list_available_paths()
     else:
