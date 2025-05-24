@@ -80,21 +80,29 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
                 flat[f"{k}.{subk}"] = subv
         else:
             flat[k] = v
-    df_scoring = pd.DataFrame.from_records(list(flat.items()),
-                                          columns=["metric", "value"])
+    df_scoring = pd.DataFrame.from_records(
+        list(flat.items()), columns=["metric", "value"]
+    )
 
-    # render via pandas Styler (so we can attach our own class)
-    styled = df_scoring.style.set_table_attributes('class="scoring-table"').render()
+    # produce simple HTML table with our class
+    html_table = df_scoring.to_html(
+        index=False,
+        classes="scoring-table",
+        border=0,
+        justify="left"
+    )
 
-    # inject CSS that forces table text to inherit the theme color
+    # inject CSS + the table
     components.html(f"""
       <style>
+        /* Force cells to inherit the current text color */
         table.scoring-table, 
         table.scoring-table th, 
         table.scoring-table td {{
           color: inherit !important;
           background-color: transparent !important;
         }}
+        /* Borders in current color */
         table.scoring-table th {{
           border-bottom: 2px solid currentColor !important;
           font-weight: bold;
@@ -102,15 +110,14 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
         table.scoring-table td {{
           border-bottom: 1px solid currentColor !important;
         }}
-        /* shrink font so it wraps neatly */
+        /* Shrink font to fit nicely */
         table.scoring-table {{
           font-size: 0.75rem !important;
           line-height: 1.2 !important;
         }}
       </style>
-      {styled}
-    """, height=(len(df_scoring) + 1) * 28)
-
+      {html_table}
+    """, height=(df_scoring.shape[0] + 1) * 28)
 
 # — Main UI —
 if username:
