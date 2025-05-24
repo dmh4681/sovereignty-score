@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import csv, os
+import json
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
 
@@ -8,6 +9,11 @@ from tracker.scoring import calculate_daily_score
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
+
+# load all path‐definitions once
+PATHS_FILE = os.path.join(BASE, "config", "paths.json")
+with open(PATHS_FILE, "r", encoding="utf-8") as f:
+    ALL_PATHS = json.load(f)
 
 def get_user_history_file(username: str) -> str:
     safe = username.strip().lower().replace(" ", "_")
@@ -29,6 +35,12 @@ path_options = {
 }
 selected_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys()))
 selected_path  = path_options[selected_label]
+
+with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
+    st.markdown(f"**Profile:** {selected_path_label}")
+    st.table(pd.DataFrame.from_dict(
+        ALL_PATHS[selected_path], orient="index", columns=["value"]
+    ))
 
 # — Main UI once username is provided —
 if username:
