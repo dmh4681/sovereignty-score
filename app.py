@@ -66,49 +66,50 @@ selected_path = path_options[selected_label]
 
 
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    # 1) Title & description
     st.markdown(f"**Profile:** {selected_label}")
     desc = ALL_PATHS[selected_path].get("description", "")
     if desc:
         st.markdown(f"*{desc}*")
 
-    # 2) Build a tiny DataFrame of just the scoring metrics
+    # build flat metric→value DataFrame
     cfg = ALL_PATHS[selected_path]
-    metrics = {k: v for k, v in cfg.items() if k != "description"}
     flat = {}
-    for m, v in metrics.items():
+    for k, v in cfg.items():
         if isinstance(v, dict):
             for subk, subv in v.items():
-                flat[f"{m}.{subk}"] = subv
+                flat[f"{k}.{subk}"] = subv
         else:
-            flat[m] = v
-    df_scoring = pd.DataFrame.from_records(
-        list(flat.items()), columns=["metric", "value"]
-    )
+            flat[k] = v
+    df_scoring = pd.DataFrame.from_records(list(flat.items()),
+                                          columns=["metric", "value"])
 
-    # 3) Convert to HTML + inject small-font CSS
-    html = df_scoring.to_html(index=False, classes="scoring-table", border=0)
-    components.html(
-        f"""
-        <style>
-          .scoring-table {{
-            font-size: 0.85rem;
-            border-collapse: collapse;
-            width: 100%;
-            color: inherit;
-          }}
-          .scoring-table th, .scoring-table td {{
-            padding: 4px 6px;
-            text-align: left;
-            border-bottom: 1px solid currentColor;
-            color: inherit;
-          }}
-        </style>
-        {html}
-        """,
-        height= (len(df_scoring) + 2) * 25  # auto-height
-    )
+    # render via pandas Styler (so we can attach our own class)
+    styled = df_scoring.style.set_table_attributes('class="scoring-table"').render()
 
+    # inject CSS that forces table text to inherit the theme color
+    components.html(f"""
+      <style>
+        table.scoring-table, 
+        table.scoring-table th, 
+        table.scoring-table td {{
+          color: inherit !important;
+          background-color: transparent !important;
+        }}
+        table.scoring-table th {{
+          border-bottom: 2px solid currentColor !important;
+          font-weight: bold;
+        }}
+        table.scoring-table td {{
+          border-bottom: 1px solid currentColor !important;
+        }}
+        /* shrink font so it wraps neatly */
+        table.scoring-table {{
+          font-size: 0.75rem !important;
+          line-height: 1.2 !important;
+        }}
+      </style>
+      {styled}
+    """, height=(len(df_scoring) + 1) * 28)
 
 
 # — Main UI —
