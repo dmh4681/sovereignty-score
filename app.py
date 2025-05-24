@@ -74,11 +74,16 @@ if username:
             writer.writerow([datetime.now().isoformat()] + list(data.values()) + [score])
 
         # Show history
-        st.subheader("📜 Your History")
-        with open(hist_file, newline="") as f:
-            reader = csv.reader(f)
-            rows = list(reader)
+    st.subheader("📜 Your History")
+    with open(hist_file, newline="") as f:
+        reader = csv.reader(f)
+        rows = list(reader)
+        if len(rows) > 1:
             st.dataframe(rows[1:], columns=rows[0])
+        elif len(rows) == 1:
+            st.info("📘 You’ve just submitted your first entry. More rows will appear here over time.")
+        else:
+            st.warning("⚠️ No history found yet.")
 
 else:
     st.warning("⚠️ Please enter your username in the sidebar to begin.")
