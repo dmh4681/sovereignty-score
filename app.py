@@ -41,16 +41,18 @@ path_options = {
     "Planetary Stewardship":    "planetary_stewardship",
 }
 
-# Preselect path from URL if present
+# Preselect path from URL if present    
 # Preselect path from URL if present (Streamlit 1.32+)
 query_params = st.query_params
 default_path = query_params.get("path", [None])[0] if query_params else None
-selected_label = st.sidebar.selectbox(
-    "Scoring Profile",
-    list(path_options.keys()),
-    index=list(path_options.values()).index(default_path) if default_path in path_options.values() else 0
-)
-selected_path = path_options[selected_label]
+
+# Reverse-map path keys to labels
+reverse_map = {v: k for k, v in path_options.items()}
+default_label = reverse_map.get(default_path, "Default (Balanced)")
+
+# Path dropdown selection
+selected_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys()), index=list(path_options.keys()).index(default_label))
+selected_path  = path_options[selected_label]
 
 # Sidebar breakdown
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
@@ -132,15 +134,23 @@ if username:
             writer = csv.writer(f)
             writer.writerow([datetime.now().isoformat()] + list(data.values()) + [score])
 
-    # Show history
-    st.subheader("📜 Your History")
-    try:
-        df = pd.read_csv(hist_file)
-        if not df.empty:
-            st.dataframe(df)
-        else:
-            st.info("📘 You've just created your first entry—more rows will show up here over time.")
-    except Exception:
-        st.warning("⚠️ No history found yet. Submit a score to get started.")
+   # — Show history via pandas —
+st.subheader("📜 Your History")
+try:
+    df = pd.read_csv(hist_file)
+
+    # Re-align old CSVs that may be missing columns
+    for col in header:
+        if col not in df.columns:
+            df[col] = None
+    df = df[header]  # Reorder to match new format
+
+    if df.shape[0] > 0:
+        st.dataframe(df)
+    else:
+        st.info("📘 You've just created your first entry—more rows will show up here over time.")
+except Exception:
+    st.warning("⚠️ No history found yet. Submit a score to get started.")
+
 else:
     st.warning("⚠️ Please enter your username in the sidebar to begin.")
