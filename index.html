@@ -17,7 +17,7 @@
       padding: 3rem 1rem;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       text-align: center;
     }
     h1 {
@@ -45,6 +45,57 @@
     .btn:hover {
       background-color: #ffd633;
     }
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .tile {
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      padding: 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .tile:hover {
+      transform: scale(1.02);
+      background-color: #333;
+    }
+    .tile h3 {
+      color: #ffcc00;
+      margin-bottom: 0.5rem;
+    }
+    .tile p {
+      font-size: 0.95rem;
+      color: #ccc;
+    }
+    .cta {
+      background-color: #222;
+      padding: 2rem;
+      margin-top: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      color: #eee;
+    }
+    .cta input[type="email"], .cta input[type="text"] {
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      width: 250px;
+      margin: 0.5rem 0;
+    }
+    .cta button {
+      padding: 0.8rem 1.5rem;
+      background-color: #ffcc00;
+      border: none;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     .features {
       margin-top: 3rem;
       text-align: left;
@@ -63,33 +114,6 @@
       font-size: 0.9rem;
       color: #888;
     }
-    .cta {
-  background-color: #222;
-  padding: 2rem;
-  margin-top: 2rem;
-  border-radius: 10px;
-  text-align: center;
-  color: #eee;
-}
-
-.cta input[type="email"] {
-  padding: 0.8rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  width: 250px;
-  margin-right: 0.5rem;
-}
-
-.cta button {
-  padding: 0.8rem 1.5rem;
-  background-color: #ffcc00;
-  border: none;
-  font-weight: bold;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
   </style>
 </head>
 <body>
@@ -98,18 +122,34 @@
     <h2>Track daily choices that build your body, mind, and freedom.</h2>
     <a class="btn" href="https://sovereignty-score-digitalnomad.streamlit.app" target="_blank">Launch the App</a>
 
+    <div class="tiles">
+      <div class="tile">
+        <h3>💰 Financial Path</h3>
+        <p>Prioritize savings, investments, and minimalist living. Designed to cultivate economic resilience and freedom.</p>
+      </div>
+      <div class="tile">
+        <h3>🧠 Mental Resilience</h3>
+        <p>Sharpen your mind through meditation, learning, and mindful routines. Build psychological strength that lasts.</p>
+      </div>
+      <div class="tile">
+        <h3>🏋️‍♂️ Physical Optimization</h3>
+        <p>Focus on strength, performance, recovery, and nutrition to craft your most resilient body yet.</p>
+      </div>
+      <div class="tile">
+        <h3>🧘‍♂️ Spiritual Growth</h3>
+        <p>Deepen your sense of presence, purpose, and gratitude. Find sovereignty in awareness and self-knowledge.</p>
+      </div>
+    </div>
+
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
       <p>Get updates, tips, and tools to help you build a healthier, freer life — straight to your inbox.</p>
-      <form action="https://formspree.io/f/mvganjjw" method="POST" style="margin-top: 2rem;">
-        <input type="text" name="username" placeholder="Choose a username" required
-          style="padding: 0.8rem; margin: 0.5rem 0; width: 100%; max-width: 400px; border-radius: 6px;" />
-        <input type="email" name="email" placeholder="Your email address" required
-          style="padding: 0.8rem; margin: 0.5rem 0; width: 100%; max-width: 400px; border-radius: 6px;" />
-        <button type="submit" class="btn" style="margin-top: 1rem;">Join the Sovereign Journey</button>
+      <form action="https://formspree.io/f/mvganjjw" method="POST">
+        <input type="text" name="username" placeholder="Choose a username" required />
+        <input type="email" name="email" placeholder="Your email address" required />
+        <button type="submit">Join the Sovereign Journey</button>
       </form>
     </div>
-
 
     <div class="features">
       <h3>✨ Simple Daily Logging</h3>
