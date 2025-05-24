@@ -75,7 +75,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
             flat[metric] = val
     df_scoring = pd.DataFrame.from_records(list(flat.items()), columns=["metric", "value"])
     st.markdown(
-        "<div style='font-size:0.6em; line-height:1.2em;'>", 
+        "<div style='font-size:0.3em; line-height:1.2em;'>", 
         unsafe_allow_html=True
     )
     st.table(df_scoring)
