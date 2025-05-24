@@ -63,6 +63,33 @@
       font-size: 0.9rem;
       color: #888;
     }
+    .cta {
+  background-color: #222;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  color: #eee;
+}
+
+.cta input[type="email"] {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  width: 250px;
+  margin-right: 0.5rem;
+}
+
+.cta button {
+  padding: 0.8rem 1.5rem;
+  background-color: #ffcc00;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -70,6 +97,19 @@
     <h1>🛡️ The Sovereignty Score</h1>
     <h2>Track daily choices that build your body, mind, and freedom.</h2>
     <a class="btn" href="https://sovereignty-score-digitalnomad.streamlit.app" target="_blank">Launch the App</a>
+
+    <div class="cta">
+      <h3>📬 Join the Sovereignty Circle</h3>
+      <p>Get updates, tips, and tools to help you build a healthier, freer life — straight to your inbox.</p>
+      <form action="https://formspree.io/f/mvganjjw" method="POST" style="margin-top: 2rem;">
+        <input type="text" name="username" placeholder="Choose a username" required
+          style="padding: 0.8rem; margin: 0.5rem 0; width: 100%; max-width: 400px; border-radius: 6px;" />
+        <input type="email" name="email" placeholder="Your email address" required
+          style="padding: 0.8rem; margin: 0.5rem 0; width: 100%; max-width: 400px; border-radius: 6px;" />
+        <button type="submit" class="btn" style="margin-top: 1rem;">Join the Sovereign Journey</button>
+      </form>
+    </div>
+
 
     <div class="features">
       <h3>✨ Simple Daily Logging</h3>
