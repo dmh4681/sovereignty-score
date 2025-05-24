@@ -56,7 +56,7 @@
         "exercise_minutes": { "points_per_unit": 0.5, "max_units": 40 },
         "environmental_action": 25, 
         "no_spending": 10,
-        "read_or_learned": 10,
+        "read_or_learned": 15,
         "max_score": 100
     }
   }
