@@ -46,13 +46,19 @@ path_options = {
 # Pre-select via URL query ?path=…
 query_params = st.query_params
 default_path = query_params.get("path", [None])[0] if query_params else None
+
+# map path values back to the human label
 reverse_map = {v: k for k, v in path_options.items()}
 default_label = reverse_map.get(default_path, "Default (Balanced)")
+
+# initialize session state, then bind the selectbox to it
+if "selected_label" not in st.session_state:
+    st.session_state.selected_label = default_label
 
 selected_label = st.sidebar.selectbox(
     "Scoring Profile",
     list(path_options.keys()),
-    index=list(path_options.keys()).index(default_label)
+    key="selected_label"
 )
 selected_path = path_options[selected_label]
 
@@ -68,7 +74,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
         else:
             flat[metric] = val
     df_scoring = pd.DataFrame.from_records(list(flat.items()), columns=["metric", "value"])
-    st.markdown("<style>.small-font{font-size:0.75em;}</style><div class='small-font'>", unsafe_allow_html=True)
+    st.markdown("<style>.small-font{font-size:0.5em;}</style><div class='small-font'>", unsafe_allow_html=True)
     st.table(df_scoring)
     st.markdown("</div>", unsafe_allow_html=True)
 
