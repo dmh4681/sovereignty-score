@@ -74,6 +74,7 @@ if username:
         "username",
         "home_cooked_meals","junk_food","exercise_minutes","strength_training",
         "no_spending","invested_bitcoin","meditation","gratitude","read_or_learned",
+        "environmental_action",
         "score"
     ]
     if not os.path.isfile(hist_file):
@@ -91,6 +92,7 @@ if username:
         med   = st.checkbox("Meditated?")
         grat  = st.checkbox("Gratitude practice?")
         learn = st.checkbox("Read or learned something new?")
+        env = st.checkbox("Took environmentally friendly action today?")
         submitted = st.form_submit_button("Submit & Save")
 
     if submitted:
@@ -105,6 +107,7 @@ if username:
             "meditation":       med,
             "gratitude":        grat,
             "read_or_learned":  learn,
+            "environmental_action": env,
         }
         score = calculate_daily_score(data, path=selected_path)
         st.success(f"💪 Sovereignty Score: **{score} / 100**")

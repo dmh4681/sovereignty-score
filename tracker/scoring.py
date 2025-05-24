@@ -24,7 +24,7 @@ def calculate_daily_score(data: dict, path: str = "default") -> int:
     if "exercise_minutes" in w:
         em = w["exercise_minutes"]
         score += min(data.get("exercise_minutes", 0), em["max_units"]) * em["points_per_unit"]
-    for k in ["strength_training", "no_spending", "invested_bitcoin", "meditation", "gratitude", "read_or_learned"]:
+    for k in ["strength_training", "no_spending", "invested_bitcoin", "meditation", "gratitude", "read_or_learned","environmental_action"]:
         if k in w and data.get(k, False):
             score += w[k]
 
