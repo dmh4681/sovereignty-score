@@ -52,7 +52,16 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
         list(flat.items()),
         columns=["metric","value"]
     )
+    st.markdown("""
+        <style>
+        .small-font {
+            font-size: 0.8em;
+        }
+        </style>
+        <div class="small-font">
+    """, unsafe_allow_html=True)
     st.table(df)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # — Main UI once username is provided —
 if username:
