@@ -62,6 +62,7 @@ if username:
     # ensure per-user CSV has header
     header = [
         "timestamp",
+        "username",
         "home_cooked_meals","junk_food","exercise_minutes","strength_training",
         "no_spending","invested_bitcoin","meditation","gratitude","read_or_learned",
         "score"
@@ -85,6 +86,7 @@ if username:
 
     if submitted:
         data = {
+            "username": username,
             "home_cooked_meals": meals,
             "junk_food":        not junk,  # invert to match scoring logic
             "exercise_minutes": mins,
