@@ -42,7 +42,7 @@ path_options = {
 }
 
 # Preselect path from URL if present
-query_params = st.experimental_get_query_params()
+query_params = st.query_params()
 default_path = query_params.get("path", [None])[0]
 selected_label = st.sidebar.selectbox(
     "Scoring Profile",
