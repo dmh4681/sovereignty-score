@@ -32,6 +32,7 @@ path_options = {
     "Mental Resilience":        "mental_resilience",
     "Physical Optimization":    "physical_optimization",
     "Spiritual Growth":         "spiritual_growth",
+    "Planetary Stewardship":    "planetary_stewardship",
 }
 selected_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys()))
 selected_path  = path_options[selected_label]
