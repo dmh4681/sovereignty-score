@@ -37,7 +37,7 @@ selected_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys(
 selected_path  = path_options[selected_label]
 
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    st.markdown(f"**Profile:** {selected_path_label}")
+    st.markdown(f"**Profile:** {selected_label}")
     st.table(pd.DataFrame.from_dict(
         ALL_PATHS[selected_path], orient="index", columns=["value"]
     ))
