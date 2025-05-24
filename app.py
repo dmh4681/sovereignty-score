@@ -26,15 +26,15 @@ path_options = {
 selected_path_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys()))
 selected_path = path_options[selected_path_label]
 
-# Determine user's history file
 def get_user_history_file(username: str) -> str:
     safe_user = username.strip().lower().replace(" ", "_")
     return os.path.join(DATA_DIR, f"history_{safe_user}.csv")
 
-# Input form
 if username:
     st.subheader(f"Hello, {username} 👋")
+    hist_file = get_user_history_file(username)
 
+    # Build the input form
     with st.form("tracker_form"):
         meals  = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
         junk   = st.checkbox("No junk food today?")
@@ -63,27 +63,27 @@ if username:
         st.success(f"💪 Sovereignty Score: **{score} / 100**")
         st.info(f"Scoring Path: **{selected_path_label}**")
 
-        # Save to per-user history
-        hist_file = get_user_history_file(username)
+        # Append to per-user history CSV
         file_exists = os.path.isfile(hist_file)
-
         with open(hist_file, "a", newline="") as f:
             writer = csv.writer(f)
             if not file_exists:
                 writer.writerow(["timestamp"] + list(data.keys()) + ["score"])
             writer.writerow([datetime.now().isoformat()] + list(data.values()) + [score])
 
-        # Show history
+    # --- Show history (runs whether or not they just submitted) ---
     st.subheader("📜 Your History")
-    with open(hist_file, newline="") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
+    if os.path.isfile(hist_file):
+        with open(hist_file, newline="") as f:
+            rows = list(csv.reader(f))
         if len(rows) > 1:
             st.dataframe(rows[1:], columns=rows[0])
         elif len(rows) == 1:
-            st.info("📘 You’ve just submitted your first entry. More rows will appear here over time.")
+            st.info("📘 You’ve just created your first entry—more rows will show up here over time.")
         else:
             st.warning("⚠️ No history found yet.")
+    else:
+        st.warning("⚠️ No history found yet. Submit a score to get started.")
 
 else:
     st.warning("⚠️ Please enter your username in the sidebar to begin.")
