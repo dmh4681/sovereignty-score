@@ -37,10 +37,22 @@ selected_label = st.sidebar.selectbox("Scoring Profile", list(path_options.keys(
 selected_path  = path_options[selected_label]
 
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    st.markdown(f"**Profile:** {selected_label}")
-    st.table(pd.DataFrame.from_dict(
-        ALL_PATHS[selected_path], orient="index", columns=["value"]
-    ))
+    st.markdown(f"**Profile:** {selected_path_label}")
+    # flatten nested dicts into metric.submetric keys
+    cfg = ALL_PATHS[selected_path]
+    flat = {}
+    for metric, val in cfg.items():
+        if isinstance(val, dict):
+            for subk, subv in val.items():
+                flat[f"{metric}.{subk}"] = subv
+        else:
+            flat[metric] = val
+    # build a 2-column DataFrame and render
+    df = pd.DataFrame.from_records(
+        list(flat.items()),
+        columns=["metric","value"]
+    )
+    st.table(df)
 
 # — Main UI once username is provided —
 if username:
@@ -99,7 +111,7 @@ if username:
         if df.shape[0] > 0:
             st.dataframe(df)
         else:
-            st.info("📘 You’ve just created your first entry—more rows will show up here over time.")
+            st.info("📘 You've just created your first entry—more rows will show up here over time.")
     except Exception:
         st.warning("⚠️ No history found yet. Submit a score to get started.")
 
