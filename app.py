@@ -65,11 +65,18 @@ selected_path = path_options[selected_label]
 
 
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    st.markdown(f"**Profile:** {selected_path}")
+    st.markdown(f"**Profile:** {selected_label}")  # user‐friendly label
     cfg = ALL_PATHS[selected_path]
-    # flatten nested dict
+
+    # 2a) Show the human description, if present
+    desc = cfg.get("description")
+    if desc:
+        st.markdown(f"*{desc}*")
+
+    # 2b) Build a metrics table from the rest of the keys
+    metrics = {k: v for k, v in cfg.items() if k != "description"}
     flat = {}
-    for m, v in cfg.items():
+    for m, v in metrics.items():
         if isinstance(v, dict):
             for subk, subv in v.items():
                 flat[f"{m}.{subk}"] = subv
@@ -80,18 +87,24 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
         list(flat.items()), columns=["metric", "value"]
     )
 
-    # convert to HTML and wrap in a small‐font div
-    html_table = df_scoring.to_html(index=False, classes="scoring-table")
-    styled = f"""
-    <style>
-      .scoring-table {{ font-size:0.7em; line-height:1.2em; }}
-      .scoring-table th, .scoring-table td {{ padding: 4px 8px; }}
-    </style>
-    <div class="scoring-table-wrapper">
-      {html_table}
-    </div>
-    """
-    st.markdown(styled, unsafe_allow_html=True)
+    # 2c) Convert to HTML & inject small‐font CSS
+    html = df_scoring.to_html(index=False, classes="scoring-table", border=0)
+    st.markdown(f"""
+        <style>
+          .scoring-table {{ 
+            font-size: 0.75em; 
+            line-height:1.2em; 
+            width:100%;
+            border-collapse: collapse;
+          }}
+          .scoring-table th, .scoring-table td {{
+            padding:4px 6px;
+            text-align: left;
+          }}
+        </style>
+        {html}
+    """, unsafe_allow_html=True)
+
 
 
 # — Main UI —
