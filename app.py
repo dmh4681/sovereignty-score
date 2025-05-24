@@ -42,8 +42,9 @@ path_options = {
 }
 
 # Preselect path from URL if present
-query_params = st.experimental_get_query_params()
-default_path = query_params.get("path", [None])[0]
+# Preselect path from URL if present (Streamlit 1.32+)
+query_params = st.query_params
+default_path = query_params.get("path", [None])[0] if query_params else None
 selected_label = st.sidebar.selectbox(
     "Scoring Profile",
     list(path_options.keys()),
