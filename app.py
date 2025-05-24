@@ -34,6 +34,17 @@ if username:
     st.subheader(f"Hello, {username} 👋")
     hist_file = get_user_history_file(username)
 
+    # Ensure the per-user history file exists with a header
+    header = [
+        "timestamp",
+        "home_cooked_meals","junk_food","exercise_minutes","strength_training",
+        "no_spending","invested_bitcoin","meditation","gratitude","read_or_learned",
+        "score"
+    ]
+    if not os.path.isfile(hist_file):
+        with open(hist_file, "w", newline="") as f:
+            csv.writer(f).writerow(header)
+
     # Build the input form
     with st.form("tracker_form"):
         meals  = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
