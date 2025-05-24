@@ -43,18 +43,19 @@ path_options = {
     "Planetary Stewardship": "planetary_stewardship",
 }
 
-# Pre-select via URL query ?path=…
+# — Pre-select via URL query ?path=… into session_state —
 query_params = st.query_params
 default_path = query_params.get("path", [None])[0] if query_params else None
 
-# map path values back to the human label
+# map the internal path‐key back to the user‐facing label
 reverse_map = {v: k for k, v in path_options.items()}
 default_label = reverse_map.get(default_path, "Default (Balanced)")
 
-# initialize session state, then bind the selectbox to it
+# only initialize once, so session_state sticks across reruns
 if "selected_label" not in st.session_state:
     st.session_state.selected_label = default_label
 
+# now bind the selectbox to that session_state key
 selected_label = st.sidebar.selectbox(
     "Scoring Profile",
     list(path_options.keys()),
@@ -62,24 +63,36 @@ selected_label = st.sidebar.selectbox(
 )
 selected_path = path_options[selected_label]
 
-# Show scoring breakdown
+
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
     st.markdown(f"**Profile:** {selected_path}")
     cfg = ALL_PATHS[selected_path]
+    # flatten nested dict
     flat = {}
-    for metric, val in cfg.items():
-        if isinstance(val, dict):
-            for subk, subv in val.items():
-                flat[f"{metric}.{subk}"] = subv
+    for m, v in cfg.items():
+        if isinstance(v, dict):
+            for subk, subv in v.items():
+                flat[f"{m}.{subk}"] = subv
         else:
-            flat[metric] = val
-    df_scoring = pd.DataFrame.from_records(list(flat.items()), columns=["metric", "value"])
-    st.markdown(
-        "<div style='font-size:0.3em; line-height:1.2em;'>", 
-        unsafe_allow_html=True
+            flat[m] = v
+
+    df_scoring = pd.DataFrame.from_records(
+        list(flat.items()), columns=["metric", "value"]
     )
-    st.table(df_scoring)
-    st.markdown("</div>", unsafe_allow_html=True)
+
+    # convert to HTML and wrap in a small‐font div
+    html_table = df_scoring.to_html(index=False, classes="scoring-table")
+    styled = f"""
+    <style>
+      .scoring-table {{ font-size:0.7em; line-height:1.2em; }}
+      .scoring-table th, .scoring-table td {{ padding: 4px 8px; }}
+    </style>
+    <div class="scoring-table-wrapper">
+      {html_table}
+    </div>
+    """
+    st.markdown(styled, unsafe_allow_html=True)
+
 
 # — Main UI —
 if username:
