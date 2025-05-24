@@ -55,7 +55,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
     st.markdown("""
         <style>
         .small-font {
-            font-size: 0.8em;
+            font-size: 0.7em;
         }
         </style>
         <div class="small-font">
