@@ -53,7 +53,7 @@ path_options = {
 }
 
 # Pre-select via ?path=… in URL
-default_path = st.experimental_get_query_params().get("path", [None])[0]
+default_path = st.query_params().get("path", [None])[0]
 reverse_map  = {v:k for k,v in path_options.items()}
 default_label = reverse_map.get(default_path, "Default (Balanced)")
 
