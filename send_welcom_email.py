@@ -57,3 +57,4 @@ res = requests.post(
 
 print(f"✅ Email sent! Status: {res.status_code}")
 print(res.text)
+print(email_body)
