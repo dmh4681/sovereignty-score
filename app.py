@@ -184,7 +184,7 @@ if username:
 
     # 3) Show history
     st.subheader("📜 Your History")
-        df_hist = con.execute(
+    df_hist = con.execute(
       "SELECT timestamp, path, home_cooked_meals, junk_food, exercise_minutes, strength_training,"
      +" no_spending, invested_bitcoin, meditation, gratitude, read_or_learned, environmental_action, score"
      +" FROM sovereignty WHERE username = ? ORDER BY timestamp DESC",
