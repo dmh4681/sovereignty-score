@@ -24,10 +24,10 @@ prompt = f"""
 You are a motivational coach aligned with the Sovereign Path philosophy. 
 Write a welcome email for a new user named {username}, who has selected the "{selected_path.replace("_", " ").title()}" path. 
 Make it inspirational and styled like the voice of its associated expert:
-- Physical Optimization = Jeff Cavaliere
-- Financial Path = Mark Hyman
-- Mental Resilience = Andrew Huberman
-- Spiritual Growth = Michael Pollan
+- Physical Optimization = Dylan's sovereign tone
+- Financial Path = Dylan's sovereign tone
+- Mental Resilience = Dylan's sovereign tone
+- Spiritual Growth = Dylan's sovereign tone
 - Planetary Stewardship = Dylan's sovereign tone
 
 The email should be direct, powerful, and personalized — suitable for sending as a welcome onboarding message.
