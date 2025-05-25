@@ -19,26 +19,22 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY)
 username = "DigitalNomad"
 selected_path = "physical_optimization"
 
-# GPT prompt
-prompt = f"""
-You are a motivational coach aligned with the Sovereign Path philosophy. 
+# Build message dynamically
+system_prompt = "You are a motivational coach aligned with the Sovereign Path philosophy."
+user_prompt = f"""
 Write a welcome email for a new user named {username}, who has selected the "{selected_path.replace("_", " ").title()}" path. 
-Make it inspirational and styled like the voice of its associated expert:
-- Physical Optimization = Dylan's sovereign tone
-- Financial Path = Dylan's sovereign tone
-- Mental Resilience = Dylan's sovereign tone
-- Spiritual Growth = Dylan's sovereign tone
-- Planetary Stewardship = Dylan's sovereign tone
-
-The email should be direct, powerful, and personalized — suitable for sending as a welcome onboarding message.
+Make it inspirational and styled entirely in Dylan’s sovereign tone — powerful, direct, and designed to ignite momentum.
 """
 
-# Generate content using Chat API
+messages = [
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": user_prompt}
+]
+
+# Call OpenAI
 response = client.chat.completions.create(
     model="gpt-4",
-    messages=[
-        {"role": "user", "content": prompt}
-    ]
+    messages=messages
 )
 
 email_body = response.choices[0].message.content
