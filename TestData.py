@@ -5,6 +5,25 @@ from datetime import datetime, timedelta
 # Connect to your DuckDB database
 con = duckdb.connect("data/sovereignty.duckdb")
 
+con.execute("""
+CREATE TABLE IF NOT EXISTS sovereignty (
+    timestamp            TIMESTAMP,
+    username             VARCHAR,
+    path                 VARCHAR,
+    home_cooked_meals    INTEGER,
+    junk_food            BOOLEAN,
+    exercise_minutes     INTEGER,
+    strength_training    BOOLEAN,
+    no_spending          BOOLEAN,
+    invested_bitcoin     BOOLEAN,
+    meditation           BOOLEAN,
+    gratitude            BOOLEAN,
+    read_or_learned      BOOLEAN,
+    environmental_action BOOLEAN,
+    score                INTEGER
+);
+""")
+
 usernames = [f"user_{i}" for i in range(1, 11)]
 paths = ["default", "financial_path", "mental_resilience", "physical_optimization", "spiritual_growth", "planetary_stewardship"]
 
