@@ -65,59 +65,38 @@ selected_label = st.sidebar.selectbox(
 selected_path = path_options[selected_label]
 
 
+# Sidebar breakdown
 with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    st.markdown(f"**Profile:** {selected_label}")
+    # 1) Print the human‐readable description once
     desc = ALL_PATHS[selected_path].get("description", "")
     if desc:
+        st.markdown(f"**Profile:** {selected_label}")
         st.markdown(f"*{desc}*")
-
-    # build flat metric→value DataFrame
-    cfg = ALL_PATHS[selected_path]
+    else:
+        st.markdown(f"**Profile:** {selected_label}")
+    
+    # 2) Build the flat metric→value table
+    cfg = dict(ALL_PATHS[selected_path])          # take a shallow copy
+    cfg.pop("description", None)                  # remove the narrative
     flat = {}
-    for k, v in cfg.items():
-        if isinstance(v, dict):
-            for subk, subv in v.items():
-                flat[f"{k}.{subk}"] = subv
+    for metric, val in cfg.items():
+        if isinstance(val, dict):
+            for subk, subv in val.items():
+                flat[f"{metric}.{subk}"] = subv
         else:
-            flat[k] = v
+            flat[metric] = val
     df_scoring = pd.DataFrame.from_records(
-        list(flat.items()), columns=["metric", "value"]
+        list(flat.items()), columns=["Metric", "Value"]
     )
 
-    # produce simple HTML table with our class
-    html_table = df_scoring.to_html(
-        index=False,
-        classes="scoring-table",
-        border=0,
-        justify="left"
+    # 3) Render as a native Streamlit DataFrame
+    #    - adjust height so it doesn't take the entire page
+    st.dataframe(
+        df_scoring, 
+        use_container_width=True, 
+        height=min(400, 32 * len(df_scoring) + 40)
     )
 
-    # inject CSS + the table
-    components.html(f"""
-      <style>
-        /* Force cells to inherit the current text color */
-        table.scoring-table, 
-        table.scoring-table th, 
-        table.scoring-table td {{
-          color: inherit !important;
-          background-color: transparent !important;
-        }}
-        /* Borders in current color */
-        table.scoring-table th {{
-          border-bottom: 2px solid currentColor !important;
-          font-weight: bold;
-        }}
-        table.scoring-table td {{
-          border-bottom: 1px solid currentColor !important;
-        }}
-        /* Shrink font to fit nicely */
-        table.scoring-table {{
-          font-size: 0.75rem !important;
-          line-height: 1.2 !important;
-        }}
-      </style>
-      {html_table}
-    """, height=(df_scoring.shape[0] + 1) * 28)
 
 # — Main UI —
 if username:
