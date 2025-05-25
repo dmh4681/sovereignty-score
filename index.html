@@ -41,22 +41,10 @@
       transition: transform 0.2s ease, border-color 0.2s ease;
       color: inherit;
     }
-    .tile:hover {
-      transform: scale(1.02);
-      background-color: #333;
-    }
-    .tile.selected {
-      border-color: #ffcc00;
-      background-color: #3a3a3a;
-    }
-    .tile h3 {
-      color: #ffcc00;
-      margin-bottom: 0.5rem;
-    }
-    .tile p {
-      font-size: 0.95rem;
-      color: #ccc;
-    }
+    .tile:hover { transform: scale(1.02); background-color: #333; }
+    .tile.selected { border-color: #ffcc00; background-color: #3a3a3a; }
+    .tile h3 { color: #ffcc00; margin-bottom: 0.5rem; }
+    .tile p { font-size: 0.95rem; color: #ccc; }
 
     .cta {
       background-color: #222;
@@ -66,8 +54,7 @@
       text-align: center;
       color: #eee;
     }
-    .cta input[type="text"],
-    .cta input[type="email"],
+    .cta input,
     .cta button {
       display: block;
       width: 100%;
@@ -87,6 +74,18 @@
     .cta button:disabled {
       background-color: #666;
       cursor: not-allowed;
+    }
+
+    .manifesto {
+      margin-top: 2rem;
+      text-align: left;
+      background: rgba(255, 204, 0, 0.1);
+      border-left: 4px solid #ffcc00;
+      padding: 1.5rem;
+      border-radius: 6px;
+      color: #f5f5f5;
+      font-size: 1rem;
+      line-height: 1.5;
     }
 
     .footer {
@@ -132,13 +131,16 @@
       <h3>📬 Join the Sovereignty Circle</h3>
       <p>Get updates, tips, and tools — straight to your inbox.</p>
       <form id="signupForm" action="https://formspree.io/f/mvganjjw" method="POST">
-        <!-- hidden field for the chosen Path -->
         <input type="hidden" name="path" id="selectedPath" />
-
         <input type="text" name="username" placeholder="Choose a username" required />
         <input type="email" name="email" placeholder="Your email address" required />
         <button type="submit" id="joinBtn" disabled>Join the Sovereign Journey</button>
       </form>
+    </div>
+
+    <div class="manifesto">
+      <h3>🛡️ Our Sovereignty Manifesto</h3>
+      <p>We believe that true freedom arises where health and wealth converge. Each choice you log—be it a home-cooked meal, a mindful breath, or a Bitcoin investment—is a brick in the foundation of your personal autonomy. By measuring these daily habits, we prove that discipline in body, mind, and finance compounds into real-world liberty. This movement is about reclaiming your time, energy, and resources from broken systems—one sovereign choice at a time.</p>
     </div>
 
     <div class="footer">
@@ -153,22 +155,17 @@
 
     tiles.forEach(tile => {
       tile.addEventListener('click', () => {
-        // clear previous
         tiles.forEach(t => t.classList.remove('selected'));
-        // select this one
         tile.classList.add('selected');
-        // set hidden input
         pathInput.value = tile.dataset.path;
-        // enable button
         joinBtn.disabled = false;
       });
     });
 
-    // extra: prevent form submit if no path
     document.getElementById('signupForm').addEventListener('submit', e => {
       if (!pathInput.value) {
         e.preventDefault();
-        alert('Please select a Path above before joining.');
+        alert('Please select a Path before joining.');
       }
     });
   </script>
