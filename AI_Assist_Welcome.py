@@ -13,7 +13,7 @@ ASSISTANT_ID = "asst_x36oxhsulPDwZPYOD2Ohi0O3"  # Replace with yours if differen
 
 # User inputs
 username = "DigitalNomad"
-selected_path = "planetary_stewardship"
+selected_path = "physical_optimization"
 
 # Create a thread
 thread = client.beta.threads.create()
