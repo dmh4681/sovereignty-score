@@ -9,6 +9,8 @@ con = duckdb.connect("data/sovereignty.duckdb")
 # Query all data
 df = con.execute("SELECT * FROM sovereignty ORDER BY timestamp DESC").df()
 
+df_top100 = con.execute("SELECT * FROM sovereignty ORDER BY timestamp DESC LIMIT 100").df()
+
 # Summary
 print("=== Sovereignty Score Test Data Overview ===")
 print("Total Records:", len(df))
@@ -36,3 +38,5 @@ plt.tight_layout()
 plt.savefig("path_counts.png")
 
 print("\n✅ Charts saved: score_distribution.png, path_counts.png")
+
+print(df_top100.to_string(index=False))
