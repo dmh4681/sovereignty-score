@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import csv, os, json
+import duckdb, os, json
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
 
@@ -15,17 +15,29 @@ PATHS_FILE = os.path.join(BASE, "config", "paths.json")
 with open(PATHS_FILE, "r", encoding="utf-8") as f:
     ALL_PATHS = json.load(f)
 
-# This is the canonical set of columns for every per-user history CSV:
-CSV_HEADER = [
-    "timestamp", "username", "home_cooked_meals", "junk_food",
-    "exercise_minutes", "strength_training", "no_spending",
-    "invested_bitcoin", "meditation", "gratitude", "read_or_learned",
-    "environmental_action", "score"
-]
-
-def get_user_history_file(username: str) -> str:
-    safe = username.strip().lower().replace(" ", "_")
-    return os.path.join(DATA_DIR, f"history_{safe}.csv")
+# — DuckDB setup —
+DB_FILE = os.path.join(DATA_DIR, "sovereignty.duckdb")
+# open or create
+con = duckdb.connect(DB_FILE)
+# create our single table if it doesn’t exist
+con.execute("""
+  CREATE TABLE IF NOT EXISTS sovereignty (
+    timestamp            TIMESTAMP,
+    username             VARCHAR,
+    path                 VARCHAR,
+    home_cooked_meals    INTEGER,
+    junk_food            BOOLEAN,
+    exercise_minutes     INTEGER,
+    strength_training    BOOLEAN,
+    no_spending          BOOLEAN,
+    invested_bitcoin     BOOLEAN,
+    meditation           BOOLEAN,
+    gratitude            BOOLEAN,
+    read_or_learned      BOOLEAN,
+    environmental_action BOOLEAN,
+    score                INTEGER
+  );
+""")
 
 # — Page title & instructions —
 st.title("🏰 Sovereignty Score Tracker")
@@ -148,14 +160,36 @@ if username:
         st.success(f"💪 Sovereignty Score: **{score} / 100**")
         st.info(f"Scoring Path: **{selected_label}**")
 
-        # Append to history
-        row = [datetime.now().isoformat()] + list(data.values()) + [score]
-        with open(hist_file, "a", newline="") as f:
-            csv.writer(f).writerow(row)
+                # — Persist into DuckDB —
+        con.execute("""
+          INSERT INTO sovereignty VALUES (
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?
+          )
+        """, [
+          datetime.now(),
+          data["username"],
+          data["path"],
+          data["home_cooked_meals"],
+          data["junk_food"],
+          data["exercise_minutes"],
+          data["strength_training"],
+          data["no_spending"],
+          data["invested_bitcoin"],
+          data["meditation"],
+          data["gratitude"],
+          data["read_or_learned"],
+          data["environmental_action"],
+          score
+        ])
 
     # 3) Show history
     st.subheader("📜 Your History")
-    df_hist = pd.read_csv(hist_file)
+        df_hist = con.execute(
+      "SELECT timestamp, path, home_cooked_meals, junk_food, exercise_minutes, strength_training,"
+     +" no_spending, invested_bitcoin, meditation, gratitude, read_or_learned, environmental_action, score"
+     +" FROM sovereignty WHERE username = ? ORDER BY timestamp DESC",
+      [username]
+    ).df()
     if not df_hist.empty:
         st.dataframe(df_hist)
     else:
