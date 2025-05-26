@@ -12,9 +12,15 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from db import get_db_connection
 
-# Get user info from query params
-username = st.query_params.get("username", None)
-path = st.query_params.get("path", None)
+# Get user info from query params or session state
+username = st.query_params.get("username", None) or st.session_state.get("username", None)
+path = st.query_params.get("path", None) or st.session_state.get("path", None)
+
+# Store in session state if we got it from query params
+if st.query_params.get("username"):
+    st.session_state.username = st.query_params.get("username")
+if st.query_params.get("path"):
+    st.session_state.path = st.query_params.get("path")
 
 if not username or not path:
     st.error("Please log in through the main page to access your dashboard.")

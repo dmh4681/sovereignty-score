@@ -40,6 +40,17 @@ logger.debug(f"All query parameters: {all_params}")
 
 username = st.query_params.get("username", None)
 path = st.query_params.get("path", None)
+
+# Store in session state if we got it from query params
+if username:
+    st.session_state.username = username
+if path:
+    st.session_state.path = path
+
+# Use session state if query params not available
+username = username or st.session_state.get("username", None)
+path = path or st.session_state.get("path", None)
+
 logger.debug(f"Login params - username: {username}, path: {path}")
 
 # If no login parameters, show a friendly message
