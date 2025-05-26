@@ -179,7 +179,7 @@
       };
 
       try {
-        console.log('Attempting login with data:', data); // Debug log
+        console.log('Attempting login with data:', data);
         const response = await fetch('http://127.0.0.1:5002/login', {
           method: 'POST',
           headers: {
@@ -192,27 +192,48 @@
           body: JSON.stringify(data)
         });
 
-        console.log('Response status:', response.status); // Debug log
-        console.log('Response headers:', Object.fromEntries(response.headers.entries())); // Debug log
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
         
         const result = await response.json();
-        console.log('Full login response:', result); // Debug log
+        console.log('Full login response:', result);
         
         if (result.status === 'success') {
-          // Use the streamlit_url from the response
-          const streamlitUrl = `${result.streamlit_url}/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
-          console.log('About to redirect to:', streamlitUrl); // Debug log
+          // Construct the local Streamlit URL
+          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
+          console.log('About to redirect to:', streamlitUrl);
           
-          // Add a small delay to ensure logs are visible
+          // Show a message to the user
+          const messageDiv = document.createElement('div');
+          messageDiv.style.position = 'fixed';
+          messageDiv.style.top = '50%';
+          messageDiv.style.left = '50%';
+          messageDiv.style.transform = 'translate(-50%, -50%)';
+          messageDiv.style.padding = '20px';
+          messageDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+          messageDiv.style.color = 'white';
+          messageDiv.style.borderRadius = '10px';
+          messageDiv.style.zIndex = '1000';
+          messageDiv.textContent = 'Redirecting to your dashboard...';
+          document.body.appendChild(messageDiv);
+          
+          // Add a small delay to ensure the message is visible
           setTimeout(() => {
-            window.location.href = streamlitUrl;
+            try {
+              window.location.replace(streamlitUrl);
+            } catch (error) {
+              console.error('Redirect failed:', error);
+              messageDiv.textContent = 'Redirect failed. Please click here to continue.';
+              messageDiv.style.cursor = 'pointer';
+              messageDiv.onclick = () => window.location.replace(streamlitUrl);
+            }
           }, 1000);
         } else {
-          console.error('Login failed:', result.message); // Debug log
+          console.error('Login failed:', result.message);
           alert(result.message || 'Login failed. Please try again.');
         }
       } catch (error) {
-        console.error('Login error:', error); // Debug log
+        console.error('Login error:', error);
         alert('Unable to connect to login server. Please make sure the server is running.');
       }
     });
