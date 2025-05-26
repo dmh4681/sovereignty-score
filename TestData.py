@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS sovereignty (
 );
 """)
 
-usernames = [f"user_{i}" for i in range(1, 11)]
+usernames = [f"user_{i}" for i in range(1, 101)]
 paths = list(paths_config.keys())
 
 for user in usernames:
-    for day in range(30):
+    for day in range(100):
         timestamp = datetime.now() - timedelta(days=day)
         path = random.choice(paths)
 
@@ -73,4 +73,4 @@ for user in usernames:
             med, grat, learn, env, score
         ))
 
-print("✅ 300 records inserted with real score logic.")
+print("✅ 10000 records inserted with real score logic.")
