@@ -95,33 +95,33 @@ try:
     # Display path description
     st.sidebar.markdown(f"**{cfg.get('description', '')}**")
     
-    # Create a DataFrame for the metrics
-    metrics_data = []
-    for metric, value in cfg.items():
-        if metric not in ('description', 'max_score'):
-            if isinstance(value, dict):
-                points = value.get('points_per_unit', 0)
-                max_units = value.get('max_units', 1)
-                metrics_data.append({
-                    'Metric': metric.replace('_', ' ').title(),
-                    'Points Per Unit': points,
-                    'Max Units': max_units,
-                    'Max Points': points * max_units
-                })
-            else:
-                metrics_data.append({
-                    'Metric': metric.replace('_', ' ').title(),
-                    'Points': value
-                })
+    # Create a more compact metrics display
+    st.sidebar.markdown("### 📊 Scoring Guide")
     
-    metrics_df = pd.DataFrame(metrics_data)
+    # Group metrics by category
+    categories = {
+        "Physical": ["home_cooked_meals", "junk_food", "exercise_minutes", "strength_training"],
+        "Financial": ["no_spending", "invested_bitcoin"],
+        "Mental": ["meditation", "gratitude", "read_or_learned"],
+        "Environmental": ["environmental_action"]
+    }
     
-    # Display the metrics table
-    st.sidebar.dataframe(
-        metrics_df,
-        use_container_width=True,
-        height=min(400, 32 * len(metrics_data) + 20)
-    )
+    for category, metrics in categories.items():
+        st.sidebar.markdown(f"#### {category}")
+        for metric in metrics:
+            if metric in cfg:
+                value = cfg[metric]
+                if isinstance(value, dict):
+                    points = value.get('points_per_unit', 0)
+                    max_units = value.get('max_units', 1)
+                    max_points = points * max_units
+                    st.sidebar.markdown(
+                        f"- **{metric.replace('_', ' ').title()}**\n"
+                        f"  {points} pts × {max_units} = {max_points} max"
+                    )
+                else:
+                    st.sidebar.markdown(f"- **{metric.replace('_', ' ').title()}**: {value} pts")
+    
 except Exception as e:
     logger.error(f"Error loading path configuration: {str(e)}")
     st.error(f"Error loading path configuration: {str(e)}")
