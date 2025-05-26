@@ -3,12 +3,35 @@ import pandas as pd
 import duckdb, os, json, smtplib, bcrypt
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
 BASE     = os.path.dirname(__file__)
 DATA_DIR = os.path.join(BASE, "data"); os.makedirs(DATA_DIR, exist_ok=True)
 DB_FILE  = os.path.join(DATA_DIR, "sovereignty.duckdb")
-con      = duckdb.connect(DB_FILE)
+
+# Global connection pool
+_db_connection = None
+
+def get_db_connection():
+    """Get or create a database connection"""
+    global _db_connection
+    try:
+        if _db_connection is None:
+            _db_connection = duckdb.connect(DB_FILE)
+            logger.info("New database connection created")
+        return _db_connection
+    except Exception as e:
+        logger.error(f"Error creating database connection: {str(e)}")
+        st.error(f"Database connection error: {str(e)}")
+        st.stop()
+
+# Initialize database connection
+con = get_db_connection()
 
 # Create users & sovereignty tables
 con.execute("""
