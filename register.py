@@ -111,7 +111,11 @@ def register_user():
             else:
                 logger.warning("Database backup failed")
                 
-            return jsonify({"status": "success", "message": "User registered!"}), 200
+            return jsonify({
+                "status": "success",
+                "message": "User registered!",
+                "streamlit_url": "http://localhost:8501"
+            }), 200
         except Exception as e:
             logger.error(f"Error during registration: {str(e)}")
             return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
