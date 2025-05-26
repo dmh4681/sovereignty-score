@@ -1,7 +1,6 @@
-import duckdb
 import os
+import duckdb
 import logging
-from contextlib import contextmanager
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -10,28 +9,17 @@ logger = logging.getLogger(__name__)
 BASE = os.path.dirname(__file__)
 DB_PATH = os.path.join(BASE, "data", "sovereignty.duckdb")
 
-@contextmanager
-def get_db_connection():
-    """Get a database connection using a context manager"""
-    conn = None
+def reset_db():
+    """Reset the database with correct table structure"""
     try:
+        # Delete the database file if it exists
+        if os.path.exists(DB_PATH):
+            os.remove(DB_PATH)
+            logger.info(f"Deleted existing database at {DB_PATH}")
+        
+        # Create new database
         conn = duckdb.connect(DB_PATH)
-        logger.info("Database connection created")
-        yield conn
-    except Exception as e:
-        logger.error(f"Error creating database connection: {str(e)}")
-        raise
-    finally:
-        if conn:
-            try:
-                conn.close()
-                logger.info("Database connection closed")
-            except Exception as e:
-                logger.error(f"Error closing database connection: {str(e)}")
-
-def init_db():
-    """Initialize the database with required tables"""
-    with get_db_connection() as conn:
+        
         # Create users table
         conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -62,4 +50,15 @@ def init_db():
             score                INTEGER
         );
         """)
-        logger.info("Database tables initialized") 
+        
+        logger.info("Successfully created new database with correct table structure")
+        
+    except Exception as e:
+        logger.error(f"Error resetting database: {str(e)}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+if __name__ == "__main__":
+    reset_db() 
