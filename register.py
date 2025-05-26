@@ -36,13 +36,7 @@ def init_db():
             with open(SQL_FILE, 'r') as f:
                 sql = f.read()
                 logger.info(f"SQL to execute: {sql}")
-                # Drop the table if it exists to ensure clean state
-                conn.execute("DROP TABLE IF EXISTS users")
-                # Create the table
                 conn.execute(sql)
-                # Verify the table structure
-                table_info = conn.execute("DESCRIBE users").fetchall()
-                logger.info(f"Table structure after creation: {table_info}")
                 logger.info("Successfully created users table")
         except Exception as e:
             logger.error(f"Error creating users table: {str(e)}")
@@ -64,10 +58,6 @@ def register_user():
 
     with get_db() as conn:
         try:
-            # Verify table structure before proceeding
-            table_info = conn.execute("DESCRIBE users").fetchall()
-            logger.info(f"Current table structure: {table_info}")
-            
             # Check if user already exists
             existing = conn.execute("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?", [username, email]).fetchone()[0]
             if existing > 0:
