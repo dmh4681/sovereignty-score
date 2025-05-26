@@ -43,26 +43,33 @@ def init_db():
 def login_user():
     logger.info("Received login request")
     data = request.get_json()
-    email    = data.get("email", "").strip().lower()
+    username = data.get("username", "").strip()
     password = data.get("password", "")
+
+    # Validate input fields
+    if not username or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Username and password are required."
+        }), 400
 
     with get_db() as conn:
         try:
             user = conn.execute(
-                "SELECT username, password, path FROM users WHERE email = ?", [email]
+                "SELECT username, password, path FROM users WHERE username = ?", [username]
             ).fetchone()
 
             if not user:
                 return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
-            username, hashed_pw, path = user
+            db_username, hashed_pw, path = user
             if not bcrypt.checkpw(password.encode("utf-8"), hashed_pw.encode("utf-8")):
                 return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
-            logger.info(f"Successful login for user: {username}")
+            logger.info(f"Successful login for user: {db_username}")
             return jsonify({
                 "status": "success",
-                "username": username,
+                "username": db_username,
                 "path": path
             }), 200
         except Exception as e:

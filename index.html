@@ -98,7 +98,7 @@
       </div>
       <div class="tile" data-path="planetary_stewardship">
         <h3>🌍 Planetary Stewardship</h3>
-        <p>Link personal sovereignty with the planet’s future. Log habits that reduce your ecological footprint.</p>
+        <p>Link personal sovereignty with the planet's future. Log habits that reduce your ecological footprint.</p>
       </div>
       <div class="tile" data-path="financial_path">
         <h3>💰 Financial Path</h3>
@@ -130,6 +130,16 @@
       </form>
     </div>
 
+    <!-- New Login Form for Already Registered Users -->
+    <div class="cta" style="margin-top: 2rem;">
+      <h3>🔑 Already Registered? Log In</h3>
+      <form id="loginForm">
+        <input type="text" name="username" placeholder="Your username" required/>
+        <input type="password" name="password" placeholder="Your password" required/>
+        <button type="submit">Log In</button>
+      </form>
+    </div>
+
     <div class="manifesto">
       <h3>🛡️ Our Sovereignty Manifesto</h3>
       <p>We believe that true freedom arises where health and wealth converge. Each choice you log—be it a home-cooked meal, a mindful breath, or a Bitcoin investment—is a brick in the foundation of your personal autonomy. By measuring these daily habits, we prove that discipline in body, mind, and finance compounds into real-world liberty. This movement is about reclaiming your time, energy, and resources from broken systems—one sovereign choice at a time.</p>
@@ -156,6 +166,37 @@
       if (!pathInput.value) {
         e.preventDefault();
         alert('Please select a Path before joining.');
+      }
+    });
+
+    // New Login Form Handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        username: formData.get('username'),
+        password: formData.get('password')
+      };
+
+      try {
+        const response = await fetch('http://localhost:5002/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          // Redirect to Streamlit app with query params
+          window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${result.username}&path=${result.path}`;
+        } else {
+          alert(result.message || 'Login failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
       }
     });
   </script>
