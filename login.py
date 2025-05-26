@@ -143,4 +143,5 @@ if __name__ == "__main__":
     logger.info("Starting Flask server...")
     # Initialize database
     init_db()
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    # Disable debug mode to prevent auto-reloading
+    app.run(host='0.0.0.0', port=5002, debug=False)
