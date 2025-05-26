@@ -23,7 +23,9 @@ CORS(app,
                     "http://127.0.0.1:8501"],
          "methods": ["GET", "POST", "OPTIONS"],
          "allow_headers": ["Content-Type", "Authorization", "Accept", "Origin"],
-         "supports_credentials": True
+         "supports_credentials": True,
+         "expose_headers": ["Content-Type", "Authorization"],
+         "max_age": 3600
      }})
 
 BASE     = os.path.dirname(__file__)

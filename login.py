@@ -14,13 +14,16 @@ app = Flask(__name__)
 CORS(app, 
      resources={r"/*": {
          "origins": ["https://dmh4681.github.io", 
+                    "https://sovereignty-score-digitalnomad.streamlit.app",
                     "http://localhost:5000", 
                     "http://127.0.0.1:5000", 
                     "http://localhost:8501", 
                     "http://127.0.0.1:8501"],
          "methods": ["GET", "POST", "OPTIONS"],
-         "allow_headers": ["Content-Type", "Authorization", "Accept"],
-         "supports_credentials": True
+         "allow_headers": ["Content-Type", "Authorization", "Accept", "Origin"],
+         "supports_credentials": True,
+         "expose_headers": ["Content-Type", "Authorization"],
+         "max_age": 3600
      }})
 
 @app.route("/login", methods=["POST", "OPTIONS"])
@@ -72,7 +75,7 @@ def login_user():
                 "status": "success",
                 "username": db_username,
                 "path": path,
-                "streamlit_url": "http://localhost:8501"  # Add local Streamlit URL
+                "streamlit_url": "https://sovereignty-score-digitalnomad.streamlit.app"
             }), 200
     except Exception as e:
         logger.error(f"Error during login: {str(e)}")
