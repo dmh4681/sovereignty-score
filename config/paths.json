@@ -1,63 +1,122 @@
 {
-    "default": {
-      "description": "A well-rounded balance of physical, mental, and financial habits — perfect for getting started on the Sovereign Path.",
-      "home_cooked_meals": { "points_per_unit": 6.6667, "max_units": 3 },
-      "no_junk_food": 10,
-      "exercise_minutes": { "points_per_unit": 0.5, "max_units": 40 },
-      "strength_training": 10,
-      "no_spending": 5,
-      "invested_bitcoin": 5,
-      "meditation": 10,
-      "gratitude": 10,
-      "read_or_learned": 10,
-      "max_score": 100
+  "default": {
+    "description": "A well-rounded balance of physical, mental, and financial habits \u2014 perfect for getting started on the Sovereign Path.",
+    "home_cooked_meals": {
+      "points_per_unit": 6.6667,
+      "max_units": 3
     },
-    "financial_path": {
-      "description": "Maximize financial sovereignty by minimizing discretionary spending, investing daily, and learning constantly.",
-      "home_cooked_meals": { "points_per_unit": 6.6667, "max_units": 3 },
-      "no_spending": 25,
-      "invested_bitcoin": 20,
-      "exercise_minutes": { "points_per_unit": 0.25, "max_units": 40 },
-      "gratitude": 5,
-      "read_or_learned": 20,
-      "max_score": 100
+    "no_junk_food": 10,
+    "exercise_minutes": {
+      "points_per_unit": 0.5,
+      "max_units": 40
     },
-    "mental_resilience": {
-      "description": "Strengthen your inner world through meditation, learning, and daily gratitude — build a mind that bends but never breaks.",
-      "meditation": 25,
-      "gratitude": 20,
-      "read_or_learned": 20,
-      "exercise_minutes": { "points_per_unit": 0.5, "max_units": 30 },
-      "no_junk_food": 20,
-      "max_score": 100
+    "strength_training": 10,
+    "no_spending": 5,
+    "invested_bitcoin": 5,
+    "meditation": 10,
+    "gratitude": 5,
+    "read_or_learned": 10,
+    "environmental_action": 5,
+    "max_score": 100
+  },
+  "financial_path": {
+    "description": "Maximize financial sovereignty by minimizing discretionary spending, investing daily, and learning constantly.",
+    "home_cooked_meals": {
+      "points_per_unit": 5,
+      "max_units": 3
     },
-    "physical_optimization": {
-      "description": "Train like a machine. Fuel like a pro. Designed for high-output humans focused on athleticism and longevity.",
-      "home_cooked_meals": { "points_per_unit": 10, "max_units": 3 },
-      "no_junk_food": 15,
-      "exercise_minutes": { "points_per_unit": 1, "max_units": 30 },
-      "strength_training": 20,
-      "no_spending": 5,
-      "max_score": 100
+    "no_spending": 15,
+    "invested_bitcoin": 15,
+    "exercise_minutes": {
+      "points_per_unit": 0.25,
+      "max_units": 40
     },
-    "spiritual_growth": {
-      "description": "For those seeking deeper meaning, presence, and alignment — guided by gratitude, meditation, and mindful action.",
-      "meditation": 25,
-      "gratitude": 25,
-      "read_or_learned": 20,
-      "no_junk_food": 10,
-      "exercise_minutes": { "points_per_unit": 0.5, "max_units": 40 },
-      "max_score": 100
+    "gratitude": 10,
+    "read_or_learned": 15,
+    "no_junk_food": 5,
+    "meditation": 5,
+    "strength_training": 5,
+    "environmental_action": 5,
+    "max_score": 100
+  },
+  "mental_resilience": {
+    "description": "Strengthen your inner world through meditation, learning, and daily gratitude \u2014 build a mind that bends but never breaks.",
+    "meditation": 15,
+    "gratitude": 15,
+    "read_or_learned": 15,
+    "exercise_minutes": {
+      "points_per_unit": 0.25,
+      "max_units": 40
     },
-    "planetary_stewardship": {
-        "description": "Align your daily choices with environmental responsibility. Live lightly, reduce impact, and cultivate sustainable habits.",
-        "home_cooked_meals": { "points_per_unit": 6.6667, "max_units": 3 },
-        "no_junk_food": 10,
-        "exercise_minutes": { "points_per_unit": 0.5, "max_units": 40 },
-        "environmental_action": 25, 
-        "no_spending": 10,
-        "read_or_learned": 15,
-        "max_score": 100
-    }
+    "no_junk_food": 10,
+    "home_cooked_meals": {
+      "points_per_unit": 5,
+      "max_units": 3
+    },
+    "no_spending": 5,
+    "invested_bitcoin": 5,
+    "strength_training": 5,
+    "environmental_action": 5,
+    "max_score": 100
+  },
+  "physical_optimization": {
+    "description": "Train like a machine. Fuel like a pro. Designed for high-output humans focused on athleticism and longevity.",
+    "home_cooked_meals": {
+      "points_per_unit": 8,
+      "max_units": 3
+    },
+    "no_junk_food": 10,
+    "exercise_minutes": {
+      "points_per_unit": 0.5,
+      "max_units": 40
+    },
+    "strength_training": 15,
+    "no_spending": 5,
+    "read_or_learned": 5,
+    "gratitude": 5,
+    "meditation": 6,
+    "invested_bitcoin": 5,
+    "environmental_action": 5,
+    "max_score": 100
+  },
+  "spiritual_growth": {
+    "description": "For those seeking deeper meaning, presence, and alignment \u2014 guided by gratitude, meditation, and mindful action.",
+    "meditation": 20,
+    "gratitude": 15,
+    "read_or_learned": 10,
+    "no_junk_food": 10,
+    "exercise_minutes": {
+      "points_per_unit": 0.25,
+      "max_units": 40
+    },
+    "home_cooked_meals": {
+      "points_per_unit": 3.333,
+      "max_units": 3
+    },
+    "no_spending": 5,
+    "strength_training": 5,
+    "invested_bitcoin": 5,
+    "environmental_action": 10,
+    "max_score": 100
+  },
+  "planetary_stewardship": {
+    "description": "Align your daily choices with environmental responsibility. Live lightly, reduce impact, and cultivate sustainable habits.",
+    "home_cooked_meals": {
+      "points_per_unit": 5,
+      "max_units": 3
+    },
+    "no_junk_food": 10,
+    "exercise_minutes": {
+      "points_per_unit": 0.25,
+      "max_units": 40
+    },
+    "environmental_action": 20,
+    "no_spending": 10,
+    "read_or_learned": 10,
+    "meditation": 10,
+    "gratitude": 5,
+    "invested_bitcoin": 5,
+    "strength_training": 5,
+    "max_score": 100
   }
-  
+}
