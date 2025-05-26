@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # Enable CORS for all routes
-CORS(app, resources={r"/*": {"origins": ["https://dmh4681.github.io", "http://localhost:5000", "http://127.0.0.1:5000"]}})
+CORS(app, resources={r"/*": {"origins": ["https://dmh4681.github.io", "http://localhost:5000", "http://127.0.0.1:5000", "http://localhost:8501", "http://127.0.0.1:8501"]}})
 
 BASE     = os.path.dirname(__file__)
 DB_PATH  = os.path.join(BASE, "data", "sovereignty.duckdb")
@@ -48,12 +48,24 @@ def login_user():
         return "", 200
         
     logger.info("Received login request")
-    data = request.get_json()
+    logger.info(f"Request headers: {dict(request.headers)}")
+    logger.info(f"Request data: {request.get_data()}")
+    
+    try:
+        data = request.get_json()
+        logger.info(f"Parsed JSON data: {data}")
+    except Exception as e:
+        logger.error(f"Error parsing JSON: {str(e)}")
+        return jsonify({"status": "error", "message": "Invalid JSON data"}), 400
+
     username = data.get("username", "").strip()
     password = data.get("password", "")
 
+    logger.info(f"Processing login for username: {username}")
+
     # Validate input fields
     if not username or not password:
+        logger.warning("Missing username or password")
         return jsonify({
             "status": "error",
             "message": "Username and password are required."
@@ -66,10 +78,12 @@ def login_user():
             ).fetchone()
 
             if not user:
+                logger.warning(f"User not found: {username}")
                 return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
             db_username, hashed_pw, path = user
             if not bcrypt.checkpw(password.encode("utf-8"), hashed_pw.encode("utf-8")):
+                logger.warning(f"Invalid password for user: {username}")
                 return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
             logger.info(f"Successful login for user: {db_username}")
