@@ -95,14 +95,21 @@ try:
     # Display path description
     st.sidebar.markdown(f"**{cfg.get('description', '')}**")
     
-    # Create a more compact metrics display
+    # Create a more compact metrics display with smaller text
     st.sidebar.markdown("### 📊 Scoring Guide")
+    st.sidebar.markdown("""
+        <style>
+        .small-text {
+            font-size: 0.9em;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
     # Group metrics by category
     categories = {
         "Physical": ["home_cooked_meals", "junk_food", "exercise_minutes", "strength_training"],
         "Financial": ["no_spending", "invested_bitcoin"],
-        "Mental": ["meditation", "gratitude", "read_or_learned"],
+        "Mental / Spiritual": ["meditation", "gratitude", "read_or_learned"],
         "Environmental": ["environmental_action"]
     }
     
@@ -116,11 +123,19 @@ try:
                     max_units = value.get('max_units', 1)
                     max_points = points * max_units
                     st.sidebar.markdown(
+                        f'<div class="small-text">'
                         f"- **{metric.replace('_', ' ').title()}**\n"
                         f"  {points} pts × {max_units} = {max_points} max"
+                        f'</div>',
+                        unsafe_allow_html=True
                     )
                 else:
-                    st.sidebar.markdown(f"- **{metric.replace('_', ' ').title()}**: {value} pts")
+                    st.sidebar.markdown(
+                        f'<div class="small-text">'
+                        f"- **{metric.replace('_', ' ').title()}**: {value} pts"
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
     
 except Exception as e:
     logger.error(f"Error loading path configuration: {str(e)}")
