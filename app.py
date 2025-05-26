@@ -78,6 +78,7 @@ with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
     flat = {}
     for metric,val in ALL_PATHS[selected_path].items():
         if metric=="description": continue
+        if metric=="max_score": continue
         if isinstance(val,dict):
             for subk,subv in val.items():
                 flat[f"{metric}.{subk}"] = subv
