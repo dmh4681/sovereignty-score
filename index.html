@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sovereignty Score Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet"/>
   <style>
     body {
       margin: 0;
@@ -91,111 +92,47 @@
     <h2>Track daily choices that build your body, mind, and freedom.</h2>
 
     <div class="tiles" id="pathTiles">
-      <div class="tile" data-path="default">
-        <h3>⚖️ Default (Balanced)</h3>
-        <p>A well-rounded foundation covering physical, mental, and financial habits.</p>
-      </div>
-      <div class="tile" data-path="planetary_stewardship">
-        <h3>🌍 Planetary Stewardship</h3>
-        <p>Link your sovereignty with the planet’s future. Log eco-friendly actions.</p>
-      </div>
-      <div class="tile" data-path="financial_path">
-        <h3>💰 Financial Path</h3>
-        <p>Prioritize saving, investing, and minimalist living to build economic freedom.</p>
-      </div>
-      <div class="tile" data-path="mental_resilience">
-        <h3>🧠 Mental Resilience</h3>
-        <p>Sharpen your mind through meditation, learning, and daily gratitude.</p>
-      </div>
-      <div class="tile" data-path="physical_optimization">
-        <h3>🏋️‍♂️ Physical Optimization</h3>
-        <p>Focus on strength, performance, recovery, and nutrition for your best body.</p>
-      </div>
-      <div class="tile" data-path="spiritual_growth">
-        <h3>🧘‍♂️ Spiritual Growth</h3>
-        <p>Deepen presence, purpose, and gratitude. Reconnect with what matters most.</p>
-      </div>
+      <!-- same tile markup, but no <a href> … just data-path -->
+      <div class="tile" data-path="default">…</div>
+      <div class="tile" data-path="planetary_stewardship">…</div>
+      <div class="tile" data-path="financial_path">…</div>
+      <div class="tile" data-path="mental_resilience">…</div>
+      <div class="tile" data-path="physical_optimization">…</div>
+      <div class="tile" data-path="spiritual_growth">…</div>
     </div>
 
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
-      <p>Get updates, tips, and tools — straight to your inbox.</p>
-      <form id="signupForm">
+      <p>Choose your path, then enter your info:</p>
+      <form id="signupForm" action="https://sovereignty-score-digitalnomad.streamlit.app/" method="get">
         <input type="hidden" name="path" id="selectedPath"/>
-        <input type="text"    name="username" id="usernameInput" placeholder="Choose a username" required/>
-        <input type="email"   name="email"    id="emailInput"    placeholder="Your email address" required/>
-        <input type="password" name="password" id="passwordInput" placeholder="Choose a password" required/>
+        <input type="text"  name="username"   placeholder="Choose a username" required/>
+        <input type="email" name="email"      placeholder="Your email address" required/>
         <button type="submit" id="joinBtn" disabled>Join the Sovereign Journey</button>
       </form>
     </div>
 
-    <div class="manifesto">
-      <h3>🛡️ Our Sovereignty Manifesto</h3>
-      <p>We believe true freedom arises where health and wealth converge. Each choice you log—be it a home-cooked meal, a mindful breath, or a Bitcoin investment—is a brick in your autonomy. By measuring daily habits, we prove discipline in body, mind, and finance compounds into real-world liberty. This movement reclaims your time, energy, and resources from broken systems—one sovereign choice at a time.</p>
-    </div>
-
-    <div class="footer">
-      Built by Dylan. Inspired by autonomy, accountability, and the sovereign path. 🧠⚡
-    </div>
+    <div class="manifesto">…</div>
+    <div class="footer">Built by Dylan …</div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
-
   <script>
-    document.addEventListener('DOMContentLoaded', ()=> {
-      // Firebase init
-      const firebaseConfig = {
-        apiKey: "AIzaSyCCfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
-        authDomain: "sovereignty-tracker.firebaseapp.com",
-        projectId: "sovereignty-tracker",
-        storageBucket: "sovereignty-tracker.firebasestorage.app",
-        messagingSenderId: "724217396839",
-        appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
+    const tiles    = document.querySelectorAll('.tile');
+    const pathInput = document.getElementById('selectedPath');
+    const joinBtn   = document.getElementById('joinBtn');
 
-      // Elements
-      const tiles   = document.querySelectorAll('.tile');
-      const pathIn  = document.getElementById('selectedPath');
-      const joinBtn = document.getElementById('joinBtn');
-      const form    = document.getElementById('signupForm');
+    tiles.forEach(tile => tile.addEventListener('click', () => {
+      tiles.forEach(t => t.classList.remove('selected'));
+      tile.classList.add('selected');
+      pathInput.value = tile.dataset.path;
+      joinBtn.disabled = false;
+    }));
 
-      // Tile selection
-      tiles.forEach(tile => {
-        tile.addEventListener('click', () => {
-          tiles.forEach(t=> t.classList.remove('selected'));
-          tile.classList.add('selected');
-          pathIn.value = tile.dataset.path;
-          joinBtn.disabled = false;
-        });
-      });
-
-      // Signup submit
-      form.addEventListener('submit', async e => {
+    document.getElementById('signupForm').addEventListener('submit', e => {
+      if (!pathInput.value) {
         e.preventDefault();
-        const email    = document.getElementById('emailInput').value;
-        const pwd      = document.getElementById('passwordInput').value;
-        const username = document.getElementById('usernameInput').value;
-        const path     = pathIn.value;
-
-        try {
-          // Create user & get token
-          const userCred = await auth.createUserWithEmailAndPassword(email, pwd);
-          const idToken  = await userCred.user.getIdToken();
-
-          // Redirect into your Streamlit app
-          window.location.href =
-            `https://sovereignty-score-digitalnomad.streamlit.app/`
-            + `?token=${idToken}`
-            + `&username=${encodeURIComponent(username)}`
-            + `&path=${path}`;
-        } catch(err) {
-          alert("❌ " + err.message);
-        }
-      });
+        alert('Please select a Path before joining.');
+      }
     });
   </script>
 </body>
