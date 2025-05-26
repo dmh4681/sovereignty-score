@@ -3,6 +3,7 @@ import duckdb, os, bcrypt, json
 from flask import Flask, request, jsonify
 import logging
 from contextlib import contextmanager
+import subprocess
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -87,6 +88,53 @@ def register_user():
         except Exception as e:
             logger.error(f"Error during registration: {str(e)}")
             return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
+
+@app.route("/welcome", methods=["POST"])
+def welcome_user():
+    """Handle the AI welcome script for new users"""
+    logger.info("Received welcome request")
+    data = request.get_json()
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip().lower()
+    path = data.get("path", "default")
+
+    logger.info(f"Processing welcome for user: {username}")
+
+    if not username or not email:
+        return jsonify({"status": "error", "message": "Missing required fields."}), 400
+
+    try:
+        # Run the AI welcome script
+        script_path = os.path.join(BASE, "AI_Assist_Welcome.py")
+        if not os.path.exists(script_path):
+            logger.error(f"Welcome script not found at: {script_path}")
+            return jsonify({"status": "error", "message": "Welcome script not found."}), 500
+
+        # Run the script with the user's info
+        result = subprocess.run(
+            ["python", script_path, username, email, path],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode == 0:
+            logger.info(f"Welcome script completed successfully for {username}")
+            return jsonify({
+                "status": "success",
+                "message": "Welcome email sent!",
+                "output": result.stdout
+            }), 200
+        else:
+            logger.error(f"Welcome script failed for {username}: {result.stderr}")
+            return jsonify({
+                "status": "error",
+                "message": "Failed to send welcome email.",
+                "error": result.stderr
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Error during welcome process: {str(e)}")
+        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     logger.info("Starting Flask server...")

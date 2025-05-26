@@ -121,7 +121,7 @@
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
       <p>Choose your path, then enter your info:</p>
-      <form id="signupForm" action="https://sovereignty-score-digitalnomad.streamlit.app/" method="get">
+      <form id="signupForm">
         <input type="hidden" name="path" id="selectedPath"/>
         <input type="text"  name="username"   placeholder="Choose a username" required/>
         <input type="email" name="email"      placeholder="Your email address" required/>
@@ -162,14 +162,115 @@
       joinBtn.disabled = false;
     }));
 
-    document.getElementById('signupForm').addEventListener('submit', e => {
-      if (!pathInput.value) {
-        e.preventDefault();
-        alert('Please select a Path before joining.');
+    // Registration Form Handler
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Show loading state
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.textContent = 'Creating your account...';
+      submitButton.disabled = true;
+      
+      // Create debug message container
+      const debugDiv = document.createElement('div');
+      debugDiv.style.position = 'fixed';
+      debugDiv.style.top = '10px';
+      debugDiv.style.left = '10px';
+      debugDiv.style.padding = '10px';
+      debugDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      debugDiv.style.color = 'white';
+      debugDiv.style.borderRadius = '5px';
+      debugDiv.style.zIndex = '1000';
+      debugDiv.style.fontFamily = 'monospace';
+      debugDiv.style.fontSize = '12px';
+      document.body.appendChild(debugDiv);
+      
+      const log = (message) => {
+        console.log(message);
+        debugDiv.innerHTML += `<div>${message}</div>`;
+      };
+
+      try {
+        const formData = new FormData(e.target);
+        const data = {
+          username: formData.get('username'),
+          email: formData.get('email'),
+          password: formData.get('password'),
+          path: formData.get('path')
+        };
+        
+        log('Attempting registration with data: ' + JSON.stringify(data));
+        
+        // First register the user
+        const registerResponse = await fetch('http://127.0.0.1:5001/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        log('Registration response status: ' + registerResponse.status);
+        const registerResult = await registerResponse.json();
+        log('Registration response: ' + JSON.stringify(registerResult));
+        
+        if (registerResult.status === 'success') {
+          // Now trigger the AI welcome script
+          const aiResponse = await fetch('http://127.0.0.1:5001/welcome', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              username: data.username,
+              email: data.email,
+              path: data.path
+            })
+          });
+          
+          log('AI welcome response status: ' + aiResponse.status);
+          const aiResult = await aiResponse.json();
+          log('AI welcome response: ' + JSON.stringify(aiResult));
+          
+          // Show success message
+          const messageDiv = document.createElement('div');
+          messageDiv.style.position = 'fixed';
+          messageDiv.style.top = '50%';
+          messageDiv.style.left = '50%';
+          messageDiv.style.transform = 'translate(-50%, -50%)';
+          messageDiv.style.padding = '20px';
+          messageDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+          messageDiv.style.color = 'white';
+          messageDiv.style.borderRadius = '10px';
+          messageDiv.style.zIndex = '1001';
+          messageDiv.textContent = 'Account created! Redirecting to your dashboard...';
+          document.body.appendChild(messageDiv);
+          
+          // Redirect to Streamlit app
+          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(data.username)}&path=${encodeURIComponent(data.path)}`;
+          log('Redirecting to: ' + streamlitUrl);
+          
+          setTimeout(() => {
+            window.location.href = streamlitUrl;
+          }, 2000);
+        } else {
+          log('Registration failed: ' + registerResult.message);
+          alert(registerResult.message || 'Registration failed. Please try again.');
+        }
+      } catch (error) {
+        log('Registration error: ' + error.message);
+        alert('Unable to connect to registration server. Please make sure the server is running.');
+      } finally {
+        // Restore button state
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
       }
     });
 
-    // New Login Form Handler
+    // Login Form Handler
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
