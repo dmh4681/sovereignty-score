@@ -124,7 +124,7 @@ try:
                     max_points = points * max_units
                     st.sidebar.markdown(
                         f'<div class="small-text">'
-                        f"- **{metric.replace('_', ' ').title()}**\n"
+                        f"- {metric.replace('_', ' ').title()}\n"
                         f"  {points} pts × {max_units} = {max_points} max"
                         f'</div>',
                         unsafe_allow_html=True
@@ -132,7 +132,7 @@ try:
                 else:
                     st.sidebar.markdown(
                         f'<div class="small-text">'
-                        f"- **{metric.replace('_', ' ').title()}**: {value} pts"
+                        f"- {metric.replace('_', ' ').title()}: {value} pts"
                         f'</div>',
                         unsafe_allow_html=True
                     )
@@ -150,7 +150,7 @@ with st.form("tracker_form"):
     mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
     lift  = st.checkbox("Strength training?")
     spend= st.checkbox("No discretionary spending?")
-    btc  = st.checkbox("Invested in Bitcoin?")
+    btc  = st.checkbox("Invested or Stacked Sats?")
     med  = st.checkbox("Meditated?")
     grat = st.checkbox("Gratitude practice?")
     learn= st.checkbox("Read or learned something new?")
