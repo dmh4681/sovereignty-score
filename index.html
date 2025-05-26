@@ -179,16 +179,20 @@
       };
 
       try {
-        const response = await fetch('http://localhost:5002/login', {
+        console.log('Attempting login...'); // Debug log
+        const response = await fetch('http://127.0.0.1:5002/login', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify(data)
         });
 
+        console.log('Response received:', response); // Debug log
         const result = await response.json();
         console.log('Login response:', result); // Debug log
+        
         if (result.status === 'success') {
           // Redirect to Streamlit app with query params
           window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${result.username}&path=${result.path}`;
@@ -196,8 +200,8 @@
           alert(result.message || 'Login failed. Please try again.');
         }
       } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        console.error('Login error:', error); // Debug log
+        alert('Unable to connect to login server. Please make sure the server is running.');
       }
     });
   </script>
