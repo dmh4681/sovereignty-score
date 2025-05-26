@@ -1,6 +1,7 @@
 # login.py
 import duckdb, os, bcrypt
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import logging
 from contextlib import contextmanager
 
@@ -9,6 +10,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": ["https://dmh4681.github.io", "http://localhost:5000", "http://127.0.0.1:5000"]}})
 
 BASE     = os.path.dirname(__file__)
 DB_PATH  = os.path.join(BASE, "data", "sovereignty.duckdb")
@@ -39,8 +42,11 @@ def init_db():
             logger.error(f"Error creating users table: {str(e)}")
             raise
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST", "OPTIONS"])
 def login_user():
+    if request.method == "OPTIONS":
+        return "", 200
+        
     logger.info("Received login request")
     data = request.get_json()
     username = data.get("username", "").strip()
