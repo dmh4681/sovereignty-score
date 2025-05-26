@@ -75,7 +75,7 @@ def login_user():
                 "status": "success",
                 "username": db_username,
                 "path": path,
-                "streamlit_url": "https://sovereignty-score-digitalnomad.streamlit.app"
+                "streamlit_url": "http://localhost:8501"
             }), 200
     except Exception as e:
         logger.error(f"Error during login: {str(e)}")
