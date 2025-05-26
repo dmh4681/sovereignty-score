@@ -252,7 +252,7 @@
           document.body.appendChild(messageDiv);
           
           // Redirect to Streamlit app
-          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(data.username)}&path=${encodeURIComponent(data.path)}`;
+          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(data.username)}&path=${encodeURIComponent(data.path)}`;
           log('Redirecting to: ' + streamlitUrl);
           
           setTimeout(() => {
@@ -327,7 +327,7 @@
         log('Full login response: ' + JSON.stringify(result));
         
         if (result.status === 'success') {
-          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
+          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
           log('Redirecting to: ' + streamlitUrl);
           
           // Show redirect message
