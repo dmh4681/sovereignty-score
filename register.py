@@ -36,7 +36,13 @@ def init_db():
             with open(SQL_FILE, 'r') as f:
                 sql = f.read()
                 logger.info(f"SQL to execute: {sql}")
+                # Drop the table if it exists to ensure clean state
+                conn.execute("DROP TABLE IF EXISTS users")
+                # Create the table
                 conn.execute(sql)
+                # Print the table structure
+                table_info = conn.execute("DESCRIBE users").fetchall()
+                logger.info(f"Table structure after creation: {table_info}")
                 logger.info("Successfully created users table")
         except Exception as e:
             logger.error(f"Error creating users table: {str(e)}")
@@ -58,6 +64,10 @@ def register_user():
 
     with get_db() as conn:
         try:
+            # Print current table structure
+            table_info = conn.execute("DESCRIBE users").fetchall()
+            logger.info(f"Current table structure before registration: {table_info}")
+            
             # Check if user already exists
             existing = conn.execute("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?", [username, email]).fetchone()[0]
             if existing > 0:
@@ -68,10 +78,10 @@ def register_user():
             hashed_pw = bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
             # Insert user
-            conn.execute(
-                "INSERT INTO users (username, email, password, path) VALUES (?, ?, ?, ?)",
-                (username, email, hashed_pw, path)
-            )
+            insert_sql = "INSERT INTO users (username, email, password, path) VALUES (?, ?, ?, ?)"
+            logger.info(f"Executing SQL: {insert_sql}")
+            logger.info(f"With values: username={username}, email={email}, path={path}")
+            conn.execute(insert_sql, (username, email, hashed_pw, path))
             logger.info(f"Successfully registered user: {username}")
             return jsonify({"status": "success", "message": "User registered!"}), 200
         except Exception as e:
