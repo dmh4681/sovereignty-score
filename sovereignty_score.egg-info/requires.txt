@@ -1,0 +1,6 @@
+streamlit
+pandas
+duckdb
+flask
+flask-cors
+bcrypt

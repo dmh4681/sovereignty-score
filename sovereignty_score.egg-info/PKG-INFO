@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: sovereignty-score
+Version: 0.1
+Requires-Dist: streamlit
+Requires-Dist: pandas
+Requires-Dist: duckdb
+Requires-Dist: flask
+Requires-Dist: flask-cors
+Requires-Dist: bcrypt
+Dynamic: requires-dist

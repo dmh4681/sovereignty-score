@@ -1,0 +1,9 @@
+README.md
+setup.py
+sovereignty_score.egg-info/PKG-INFO
+sovereignty_score.egg-info/SOURCES.txt
+sovereignty_score.egg-info/dependency_links.txt
+sovereignty_score.egg-info/requires.txt
+sovereignty_score.egg-info/top_level.txt
+tracker/__init__.py
+tracker/scoring.py
