@@ -1,6 +1,7 @@
 # register.py
 import duckdb, os, bcrypt, json
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import logging
 from contextlib import contextmanager
 import subprocess
@@ -10,6 +11,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+# Enable CORS for all routes
+CORS(app, 
+     resources={r"/*": {
+         "origins": ["https://dmh4681.github.io", 
+                    "http://localhost:5000", 
+                    "http://127.0.0.1:5000", 
+                    "http://localhost:8501", 
+                    "http://127.0.0.1:8501"],
+         "methods": ["GET", "POST", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Authorization", "Accept"],
+         "supports_credentials": True
+     }})
 
 BASE     = os.path.dirname(__file__)
 DB_PATH  = os.path.join(BASE, "data", "sovereignty.duckdb")
@@ -49,8 +62,11 @@ def init_db():
             logger.error(f"Error creating users table: {str(e)}")
             raise
 
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["POST", "OPTIONS"])
 def register_user():
+    if request.method == "OPTIONS":
+        return "", 200
+        
     logger.info("Received registration request")
     data = request.get_json()
     username = data.get("username", "").strip()
@@ -89,8 +105,11 @@ def register_user():
             logger.error(f"Error during registration: {str(e)}")
             return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
 
-@app.route("/welcome", methods=["POST"])
+@app.route("/welcome", methods=["POST", "OPTIONS"])
 def welcome_user():
+    if request.method == "OPTIONS":
+        return "", 200
+        
     """Handle the AI welcome script for new users"""
     logger.info("Received welcome request")
     data = request.get_json()
