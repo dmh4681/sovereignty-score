@@ -1,27 +1,37 @@
-import firebase_admin
-from firebase_admin import credentials, auth
-from urllib.parse import parse_qs
+import os
+import json
+import duckdb
 import streamlit as st
 import pandas as pd
-import duckdb, os, json
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
 
-# — Paths & setup —
-BASE       = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR   = os.path.join(BASE, "data")
+# — Constants & Paths —
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR    = os.path.join(BASE_DIR, "data")
+CONFIG_DIR  = os.path.join(BASE_DIR, "config")
+DB_FILE     = os.path.join(DATA_DIR, "sovereignty.duckdb")
+PATHS_FILE  = os.path.join(CONFIG_DIR, "paths.json")
+USERS_SQL   = os.path.join(CONFIG_DIR, "create_users_table.sql")
+
+# — Ensure data directory exists —
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Load all scoring paths + descriptions
-PATHS_FILE = os.path.join(BASE, "config", "paths.json")
+# — Load scoring definitions —
 with open(PATHS_FILE, "r", encoding="utf-8") as f:
     ALL_PATHS = json.load(f)
 
-# — DuckDB setup —
-DB_FILE = os.path.join(DATA_DIR, "sovereignty.duckdb")
+# — Connect to DuckDB & initialize schema —
 con = duckdb.connect(DB_FILE)
+
+# 1) Users table
+if os.path.isfile(USERS_SQL):
+    with open(USERS_SQL, "r") as f:
+        con.execute(f.read())
+
+# 2) Sovereignty entries table
 con.execute("""
-  CREATE TABLE IF NOT EXISTS sovereignty (
+CREATE TABLE IF NOT EXISTS sovereignty (
     timestamp            TIMESTAMP,
     username             VARCHAR,
     path                 VARCHAR,
@@ -36,96 +46,69 @@ con.execute("""
     read_or_learned      BOOLEAN,
     environmental_action BOOLEAN,
     score                INTEGER
-  );
+);
 """)
 
-# Firebase Credentials
-cred_path = os.path.join(BASE, "config", "firebase_service_account.json")
-if not firebase_admin._apps:
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
-
-# — Page title & sidebar —
+# — Streamlit UI — 
+st.set_page_config(page_title="Sovereignty Score Tracker")
 st.title("🏰 Sovereignty Score Tracker")
-st.markdown("Track your sovereign choices. Enter your habits, get a score, and visualize your progress.")
+st.markdown("Track habits, get scored, and visualize your sovereign progress.")
 
+# — Sidebar: Username & Path selection —
 st.sidebar.title("User & Path")
-# Extract token from query params and verify
-query_token = st.query_params.get("token", [None])[0]
 
-if not query_token:
-    st.error("❌ No token found in URL.")
-    st.stop()
+username = st.sidebar.text_input("Username", max_chars=30).strip()
+path_labels = list(ALL_PATHS.keys())
+path_map    = {label: label for label in path_labels}  # labels == keys
 
-try:
-    decoded = auth.verify_id_token(query_token)
-    user_email = decoded.get("email", "Unknown")
-    user_uid = decoded["uid"]
-except Exception as e:
-    st.error("🚫 Invalid or expired login token.")
-    st.stop()
+default_path = st.query_params.get("path", [None])[0] or "default"
+if default_path not in path_map:
+    default_path = "default"
 
-username = user_email  # use email as username for now
+if "path_choice" not in st.session_state:
+    st.session_state.path_choice = default_path
 
-
-path_options = {
-    "Default (Balanced)":    "default",
-    "Financial Path":        "financial_path",
-    "Mental Resilience":     "mental_resilience",
-    "Physical Optimization": "physical_optimization",
-    "Spiritual Growth":      "spiritual_growth",
-    "Planetary Stewardship": "planetary_stewardship",
-}
-
-# Pre-select via ?path=… in URL
-# new, correct:
-default_path = st.query_params.get("path", [None])[0]
-reverse_map  = {v:k for k,v in path_options.items()}
-default_label = reverse_map.get(default_path, "Default (Balanced)")
-
-if "selected_label" not in st.session_state:
-    st.session_state.selected_label = default_label
-
-selected_label = st.sidebar.selectbox(
-    "Scoring Profile",
-    list(path_options.keys()),
-    key="selected_label"
+selected_path = st.sidebar.selectbox(
+    "Choose your Path",
+    options=path_labels,
+    index=path_labels.index(st.session_state.path_choice),
+    key="path_choice"
 )
-selected_path = path_options[selected_label]
 
-# Show description + metric breakdown
-with st.sidebar.expander("ℹ️ How this Path is Scored", expanded=False):
-    desc = ALL_PATHS[selected_path].get("description","")
-    st.markdown(f"**{selected_label}**")
+# — Sidebar: Show how this Path is scored —
+with st.sidebar.expander("ℹ️ Path Breakdown", expanded=False):
+    cfg = ALL_PATHS[selected_path]
+    desc = cfg.get("description", "")
     if desc:
+        st.markdown(f"**{selected_path.replace('_',' ').title()}**")
         st.markdown(f"*{desc}*")
-    # flatten metrics
+
     flat = {}
-    for metric,val in ALL_PATHS[selected_path].items():
-        if metric=="description": continue
-        if metric=="max_score": continue
-        if isinstance(val,dict):
-            for subk,subv in val.items():
+    for metric, val in cfg.items():
+        if metric in ("description", "max_score"): 
+            continue
+        if isinstance(val, dict):
+            for subk, subv in val.items():
                 flat[f"{metric}.{subk}"] = subv
         else:
             flat[metric] = val
-    df_scoring = pd.DataFrame.from_records(
-        list(flat.items()), columns=["Metric","Value"]
-    )
-    st.dataframe(df_scoring, use_container_width=True, height=min(400,32*len(df_scoring)+20))
 
-# — Main UI —
+    df_breakdown = pd.DataFrame.from_records(
+        list(flat.items()), columns=["Metric", "Value"]
+    )
+    st.dataframe(df_breakdown, use_container_width=True, height=min(300, 32*len(df_breakdown)+20))
+
+# — Stop if no username —
 if not username:
-    st.warning("⚠️ Please enter your username in the sidebar to begin.")
+    st.warning("⚠️ Enter a username above to continue.")
     st.stop()
 
+# — Form for daily inputs —
 st.subheader(f"Hello, {username} 👋")
-
-# Input form
-with st.form("tracker_form"):
-    meals = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
+with st.form("daily_form"):
+    meals = st.number_input("Home-cooked meals", 0, 10, 0)
     junk  = st.checkbox("No junk food today?")
-    mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
+    mins  = st.number_input("Exercise minutes", 0, 300, 0)
     lift  = st.checkbox("Strength training?")
     spend = st.checkbox("No discretionary spending?")
     btc   = st.checkbox("Invested in Bitcoin?")
@@ -135,6 +118,7 @@ with st.form("tracker_form"):
     env   = st.checkbox("Took environmentally friendly action today?")
     submitted = st.form_submit_button("Submit & Save")
 
+# — On submit, compute score & insert —
 if submitted:
     data = {
         "username":             username,
@@ -151,23 +135,29 @@ if submitted:
         "environmental_action": env,
     }
     score = calculate_daily_score(data, path=selected_path)
-    st.success(f"💪 Sovereignty Score: **{score} / 100**")
-    st.info(f"Scoring Path: **{selected_label}**")
+    st.success(f"💪 Your Sovereignty Score: **{score} / 100**")
+    st.info(f"Path: **{selected_path.replace('_',' ').title()}**")
 
-    # write into DuckDB
     con.execute("""
-      INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+    INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     """, [
-      datetime.now(), data["username"], data["path"],
-      data["home_cooked_meals"], data["junk_food"],
-      data["exercise_minutes"], data["strength_training"],
-      data["no_spending"], data["invested_bitcoin"],
-      data["meditation"], data["gratitude"],
-      data["read_or_learned"], data["environmental_action"],
-      score
+        datetime.now(),
+        data["username"],
+        data["path"],
+        data["home_cooked_meals"],
+        data["junk_food"],
+        data["exercise_minutes"],
+        data["strength_training"],
+        data["no_spending"],
+        data["invested_bitcoin"],
+        data["meditation"],
+        data["gratitude"],
+        data["read_or_learned"],
+        data["environmental_action"],
+        score
     ])
 
-# Show history
+# — Display History —
 st.subheader("📜 Your History")
 df_hist = con.execute(
     """
@@ -183,6 +173,6 @@ df_hist = con.execute(
 ).df()
 
 if df_hist.empty:
-    st.info("📘 You have no entries yet. Submit above to get started.")
+    st.info("📘 No entries yet. Submit above to get started.")
 else:
     st.dataframe(df_hist, use_container_width=True)
