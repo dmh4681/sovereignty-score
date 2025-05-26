@@ -184,8 +184,11 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Origin': 'https://dmh4681.github.io'
           },
+          mode: 'cors',
+          credentials: 'include',
           body: JSON.stringify(data)
         });
 

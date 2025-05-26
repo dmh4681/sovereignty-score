@@ -10,37 +10,46 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-# Enable CORS for all routes
-CORS(app, resources={r"/*": {"origins": ["https://dmh4681.github.io", "http://localhost:5000", "http://127.0.0.1:5000", "http://localhost:8501", "http://127.0.0.1:8501"]}})
+# Enable CORS for all routes with more permissive settings
+CORS(app, 
+     resources={r"/*": {
+         "origins": ["https://dmh4681.github.io", 
+                    "http://localhost:5000", 
+                    "http://127.0.0.1:5000", 
+                    "http://localhost:8501", 
+                    "http://127.0.0.1:8501"],
+         "methods": ["GET", "POST", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Authorization", "Accept"],
+         "supports_credentials": True
+     }})
 
 BASE     = os.path.dirname(__file__)
 DB_PATH  = os.path.join(BASE, "data", "sovereignty.duckdb")
 SQL_FILE = os.path.join(BASE, "config", "create_users_table.sql")
 
-@contextmanager
-def get_db():
-    """Context manager for database connections"""
-    conn = None
-    try:
-        conn = duckdb.connect(DB_PATH)
-        yield conn
-    finally:
-        if conn:
-            conn.close()
+# Global connection pool
+_db_connection = None
+
+def get_db_connection():
+    """Get or create a database connection"""
+    global _db_connection
+    if _db_connection is None:
+        _db_connection = duckdb.connect(DB_PATH)
+    return _db_connection
 
 def init_db():
     """Initialize the database with required tables"""
-    with get_db() as conn:
-        try:
-            logger.info(f"Reading SQL file from: {SQL_FILE}")
-            with open(SQL_FILE, 'r') as f:
-                sql = f.read()
-                logger.info(f"SQL to execute: {sql}")
-                conn.execute(sql)
-                logger.info("Successfully created users table")
-        except Exception as e:
-            logger.error(f"Error creating users table: {str(e)}")
-            raise
+    try:
+        conn = get_db_connection()
+        logger.info(f"Reading SQL file from: {SQL_FILE}")
+        with open(SQL_FILE, 'r') as f:
+            sql = f.read()
+            logger.info(f"SQL to execute: {sql}")
+            conn.execute(sql)
+            logger.info("Successfully created users table")
+    except Exception as e:
+        logger.error(f"Error creating users table: {str(e)}")
+        raise
 
 @app.route("/login", methods=["POST", "OPTIONS"])
 def login_user():
@@ -71,30 +80,30 @@ def login_user():
             "message": "Username and password are required."
         }), 400
 
-    with get_db() as conn:
-        try:
-            user = conn.execute(
-                "SELECT username, password, path FROM users WHERE username = ?", [username]
-            ).fetchone()
+    try:
+        conn = get_db_connection()
+        user = conn.execute(
+            "SELECT username, password, path FROM users WHERE username = ?", [username]
+        ).fetchone()
 
-            if not user:
-                logger.warning(f"User not found: {username}")
-                return jsonify({"status": "error", "message": "Invalid credentials."}), 401
+        if not user:
+            logger.warning(f"User not found: {username}")
+            return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
-            db_username, hashed_pw, path = user
-            if not bcrypt.checkpw(password.encode("utf-8"), hashed_pw.encode("utf-8")):
-                logger.warning(f"Invalid password for user: {username}")
-                return jsonify({"status": "error", "message": "Invalid credentials."}), 401
+        db_username, hashed_pw, path = user
+        if not bcrypt.checkpw(password.encode("utf-8"), hashed_pw.encode("utf-8")):
+            logger.warning(f"Invalid password for user: {username}")
+            return jsonify({"status": "error", "message": "Invalid credentials."}), 401
 
-            logger.info(f"Successful login for user: {db_username}")
-            return jsonify({
-                "status": "success",
-                "username": db_username,
-                "path": path
-            }), 200
-        except Exception as e:
-            logger.error(f"Error during login: {str(e)}")
-            return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
+        logger.info(f"Successful login for user: {db_username}")
+        return jsonify({
+            "status": "success",
+            "username": db_username,
+            "path": path
+        }), 200
+    except Exception as e:
+        logger.error(f"Error during login: {str(e)}")
+        return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     logger.info("Starting Flask server...")
