@@ -179,7 +179,7 @@
       };
 
       try {
-        console.log('Attempting login...'); // Debug log
+        console.log('Attempting login with data:', data); // Debug log
         const response = await fetch('http://127.0.0.1:5002/login', {
           method: 'POST',
           headers: {
@@ -192,16 +192,23 @@
           body: JSON.stringify(data)
         });
 
-        console.log('Response received:', response); // Debug log
+        console.log('Response status:', response.status); // Debug log
+        console.log('Response headers:', Object.fromEntries(response.headers.entries())); // Debug log
+        
         const result = await response.json();
-        console.log('Login response:', result); // Debug log
+        console.log('Full login response:', result); // Debug log
         
         if (result.status === 'success') {
           // Use the streamlit_url from the response
           const streamlitUrl = `${result.streamlit_url}/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
-          console.log('Redirecting to:', streamlitUrl); // Debug log
-          window.location.href = streamlitUrl;
+          console.log('About to redirect to:', streamlitUrl); // Debug log
+          
+          // Add a small delay to ensure logs are visible
+          setTimeout(() => {
+            window.location.href = streamlitUrl;
+          }, 1000);
         } else {
+          console.error('Login failed:', result.message); // Debug log
           alert(result.message || 'Login failed. Please try again.');
         }
       } catch (error) {
