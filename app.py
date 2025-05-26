@@ -1,3 +1,6 @@
+import firebase_admin
+from firebase_admin import credentials, auth
+from urllib.parse import parse_qs
 import streamlit as st
 import pandas as pd
 import duckdb, os, json
@@ -36,12 +39,34 @@ con.execute("""
   );
 """)
 
+# Firebase Credentials
+cred_path = os.path.join(BASE, "config", "firebase_service_account.json")
+if not firebase_admin._apps:
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
+
 # — Page title & sidebar —
 st.title("🏰 Sovereignty Score Tracker")
 st.markdown("Track your sovereign choices. Enter your habits, get a score, and visualize your progress.")
 
 st.sidebar.title("User & Path")
-username = st.sidebar.text_input("Enter your username:", max_chars=30)
+# Extract token from query params and verify
+query_token = st.query_params.get("token", [None])[0]
+
+if not query_token:
+    st.error("❌ No token found in URL.")
+    st.stop()
+
+try:
+    decoded = auth.verify_id_token(query_token)
+    user_email = decoded.get("email", "Unknown")
+    user_uid = decoded["uid"]
+except Exception as e:
+    st.error("🚫 Invalid or expired login token.")
+    st.stop()
+
+username = user_email  # use email as username for now
+
 
 path_options = {
     "Default (Balanced)":    "default",

@@ -148,26 +148,40 @@
     </div>
   </div>
 
-  <script>
-    const tiles = document.querySelectorAll('.tile');
-    const pathInput = document.getElementById('selectedPath');
-    const joinBtn  = document.getElementById('joinBtn');
+  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCCFfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
+    authDomain: "sovereignty-tracker.firebaseapp.com",
+    projectId: "sovereignty-tracker",
+    storageBucket: "sovereignty-tracker.firebasestorage.app",
+    messagingSenderId: "724217396839",
+    appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    tiles.forEach(tile => {
-      tile.addEventListener('click', () => {
-        tiles.forEach(t => t.classList.remove('selected'));
-        tile.classList.add('selected');
-        pathInput.value = tile.dataset.path;
-        joinBtn.disabled = false;
-      });
-    });
+  async function handleJoin(e) {
+    e.preventDefault();
+    const path = document.getElementById('selectedPath').value;
+    const email = document.querySelector('input[name=email]').value;
+    const username = document.querySelector('input[name=username]').value;
 
-    document.getElementById('signupForm').addEventListener('submit', e => {
-      if (!pathInput.value) {
-        e.preventDefault();
-        alert('Please select a Path before joining.');
-      }
-    });
-  </script>
+    try {
+      // Automatically create an account with email as password (for demo simplicity)
+      const userCred = await auth.createUserWithEmailAndPassword(email, "sovereign123");
+      const idToken = await userCred.user.getIdToken();
+
+      // Redirect to Streamlit app with ID token and path
+      window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?token=${idToken}&path=${path}`;
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  document.getElementById("signupForm").addEventListener("submit", handleJoin);
+</script>
+
 </body>
 </html>
