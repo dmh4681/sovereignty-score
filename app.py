@@ -108,7 +108,7 @@ try:
     # Group metrics by category
     categories = {
         "Physical": ["home_cooked_meals", "junk_food", "exercise_minutes", "strength_training"],
-        "Financial": ["no_spending", "invested_or_bitcoin"],
+        "Financial": ["no_spending", "invested_bitcoin"],
         "Mental / Spiritual": ["meditation", "gratitude", "read_or_learned"],
         "Environmental": ["environmental_action"]
     }
@@ -150,7 +150,7 @@ with st.form("tracker_form"):
     mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
     lift  = st.checkbox("Strength training?")
     spend= st.checkbox("No discretionary spending?")
-    btc  = st.checkbox("Invested or Stacked Sats?")
+    btc  = st.checkbox("Stacked Sats?")
     med  = st.checkbox("Meditated?")
     grat = st.checkbox("Gratitude practice?")
     learn= st.checkbox("Read or learned something new?")
@@ -164,7 +164,7 @@ if submitted:
       "exercise_minutes": mins,
       "strength_training":lift,
       "no_spending":      spend,
-      "invested_or_bitcoin": btc,
+      "invested_bitcoin": btc,
       "meditation":       med,
       "gratitude":        grat,
       "read_or_learned":  learn,
@@ -191,7 +191,7 @@ try:
         hist = conn.execute("""
           SELECT timestamp, username, path, home_cooked_meals, junk_food,
                  exercise_minutes, strength_training, no_spending,
-                 invested_or_bitcoin, meditation, gratitude,
+                 invested_bitcoin, meditation, gratitude,
                  read_or_learned, environmental_action, score
             FROM sovereignty
            WHERE username = ?
