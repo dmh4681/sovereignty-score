@@ -172,38 +172,61 @@
     // New Login Form Handler
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = {
-        username: formData.get('username'),
-        password: formData.get('password')
+      
+      // Show loading state
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.textContent = 'Logging in...';
+      submitButton.disabled = true;
+      
+      // Create debug message container
+      const debugDiv = document.createElement('div');
+      debugDiv.style.position = 'fixed';
+      debugDiv.style.top = '10px';
+      debugDiv.style.left = '10px';
+      debugDiv.style.padding = '10px';
+      debugDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      debugDiv.style.color = 'white';
+      debugDiv.style.borderRadius = '5px';
+      debugDiv.style.zIndex = '1000';
+      debugDiv.style.fontFamily = 'monospace';
+      debugDiv.style.fontSize = '12px';
+      document.body.appendChild(debugDiv);
+      
+      const log = (message) => {
+        console.log(message);
+        debugDiv.innerHTML += `<div>${message}</div>`;
       };
 
       try {
-        console.log('Attempting login with data:', data);
+        const formData = new FormData(e.target);
+        const data = {
+          username: formData.get('username'),
+          password: formData.get('password')
+        };
+        
+        log('Attempting login with data: ' + JSON.stringify(data));
+        
         const response = await fetch('http://127.0.0.1:5002/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Origin': 'https://dmh4681.github.io'
+            'Accept': 'application/json'
           },
-          mode: 'cors',
-          credentials: 'include',
           body: JSON.stringify(data)
         });
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        log('Response status: ' + response.status);
+        log('Response headers: ' + JSON.stringify(Object.fromEntries(response.headers.entries())));
         
         const result = await response.json();
-        console.log('Full login response:', result);
+        log('Full login response: ' + JSON.stringify(result));
         
         if (result.status === 'success') {
-          // Construct the local Streamlit URL
           const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
-          console.log('About to redirect to:', streamlitUrl);
+          log('Redirecting to: ' + streamlitUrl);
           
-          // Show a message to the user
+          // Show redirect message
           const messageDiv = document.createElement('div');
           messageDiv.style.position = 'fixed';
           messageDiv.style.top = '50%';
@@ -213,28 +236,29 @@
           messageDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
           messageDiv.style.color = 'white';
           messageDiv.style.borderRadius = '10px';
-          messageDiv.style.zIndex = '1000';
+          messageDiv.style.zIndex = '1001';
           messageDiv.textContent = 'Redirecting to your dashboard...';
           document.body.appendChild(messageDiv);
           
-          // Add a small delay to ensure the message is visible
-          setTimeout(() => {
-            try {
-              window.location.replace(streamlitUrl);
-            } catch (error) {
-              console.error('Redirect failed:', error);
-              messageDiv.textContent = 'Redirect failed. Please click here to continue.';
-              messageDiv.style.cursor = 'pointer';
-              messageDiv.onclick = () => window.location.replace(streamlitUrl);
-            }
-          }, 1000);
+          // Try direct navigation first
+          try {
+            window.location.href = streamlitUrl;
+          } catch (error) {
+            log('Direct navigation failed: ' + error.message);
+            // Fallback to window.open
+            window.open(streamlitUrl, '_self');
+          }
         } else {
-          console.error('Login failed:', result.message);
+          log('Login failed: ' + result.message);
           alert(result.message || 'Login failed. Please try again.');
         }
       } catch (error) {
-        console.error('Login error:', error);
+        log('Login error: ' + error.message);
         alert('Unable to connect to login server. Please make sure the server is running.');
+      } finally {
+        // Restore button state
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
       }
     });
   </script>
