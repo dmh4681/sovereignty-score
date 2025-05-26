@@ -40,58 +40,61 @@ CREATE TABLE IF NOT EXISTS sovereignty (
 """)
 
 # Load path-definitions
-with open(os.path.join(BASE, "config", "paths.json")) as f:
-    ALL_PATHS = json.load(f)
+try:
+    with open(os.path.join(BASE, "config", "paths.json")) as f:
+        ALL_PATHS = json.load(f)
+except Exception as e:
+    st.error(f"Error loading paths configuration: {str(e)}")
+    st.stop()
 
-# ── Handle Sign-Up via Query-Params ─────────────────────────────────────────────
-qp       = st.experimental_get_query_params()  # or st.query_params in 1.32+
-email    = qp.get("email", [None])[0]
+# ── Handle Login via Query-Params ─────────────────────────────────────────────
+qp = st.experimental_get_query_params()
 username = qp.get("username", [None])[0]
-path     = qp.get("path", [None])[0]
+path = qp.get("path", [None])[0]
 
-# If we have signup info and user not yet in DB, register & send welcome
-if email and username and path:
-    user_exists = con.execute(
-      "SELECT 1 FROM users WHERE email = ? OR username = ?", [email, username]
+# Validate login parameters
+if not username or not path:
+    st.error("❌ You must arrive via the Landing Page login form.")
+    st.stop()
+
+# Verify user exists and path is valid
+try:
+    user = con.execute(
+        "SELECT username, path FROM users WHERE username = ? AND path = ?",
+        [username, path]
     ).fetchone()
-    if not user_exists:
-        # Generate a temporary password for the user
-        temp_password = "temp_" + os.urandom(8).hex()
-        salt = bcrypt.gensalt()
-        hashed_pw = bcrypt.hashpw(temp_password.encode("utf-8"), salt).decode("utf-8")
-        
-        con.execute(
-          "INSERT INTO users (username, email, password, path) VALUES (?, ?, ?, ?)",
-          [username, email, hashed_pw, path]
-        )
-        # *** send welcome email here (via your existing Mailgun/OpenAI script) ***
-        # send_welcome(email, username, path)
-
-# ── Authentication Guard ───────────────────────────────────────────────────────
-if not email or not username:
-    st.error("❌ You must arrive via the Landing Page sign-up form.")
+    
+    if not user:
+        st.error("❌ Invalid login credentials. Please try logging in again.")
+        st.stop()
+except Exception as e:
+    st.error(f"❌ Database error: {str(e)}")
     st.stop()
 
 # ── Build the Habit Tracker UI ────────────────────────────────────────────────
 st.title("🏰 Sovereignty Score Tracker")
-st.sidebar.markdown(f"### Logged in as {username} ({email})")
+st.sidebar.markdown(f"### Logged in as {username}")
 st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 
 # Show how this path is scored
-cfg  = ALL_PATHS[path]
-flat = {}
-for k,v in cfg.items():
-    if k in ("description","max_score"): continue
-    if isinstance(v, dict):
-        for subk,subv in v.items():
-            flat[f"{k}.{subk}"] = subv
-    else:
-        flat[k] = v
-st.sidebar.markdown(f"**{cfg.get('description','')}**")
-st.sidebar.dataframe(
-    pd.DataFrame.from_records(flat.items(),columns=["Metric","Value"]),
-    use_container_width=True, height=min(400,32*len(flat)+20)
-)
+try:
+    cfg = ALL_PATHS[path]
+    flat = {}
+    for k,v in cfg.items():
+        if k in ("description","max_score"): continue
+        if isinstance(v, dict):
+            for subk,subv in v.items():
+                flat[f"{k}.{subk}"] = subv
+        else:
+            flat[k] = v
+    st.sidebar.markdown(f"**{cfg.get('description','')}**")
+    st.sidebar.dataframe(
+        pd.DataFrame.from_records(flat.items(),columns=["Metric","Value"]),
+        use_container_width=True, height=min(400,32*len(flat)+20)
+    )
+except Exception as e:
+    st.error(f"Error loading path configuration: {str(e)}")
+    st.stop()
 
 # Habit-logging form
 with st.form("tracker_form"):
@@ -124,7 +127,7 @@ if submitted:
     con.execute("""
       INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
     """, [
-      datetime.utcnow(), email, path,
+      datetime.utcnow(), user[0], path,
       meals, not junk, mins, lift,
       spend, btc, med, grat,
       learn, env, score
@@ -140,7 +143,7 @@ hist = con.execute("""
     FROM sovereignty
    WHERE email = ?
 ORDER BY timestamp DESC
-""",[email]).df()
+""",[user[0]]).df()
 
 st.subheader("📜 Your History")
 if hist.empty:
