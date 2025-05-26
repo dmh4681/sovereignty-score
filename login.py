@@ -15,7 +15,7 @@ def login_user():
     password = data.get("password", "")
 
     user = con.execute(
-        "SELECT username, hashed_password, path FROM users WHERE email = ?", [email]
+        "SELECT username, password, path FROM users WHERE email = ?", [email]
     ).fetchone()
 
     if not user:
