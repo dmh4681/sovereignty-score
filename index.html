@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sovereignty Score Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
   <style>
     body {
       margin: 0;
@@ -30,64 +30,59 @@
       margin-top: 2rem;
     }
     .tile {
-      background-color: #2a2a2a;
+      background: #2a2a2a;
       border: 2px solid #444;
       padding: 1.5rem;
       border-radius: 12px;
       cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-      color: inherit;
+      transition: transform 0.2s, border-color 0.2s;
     }
-    .tile:hover { transform: scale(1.02); background-color: #333; }
-    .tile.selected { border-color: #ffcc00; background-color: #3a3a3a; }
+    .tile:hover { transform: scale(1.02); background: #333; }
+    .tile.selected { border-color: #ffcc00; background: #3a3a3a; }
     .tile h3 { color: #ffcc00; margin-bottom: 0.5rem; }
-    .tile p { font-size: 0.95rem; color: #ccc; }
+    .tile p  { color: #ccc; font-size: .95rem; }
 
     .cta {
-      background-color: #222;
+      background: #222;
       padding: 2rem;
       margin-top: 2rem;
       border-radius: 10px;
-      text-align: center;
       color: #eee;
     }
     .cta input, .cta button {
       display: block;
       width: 100%;
       max-width: 400px;
-      margin: 0.5rem auto;
-      padding: 0.8rem;
+      margin: .5rem auto;
+      padding: .8rem;
       border-radius: 6px;
       font-size: 1rem;
     }
     .cta input { border: none; }
     .cta button {
-      background-color: #ffcc00;
+      background: #ffcc00;
       border: none;
       font-weight: bold;
       cursor: pointer;
     }
     .cta button:disabled {
-      background-color: #666;
+      background: #666;
       cursor: not-allowed;
     }
 
     .manifesto {
       margin-top: 2rem;
       text-align: left;
-      background: rgba(255, 204, 0, 0.1);
+      background: rgba(255,204,0,0.1);
       border-left: 4px solid #ffcc00;
       padding: 1.5rem;
       border-radius: 6px;
-      color: #f5f5f5;
-      font-size: 1rem;
       line-height: 1.5;
     }
-
     .footer {
       margin-top: 4rem;
-      font-size: 0.9rem;
       color: #888;
+      font-size: .9rem;
     }
   </style>
 </head>
@@ -99,44 +94,47 @@
     <div class="tiles" id="pathTiles">
       <div class="tile" data-path="default">
         <h3>⚖️ Default (Balanced)</h3>
-        <p>A well-rounded foundation covering physical health, mental clarity, and personal finance. Ideal for beginners.</p>
+        <p>A well-rounded foundation covering physical health, mental clarity, and personal finance.</p>
       </div>
       <div class="tile" data-path="planetary_stewardship">
         <h3>🌍 Planetary Stewardship</h3>
-        <p>Link personal sovereignty with the planet’s future. Log habits that reduce your ecological footprint.</p>
+        <p>Align your habits with environmental responsibility and sustainability.</p>
       </div>
       <div class="tile" data-path="financial_path">
         <h3>💰 Financial Path</h3>
-        <p>Prioritize savings, investments, and minimalist living. Cultivate economic resilience and freedom.</p>
+        <p>Cultivate economic resilience through disciplined saving, investing, and learning.</p>
       </div>
       <div class="tile" data-path="mental_resilience">
         <h3>🧠 Mental Resilience</h3>
-        <p>Sharpen your mind through meditation, learning, and mindful routines. Build psychological strength that lasts.</p>
+        <p>Forge psychological strength with meditation, gratitude, and continuous learning.</p>
       </div>
       <div class="tile" data-path="physical_optimization">
         <h3>🏋️‍♂️ Physical Optimization</h3>
-        <p>Focus on strength, performance, recovery, and nutrition to craft your most resilient body yet.</p>
+        <p>Build performance and recovery routines for a high-output, resilient body.</p>
       </div>
       <div class="tile" data-path="spiritual_growth">
         <h3>🧘‍♂️ Spiritual Growth</h3>
-        <p>Deepen presence, purpose, and gratitude. Find sovereignty in awareness and self-knowledge.</p>
+        <p>Deepen presence, purpose, and gratitude through mindful practice.</p>
       </div>
     </div>
 
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
-      <p>Get updates, tips, and tools — straight to your inbox.</p>
+      <p>Sign up to receive your personalized path and start tracking today.</p>
       <form id="signupForm">
-        <input type="hidden" name="path" id="selectedPath" />
-        <input type="text" name="username" id="usernameInput" placeholder="Choose a username" required />
-        <input type="email" name="email" id="emailInput" placeholder="Your email address" required />
-        <button type="submit" id="joinBtn" disabled>Join the Sovereign Journey</button>
+        <input type="hidden" name="path" id="selectedPath"/>
+
+        <input type="text"    id="usernameInput" placeholder="Choose a username" required/>
+        <input type="email"   id="emailInput"    placeholder="Your email address" required/>
+        <input type="password" id="passwordInput" placeholder="Choose a password" required/>
+
+        <button id="joinBtn" disabled>Join the Sovereign Journey</button>
       </form>
     </div>
 
     <div class="manifesto">
       <h3>🛡️ Our Sovereignty Manifesto</h3>
-      <p>We believe that true freedom arises where health and wealth converge. Each choice you log—be it a home-cooked meal, a mindful breath, or a Bitcoin investment—is a brick in the foundation of your personal autonomy. By measuring these daily habits, we prove that discipline in body, mind, and finance compounds into real-world liberty. This movement is about reclaiming your time, energy, and resources from broken systems—one sovereign choice at a time.</p>
+      <p>We believe true freedom arises where health and wealth converge. Each logged choice — from a home-cooked meal to a mindful breath or a Bitcoin investment — is a brick in your autonomy. By measuring these habits, we prove discipline compounds into real-world liberty. This movement reclaims your time, energy, and resources — one sovereign decision at a time.</p>
     </div>
 
     <div class="footer">
@@ -148,7 +146,7 @@
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
   <script>
-    // Initialize Firebase
+    // 1) Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCCFfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
       authDomain: "sovereignty-tracker.firebaseapp.com",
@@ -160,35 +158,53 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Tile selection logic
-    const tiles = document.querySelectorAll('.tile');
+    // 2) Tile selection
+    const tiles     = document.querySelectorAll('.tile');
     const pathInput = document.getElementById('selectedPath');
-    const joinBtn = document.getElementById('joinBtn');
+    const joinBtn   = document.getElementById('joinBtn');
+    const inputs    = [ 'usernameInput', 'emailInput', 'passwordInput' ];
+
+    function updateJoinState() {
+      const allFilled = inputs.every(id => document.getElementById(id).value.trim() !== '');
+      joinBtn.disabled = !(pathInput.value && allFilled);
+    }
 
     tiles.forEach(tile => {
       tile.addEventListener('click', () => {
         tiles.forEach(t => t.classList.remove('selected'));
         tile.classList.add('selected');
         pathInput.value = tile.dataset.path;
-        joinBtn.disabled = false;
+        updateJoinState();
       });
     });
 
-    // Signup logic
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    inputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateJoinState);
+    });
+
+    // 3) Signup & redirect
+    document.getElementById('signupForm').addEventListener('submit', async e => {
       e.preventDefault();
 
-      const email = document.getElementById('emailInput').value;
+      const email    = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
       const username = document.getElementById('usernameInput').value;
-      const path = document.getElementById('selectedPath').value;
+      const path     = pathInput.value;
 
       try {
-        const userCred = await auth.createUserWithEmailAndPassword(email, "sovereign123");  // TEMP PASSWORD!
-        const idToken = await userCred.user.getIdToken();
+        // create user in Firebase Auth
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        const idToken  = await userCred.user.getIdToken();
 
-        window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?token=${idToken}&username=${encodeURIComponent(username)}&path=${path}`;
+        // redirect into Streamlit with token, username & path
+        const url = new URL('https://sovereignty-score-digitalnomad.streamlit.app/');
+        url.searchParams.set('token', username + '|' + idToken);
+        url.searchParams.set('username', encodeURIComponent(username));
+        url.searchParams.set('path', path);
+        window.location.href = url.toString();
+
       } catch (err) {
-        alert("❌ Error: " + err.message);
+        alert('❌ Error: ' + err.message);
       }
     });
   </script>
