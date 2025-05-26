@@ -16,16 +16,13 @@
       align-items: center;
       padding: 3rem 1rem;
     }
-    .container {
-      max-width: 900px;
-      text-align: center;
-    }
-    h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    .container { max-width: 900px; text-align: center; }
+    h1 { font-size: 3rem; margin-bottom: .5rem; }
     h2 { font-weight: 400; color: #ccc; margin-bottom: 2rem; }
 
     .tiles {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
       gap: 1rem;
       margin-top: 2rem;
     }
@@ -35,12 +32,13 @@
       padding: 1.5rem;
       border-radius: 12px;
       cursor: pointer;
-      transition: transform 0.2s, border-color 0.2s;
+      transition: transform .2s, border-color .2s, background .2s;
+      color: inherit;
     }
     .tile:hover { transform: scale(1.02); background: #333; }
     .tile.selected { border-color: #ffcc00; background: #3a3a3a; }
-    .tile h3 { color: #ffcc00; margin-bottom: 0.5rem; }
-    .tile p  { color: #ccc; font-size: .95rem; }
+    .tile h3 { color: #ffcc00; margin-bottom: .5rem; }
+    .tile p { font-size: .95rem; color: #ccc; }
 
     .cta {
       background: #222;
@@ -77,12 +75,13 @@
       border-left: 4px solid #ffcc00;
       padding: 1.5rem;
       border-radius: 6px;
+      font-size: 1rem;
       line-height: 1.5;
     }
     .footer {
       margin-top: 4rem;
-      color: #888;
       font-size: .9rem;
+      color: #888;
     }
   </style>
 </head>
@@ -94,47 +93,45 @@
     <div class="tiles" id="pathTiles">
       <div class="tile" data-path="default">
         <h3>⚖️ Default (Balanced)</h3>
-        <p>A well-rounded foundation covering physical health, mental clarity, and personal finance.</p>
+        <p>A well-rounded foundation covering physical, mental, and financial habits.</p>
       </div>
       <div class="tile" data-path="planetary_stewardship">
         <h3>🌍 Planetary Stewardship</h3>
-        <p>Align your habits with environmental responsibility and sustainability.</p>
+        <p>Link your sovereignty with the planet’s future. Log eco-friendly actions.</p>
       </div>
       <div class="tile" data-path="financial_path">
         <h3>💰 Financial Path</h3>
-        <p>Cultivate economic resilience through disciplined saving, investing, and learning.</p>
+        <p>Prioritize saving, investing, and minimalist living to build economic freedom.</p>
       </div>
       <div class="tile" data-path="mental_resilience">
         <h3>🧠 Mental Resilience</h3>
-        <p>Forge psychological strength with meditation, gratitude, and continuous learning.</p>
+        <p>Sharpen your mind through meditation, learning, and daily gratitude.</p>
       </div>
       <div class="tile" data-path="physical_optimization">
         <h3>🏋️‍♂️ Physical Optimization</h3>
-        <p>Build performance and recovery routines for a high-output, resilient body.</p>
+        <p>Focus on strength, performance, recovery, and nutrition for your best body.</p>
       </div>
       <div class="tile" data-path="spiritual_growth">
         <h3>🧘‍♂️ Spiritual Growth</h3>
-        <p>Deepen presence, purpose, and gratitude through mindful practice.</p>
+        <p>Deepen presence, purpose, and gratitude. Reconnect with what matters most.</p>
       </div>
     </div>
 
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
-      <p>Sign up to receive your personalized path and start tracking today.</p>
+      <p>Get updates, tips, and tools — straight to your inbox.</p>
       <form id="signupForm">
         <input type="hidden" name="path" id="selectedPath"/>
-
-        <input type="text"    id="usernameInput" placeholder="Choose a username" required/>
-        <input type="email"   id="emailInput"    placeholder="Your email address" required/>
-        <input type="password" id="passwordInput" placeholder="Choose a password" required/>
-
-        <button id="joinBtn" disabled>Join the Sovereign Journey</button>
+        <input type="text"    name="username" id="usernameInput" placeholder="Choose a username" required/>
+        <input type="email"   name="email"    id="emailInput"    placeholder="Your email address" required/>
+        <input type="password" name="password" id="passwordInput" placeholder="Choose a password" required/>
+        <button type="submit" id="joinBtn" disabled>Join the Sovereign Journey</button>
       </form>
     </div>
 
     <div class="manifesto">
       <h3>🛡️ Our Sovereignty Manifesto</h3>
-      <p>We believe true freedom arises where health and wealth converge. Each logged choice — from a home-cooked meal to a mindful breath or a Bitcoin investment — is a brick in your autonomy. By measuring these habits, we prove discipline compounds into real-world liberty. This movement reclaims your time, energy, and resources — one sovereign decision at a time.</p>
+      <p>We believe true freedom arises where health and wealth converge. Each choice you log—be it a home-cooked meal, a mindful breath, or a Bitcoin investment—is a brick in your autonomy. By measuring daily habits, we prove discipline in body, mind, and finance compounds into real-world liberty. This movement reclaims your time, energy, and resources from broken systems—one sovereign choice at a time.</p>
     </div>
 
     <div class="footer">
@@ -145,67 +142,60 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
+
   <script>
-    // 1) Initialize Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCCFfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
-      authDomain: "sovereignty-tracker.firebaseapp.com",
-      projectId: "sovereignty-tracker",
-      storageBucket: "sovereignty-tracker.firebasestorage.app",
-      messagingSenderId: "724217396839",
-      appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    document.addEventListener('DOMContentLoaded', ()=> {
+      // Firebase init
+      const firebaseConfig = {
+        apiKey: "AIzaSyCCfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
+        authDomain: "sovereignty-tracker.firebaseapp.com",
+        projectId: "sovereignty-tracker",
+        storageBucket: "sovereignty-tracker.firebasestorage.app",
+        messagingSenderId: "724217396839",
+        appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
 
-    // 2) Tile selection
-    const tiles     = document.querySelectorAll('.tile');
-    const pathInput = document.getElementById('selectedPath');
-    const joinBtn   = document.getElementById('joinBtn');
-    const inputs    = [ 'usernameInput', 'emailInput', 'passwordInput' ];
+      // Elements
+      const tiles   = document.querySelectorAll('.tile');
+      const pathIn  = document.getElementById('selectedPath');
+      const joinBtn = document.getElementById('joinBtn');
+      const form    = document.getElementById('signupForm');
 
-    function updateJoinState() {
-      const allFilled = inputs.every(id => document.getElementById(id).value.trim() !== '');
-      joinBtn.disabled = !(pathInput.value && allFilled);
-    }
-
-    tiles.forEach(tile => {
-      tile.addEventListener('click', () => {
-        tiles.forEach(t => t.classList.remove('selected'));
-        tile.classList.add('selected');
-        pathInput.value = tile.dataset.path;
-        updateJoinState();
+      // Tile selection
+      tiles.forEach(tile => {
+        tile.addEventListener('click', () => {
+          tiles.forEach(t=> t.classList.remove('selected'));
+          tile.classList.add('selected');
+          pathIn.value = tile.dataset.path;
+          joinBtn.disabled = false;
+        });
       });
-    });
 
-    inputs.forEach(id => {
-      document.getElementById(id).addEventListener('input', updateJoinState);
-    });
+      // Signup submit
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const email    = document.getElementById('emailInput').value;
+        const pwd      = document.getElementById('passwordInput').value;
+        const username = document.getElementById('usernameInput').value;
+        const path     = pathIn.value;
 
-    // 3) Signup & redirect
-    document.getElementById('signupForm').addEventListener('submit', async e => {
-      e.preventDefault();
+        try {
+          // Create user & get token
+          const userCred = await auth.createUserWithEmailAndPassword(email, pwd);
+          const idToken  = await userCred.user.getIdToken();
 
-      const email    = document.getElementById('emailInput').value;
-      const password = document.getElementById('passwordInput').value;
-      const username = document.getElementById('usernameInput').value;
-      const path     = pathInput.value;
-
-      try {
-        // create user in Firebase Auth
-        const userCred = await auth.createUserWithEmailAndPassword(email, password);
-        const idToken  = await userCred.user.getIdToken();
-
-        // redirect into Streamlit with token, username & path
-        const url = new URL('https://sovereignty-score-digitalnomad.streamlit.app/');
-        url.searchParams.set('token', username + '|' + idToken);
-        url.searchParams.set('username', encodeURIComponent(username));
-        url.searchParams.set('path', path);
-        window.location.href = url.toString();
-
-      } catch (err) {
-        alert('❌ Error: ' + err.message);
-      }
+          // Redirect into your Streamlit app
+          window.location.href =
+            `https://sovereignty-score-digitalnomad.streamlit.app/`
+            + `?token=${idToken}`
+            + `&username=${encodeURIComponent(username)}`
+            + `&path=${path}`;
+        } catch(err) {
+          alert("❌ " + err.message);
+        }
+      });
     });
   </script>
 </body>
