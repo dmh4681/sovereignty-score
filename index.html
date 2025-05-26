@@ -188,6 +188,7 @@
         });
 
         const result = await response.json();
+        console.log('Login response:', result); // Debug log
         if (result.status === 'success') {
           // Redirect to Streamlit app with query params
           window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${result.username}&path=${result.path}`;
