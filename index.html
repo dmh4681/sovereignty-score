@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sovereignty Score Tracker</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -54,8 +51,7 @@
       text-align: center;
       color: #eee;
     }
-    .cta input,
-    .cta button {
+    .cta input, .cta button {
       display: block;
       width: 100%;
       max-width: 400px;
@@ -130,10 +126,10 @@
     <div class="cta">
       <h3>📬 Join the Sovereignty Circle</h3>
       <p>Get updates, tips, and tools — straight to your inbox.</p>
-      <form id="signupForm" action="https://formspree.io/f/mvganjjw" method="POST">
+      <form id="signupForm">
         <input type="hidden" name="path" id="selectedPath" />
-        <input type="text" name="username" placeholder="Choose a username" required />
-        <input type="email" name="email" placeholder="Your email address" required />
+        <input type="text" name="username" id="usernameInput" placeholder="Choose a username" required />
+        <input type="email" name="email" id="emailInput" placeholder="Your email address" required />
         <button type="submit" id="joinBtn" disabled>Join the Sovereign Journey</button>
       </form>
     </div>
@@ -148,40 +144,53 @@
     </div>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCCFfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
-    authDomain: "sovereignty-tracker.firebaseapp.com",
-    projectId: "sovereignty-tracker",
-    storageBucket: "sovereignty-tracker.firebasestorage.app",
-    messagingSenderId: "724217396839",
-    appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js"></script>
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCFfWIMzQPcBhqIogdrAMQVfcrPh0cbn8",
+      authDomain: "sovereignty-tracker.firebaseapp.com",
+      projectId: "sovereignty-tracker",
+      storageBucket: "sovereignty-tracker.firebasestorage.app",
+      messagingSenderId: "724217396839",
+      appId: "1:724217396839:web:13aa38365fdbb7d011dec2"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  async function handleJoin(e) {
-    e.preventDefault();
-    const path = document.getElementById('selectedPath').value;
-    const email = document.querySelector('input[name=email]').value;
-    const username = document.querySelector('input[name=username]').value;
+    // Tile selection logic
+    const tiles = document.querySelectorAll('.tile');
+    const pathInput = document.getElementById('selectedPath');
+    const joinBtn = document.getElementById('joinBtn');
 
-    try {
-      // Automatically create an account with email as password (for demo simplicity)
-      const userCred = await auth.createUserWithEmailAndPassword(email, "sovereign123");
-      const idToken = await userCred.user.getIdToken();
+    tiles.forEach(tile => {
+      tile.addEventListener('click', () => {
+        tiles.forEach(t => t.classList.remove('selected'));
+        tile.classList.add('selected');
+        pathInput.value = tile.dataset.path;
+        joinBtn.disabled = false;
+      });
+    });
 
-      // Redirect to Streamlit app with ID token and path
-      window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?token=${idToken}&path=${path}`;
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  }
+    // Signup logic
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  document.getElementById("signupForm").addEventListener("submit", handleJoin);
-</script>
+      const email = document.getElementById('emailInput').value;
+      const username = document.getElementById('usernameInput').value;
+      const path = document.getElementById('selectedPath').value;
 
+      try {
+        const userCred = await auth.createUserWithEmailAndPassword(email, "sovereign123");  // TEMP PASSWORD!
+        const idToken = await userCred.user.getIdToken();
+
+        window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?token=${idToken}&username=${encodeURIComponent(username)}&path=${path}`;
+      } catch (err) {
+        alert("❌ Error: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
