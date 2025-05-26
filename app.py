@@ -174,7 +174,7 @@ if submitted:
 try:
     with get_db_connection() as conn:
         hist = conn.execute("""
-          SELECT timestamp, path, home_cooked_meals, junk_food,
+          SELECT timestamp, username, path, home_cooked_meals, junk_food,
                  exercise_minutes, strength_training, no_spending,
                  invested_bitcoin, meditation, gratitude,
                  read_or_learned, environmental_action, score
@@ -187,6 +187,8 @@ try:
     if hist.empty:
         st.info("📘 No entries yet; submit above to get started.")
     else:
-        st.dataframe(hist, use_container_width=True)
+        # Drop the username column from display since we already know who we are
+        display_df = hist.drop(columns=['username'])
+        st.dataframe(display_df, use_container_width=True)
 except Exception as e:
     st.error(f"Error loading history: {str(e)}")
