@@ -1,4 +1,11 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="Sovereignty Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go

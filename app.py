@@ -1,4 +1,11 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="Sovereignty Score Tracker",
+    page_icon="🏰",
+    layout="wide"
+)
+
 import pandas as pd
 import os, json
 from datetime import datetime
