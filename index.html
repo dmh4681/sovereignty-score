@@ -197,8 +197,8 @@
         console.log('Login response:', result); // Debug log
         
         if (result.status === 'success') {
-          // Redirect to Streamlit app with query params
-          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
+          // Use the streamlit_url from the response
+          const streamlitUrl = `${result.streamlit_url}/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
           console.log('Redirecting to:', streamlitUrl); // Debug log
           window.location.href = streamlitUrl;
         } else {
