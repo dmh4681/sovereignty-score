@@ -203,7 +203,7 @@
         log('Attempting registration with data: ' + JSON.stringify(data));
         
         // First register the user
-        const registerResponse = await fetch('http://localhost:5001/register', {
+        const registerResponse = await fetch('https://sovereignty-score-digitalnomad.streamlit.app/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -219,7 +219,7 @@
         
         if (registerResult.status === 'success') {
           // Now trigger the AI welcome script
-          const aiResponse = await fetch('http://localhost:5001/welcome', {
+          const aiResponse = await fetch('https://sovereignty-score-digitalnomad.streamlit.app/welcome', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -252,7 +252,7 @@
           document.body.appendChild(messageDiv);
           
           // Redirect to Streamlit app
-          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(data.username)}&path=${encodeURIComponent(data.path)}`;
+          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(data.username)}&path=${encodeURIComponent(data.path)}`;
           log('Redirecting to: ' + streamlitUrl);
           
           setTimeout(() => {
@@ -310,7 +310,7 @@
         
         log('Attempting login with data: ' + JSON.stringify(data));
         
-        const response = await fetch('http://localhost:5002/login', {
+        const response = await fetch('https://sovereignty-score-digitalnomad.streamlit.app/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -327,7 +327,7 @@
         log('Full login response: ' + JSON.stringify(result));
         
         if (result.status === 'success') {
-          const streamlitUrl = `http://localhost:8501/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
+          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
           log('Redirecting to: ' + streamlitUrl);
           
           // Show redirect message
