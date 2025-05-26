@@ -1,10 +1,17 @@
-import duckdb
+import json
 import random
 from datetime import datetime, timedelta
+import duckdb
+from tracker.scoring import calculate_daily_score
 
-# Connect to your DuckDB database
+# Connect to DuckDB
 con = duckdb.connect("data/sovereignty.duckdb")
 
+# Load path definitions
+with open("config/paths.json", "r", encoding="utf-8") as f:
+    paths_config = json.load(f)
+
+# Ensure table exists
 con.execute("""
 CREATE TABLE IF NOT EXISTS sovereignty (
     timestamp            TIMESTAMP,
@@ -25,15 +32,16 @@ CREATE TABLE IF NOT EXISTS sovereignty (
 """)
 
 usernames = [f"user_{i}" for i in range(1, 11)]
-paths = ["default", "financial_path", "mental_resilience", "physical_optimization", "spiritual_growth", "planetary_stewardship"]
+paths = list(paths_config.keys())
 
 for user in usernames:
     for day in range(30):
         timestamp = datetime.now() - timedelta(days=day)
         path = random.choice(paths)
+
         meals = random.randint(0, 3)
-        junk_food = random.choice([True, False])
-        minutes = random.randint(0, 60)
+        junk = random.choice([True, False])
+        mins = random.randint(0, 60)
         strength = random.choice([True, False])
         spending = random.choice([True, False])
         btc = random.choice([True, False])
@@ -41,15 +49,28 @@ for user in usernames:
         grat = random.choice([True, False])
         learn = random.choice([True, False])
         env = random.choice([True, False])
-        score = random.randint(50, 100)
+
+        data = {
+            "home_cooked_meals": meals,
+            "junk_food": junk,
+            "exercise_minutes": mins,
+            "strength_training": strength,
+            "no_spending": spending,
+            "invested_bitcoin": btc,
+            "meditation": med,
+            "gratitude": grat,
+            "read_or_learned": learn,
+            "environmental_action": env
+        }
+        score = calculate_daily_score(data, path=path)
 
         con.execute("""
             INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             timestamp, user, path,
-            meals, junk_food, minutes,
+            meals, junk, mins,
             strength, spending, btc,
             med, grat, learn, env, score
         ))
 
-print("✅ 300 sample records inserted.")
+print("✅ 300 records inserted with real score logic.")
