@@ -7,26 +7,37 @@ import logging
 from db import get_db_connection, init_db
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
 BASE = os.path.dirname(__file__)
+logger.debug(f"Base directory: {BASE}")
 
 # Load path-definitions
 try:
-    with open(os.path.join(BASE, "config", "paths.json")) as f:
+    paths_file = os.path.join(BASE, "config", "paths.json")
+    logger.debug(f"Loading paths from: {paths_file}")
+    with open(paths_file) as f:
         ALL_PATHS = json.load(f)
+    logger.debug(f"Loaded paths: {list(ALL_PATHS.keys())}")
 except Exception as e:
+    logger.error(f"Error loading paths configuration: {str(e)}")
     st.error(f"Error loading paths configuration: {str(e)}")
     st.stop()
 
 # ── Handle Login via Query-Params ─────────────────────────────────────────────
+# Debug all query parameters
+all_params = dict(st.query_params)
+logger.debug(f"All query parameters: {all_params}")
+
 username = st.query_params.get("username", None)
 path = st.query_params.get("path", None)
+logger.debug(f"Login params - username: {username}, path: {path}")
 
 # If no login parameters, show a friendly message
 if not username or not path:
+    logger.warning("No login parameters provided")
     st.title("🏰 Welcome to Sovereignty Score")
     st.info("Please log in through the landing page to access your tracker.")
     st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
@@ -34,17 +45,35 @@ if not username or not path:
 
 # Verify user exists and path is valid
 try:
+    logger.debug(f"Verifying user {username} with path {path}")
     with get_db_connection() as conn:
+        # First check if the user exists
+        user_check = conn.execute(
+            "SELECT username FROM users WHERE username = ?",
+            [username]
+        ).fetchone()
+        
+        if not user_check:
+            logger.warning(f"User {username} not found in database")
+            st.error("❌ User not found. Please register first.")
+            st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
+            st.stop()
+            
+        # Then check if the path matches
         user = conn.execute(
             "SELECT username, path FROM users WHERE username = ? AND path = ?",
             [username, path]
         ).fetchone()
         
         if not user:
-            st.error("❌ Invalid login credentials. Please try logging in again.")
+            logger.warning(f"Path {path} not valid for user {username}")
+            st.error("❌ Invalid path for this user. Please try logging in again.")
             st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
             st.stop()
+            
+        logger.debug(f"User verified: {user}")
 except Exception as e:
+    logger.error(f"Database error during user verification: {str(e)}")
     st.error(f"❌ Database error: {str(e)}")
     st.stop()
 
@@ -55,6 +84,12 @@ st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 
 # Show how this path is scored
 try:
+    logger.debug(f"Loading configuration for path: {path}")
+    if path not in ALL_PATHS:
+        logger.error(f"Path {path} not found in configuration")
+        st.error(f"❌ Invalid path configuration. Please contact support.")
+        st.stop()
+        
     cfg = ALL_PATHS[path]
     flat = {}
     for k,v in cfg.items():
@@ -70,6 +105,7 @@ try:
         use_container_width=True, height=min(400,32*len(flat)+20)
     )
 except Exception as e:
+    logger.error(f"Error loading path configuration: {str(e)}")
     st.error(f"Error loading path configuration: {str(e)}")
     st.stop()
 
@@ -124,7 +160,7 @@ try:
                  invested_bitcoin, meditation, gratitude,
                  read_or_learned, environmental_action, score
             FROM sovereignty
-           WHERE email = ?
+           WHERE username = ?
         ORDER BY timestamp DESC
         """,[user[0]]).df()
 
