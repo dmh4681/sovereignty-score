@@ -48,13 +48,14 @@ except Exception as e:
     st.stop()
 
 # ── Handle Login via Query-Params ─────────────────────────────────────────────
-qp = st.experimental_get_query_params()
-username = qp.get("username", [None])[0]
-path = qp.get("path", [None])[0]
+username = st.query_params.get("username", None)
+path = st.query_params.get("path", None)
 
-# Validate login parameters
+# If no login parameters, show a friendly message
 if not username or not path:
-    st.error("❌ You must arrive via the Landing Page login form.")
+    st.title("🏰 Welcome to Sovereignty Score")
+    st.info("Please log in through the landing page to access your tracker.")
+    st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
     st.stop()
 
 # Verify user exists and path is valid
@@ -66,6 +67,7 @@ try:
     
     if not user:
         st.error("❌ Invalid login credentials. Please try logging in again.")
+        st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
         st.stop()
 except Exception as e:
     st.error(f"❌ Database error: {str(e)}")

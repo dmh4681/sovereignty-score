@@ -195,7 +195,9 @@
         
         if (result.status === 'success') {
           // Redirect to Streamlit app with query params
-          window.location.href = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${result.username}&path=${result.path}`;
+          const streamlitUrl = `https://sovereignty-score-digitalnomad.streamlit.app/?username=${encodeURIComponent(result.username)}&path=${encodeURIComponent(result.path)}`;
+          console.log('Redirecting to:', streamlitUrl); // Debug log
+          window.location.href = streamlitUrl;
         } else {
           alert(result.message || 'Login failed. Please try again.');
         }
