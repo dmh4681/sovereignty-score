@@ -5,6 +5,7 @@ from flask_cors import CORS
 import logging
 from contextlib import contextmanager
 import subprocess
+from backup_db import create_backup
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -15,12 +16,13 @@ app = Flask(__name__)
 CORS(app, 
      resources={r"/*": {
          "origins": ["https://dmh4681.github.io", 
+                    "https://sovereignty-score-digitalnomad.streamlit.app",
                     "http://localhost:5000", 
                     "http://127.0.0.1:5000", 
                     "http://localhost:8501", 
                     "http://127.0.0.1:8501"],
          "methods": ["GET", "POST", "OPTIONS"],
-         "allow_headers": ["Content-Type", "Authorization", "Accept"],
+         "allow_headers": ["Content-Type", "Authorization", "Accept", "Origin"],
          "supports_credentials": True
      }})
 
@@ -100,6 +102,13 @@ def register_user():
             logger.info(f"With values: username={username}, email={email}, path={path}")
             conn.execute(insert_sql, (username, email, hashed_pw, path))
             logger.info(f"Successfully registered user: {username}")
+            
+            # Create backup after successful registration
+            if create_backup():
+                logger.info("Database backup created successfully")
+            else:
+                logger.warning("Database backup failed")
+                
             return jsonify({"status": "success", "message": "User registered!"}), 200
         except Exception as e:
             logger.error(f"Error during registration: {str(e)}")
