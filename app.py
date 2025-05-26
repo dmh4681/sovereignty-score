@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import duckdb, os, json, smtplib
+import duckdb, os, json, smtplib, bcrypt
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
 
@@ -13,10 +13,11 @@ con      = duckdb.connect(DB_FILE)
 # Create users & sovereignty tables
 con.execute("""
 CREATE TABLE IF NOT EXISTS users (
-  email    VARCHAR PRIMARY KEY,
-  username VARCHAR,
-  path     VARCHAR,
-  joined   TIMESTAMP
+    username    TEXT PRIMARY KEY,
+    email       TEXT NOT NULL,
+    password    TEXT NOT NULL,
+    path        TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 con.execute("""
@@ -51,13 +52,17 @@ path     = qp.get("path", [None])[0]
 # If we have signup info and user not yet in DB, register & send welcome
 if email and username and path:
     user_exists = con.execute(
-      "SELECT 1 FROM users WHERE email = ?", [email]
+      "SELECT 1 FROM users WHERE email = ? OR username = ?", [email, username]
     ).fetchone()
     if not user_exists:
-        now = datetime.utcnow()
+        # Generate a temporary password for the user
+        temp_password = "temp_" + os.urandom(8).hex()
+        salt = bcrypt.gensalt()
+        hashed_pw = bcrypt.hashpw(temp_password.encode("utf-8"), salt).decode("utf-8")
+        
         con.execute(
-          "INSERT INTO users VALUES (?, ?, ?, ?)",
-          [email, username, path, now]
+          "INSERT INTO users (username, email, password, path) VALUES (?, ?, ?, ?)",
+          [username, email, hashed_pw, path]
         )
         # *** send welcome email here (via your existing Mailgun/OpenAI script) ***
         # send_welcome(email, username, path)
