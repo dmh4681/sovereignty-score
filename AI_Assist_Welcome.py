@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 import requests
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -9,16 +10,20 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
 MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
-RECIPIENT = "dmh4681@gmail.com"
 SENDER = f"Sovereignty Score <mailgun@{MAILGUN_DOMAIN}>"
+
+# Get command line arguments
+if len(sys.argv) != 4:
+    print("Usage: python AI_Assist_Welcome.py <username> <email> <path>")
+    sys.exit(1)
+
+username = sys.argv[1]
+email = sys.argv[2]
+selected_path = sys.argv[3]
 
 # Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 ASSISTANT_ID = "asst_x36oxhsulPDwZPYOD2Ohi0O3"
-
-# Input values
-username = "DigitalNomad"
-selected_path = "planetary_stewardship"
 
 # Step 1: Create a thread and send message to Assistant
 thread = client.beta.threads.create()
@@ -51,11 +56,13 @@ response = requests.post(
     auth=("api", MAILGUN_API_KEY),
     data={
         "from": SENDER,
-        "to": RECIPIENT,
+        "to": email,
         "subject": f"Welcome to the Sovereignty Score, {username}!",
         "text": latest
     }
 )
 
 # Return results
-response.status_code, response.text, latest[:400]  # preview only first 400 characters of email
+print(f"Email sent to {email}")
+print(f"Status code: {response.status_code}")
+print(f"Preview of email content:\n{latest[:400]}")
