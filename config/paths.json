@@ -1,6 +1,6 @@
 {
   "default": {
-    "description": "A well-rounded balance of physical, mental, and financial habits \u2014 perfect for getting started on the Sovereign Path.",
+    "description": "A well-rounded balance of physical, mental, and financial habits — perfect for getting started on the Sovereign Path.",
     "home_cooked_meals": {
       "points_per_unit": 6.6667,
       "max_units": 3
@@ -40,7 +40,7 @@
     "max_score": 100
   },
   "mental_resilience": {
-    "description": "Strengthen your inner world through meditation, learning, and daily gratitude \u2014 build a mind that bends but never breaks.",
+    "description": "Strengthen your inner world through meditation, learning, and daily gratitude — build a mind that bends but never breaks.",
     "meditation": 15,
     "gratitude": 15,
     "read_or_learned": 15,
@@ -54,8 +54,8 @@
       "max_units": 3
     },
     "no_spending": 5,
-    "invested_bitcoin": 5,
     "strength_training": 5,
+    "invested_bitcoin": 5,
     "environmental_action": 5,
     "max_score": 100
   },
@@ -80,7 +80,7 @@
     "max_score": 100
   },
   "spiritual_growth": {
-    "description": "For those seeking deeper meaning, presence, and alignment \u2014 guided by gratitude, meditation, and mindful action.",
+    "description": "For those seeking deeper meaning, presence, and alignment — guided by gratitude, meditation, and mindful action.",
     "meditation": 20,
     "gratitude": 15,
     "read_or_learned": 10,

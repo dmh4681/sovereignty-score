@@ -91,23 +91,42 @@ try:
         st.stop()
         
     cfg = ALL_PATHS[path]
-    flat = {}
-    for k,v in cfg.items():
-        if k in ("description","max_score"): continue
-        if isinstance(v, dict):
-            for subk,subv in v.items():
-                flat[f"{k}.{subk}"] = subv
-        else:
-            flat[k] = v
-    st.sidebar.markdown(f"**{cfg.get('description','')}**")
+    
+    # Display path description
+    st.sidebar.markdown(f"**{cfg.get('description', '')}**")
+    
+    # Create a DataFrame for the metrics
+    metrics_data = []
+    for metric, value in cfg.items():
+        if metric not in ('description', 'max_score'):
+            if isinstance(value, dict):
+                points = value.get('points_per_unit', 0)
+                max_units = value.get('max_units', 1)
+                metrics_data.append({
+                    'Metric': metric.replace('_', ' ').title(),
+                    'Points Per Unit': points,
+                    'Max Units': max_units,
+                    'Max Points': points * max_units
+                })
+            else:
+                metrics_data.append({
+                    'Metric': metric.replace('_', ' ').title(),
+                    'Points': value
+                })
+    
+    metrics_df = pd.DataFrame(metrics_data)
+    
+    # Display the metrics table
     st.sidebar.dataframe(
-        pd.DataFrame.from_records(flat.items(),columns=["Metric","Value"]),
-        use_container_width=True, height=min(400,32*len(flat)+20)
+        metrics_df,
+        use_container_width=True,
+        height=min(400, 32 * len(metrics_data) + 20)
     )
 except Exception as e:
     logger.error(f"Error loading path configuration: {str(e)}")
     st.error(f"Error loading path configuration: {str(e)}")
-    st.stop()
+    # Don't stop the app, just show the error and continue
+    st.warning("Some features may be limited due to configuration issues.")
 
 # Habit-logging form
 with st.form("tracker_form"):
