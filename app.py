@@ -108,7 +108,7 @@ try:
     # Group metrics by category
     categories = {
         "Physical": ["home_cooked_meals", "junk_food", "exercise_minutes", "strength_training"],
-        "Financial": ["no_spending", "invested_bitcoin"],
+        "Financial": ["no_spending", "invested_or_bitcoin"],
         "Mental / Spiritual": ["meditation", "gratitude", "read_or_learned"],
         "Environmental": ["environmental_action"]
     }
@@ -164,7 +164,7 @@ if submitted:
       "exercise_minutes": mins,
       "strength_training":lift,
       "no_spending":      spend,
-      "invested_bitcoin": btc,
+      "invested_or_bitcoin": btc,
       "meditation":       med,
       "gratitude":        grat,
       "read_or_learned":  learn,
@@ -191,7 +191,7 @@ try:
         hist = conn.execute("""
           SELECT timestamp, username, path, home_cooked_meals, junk_food,
                  exercise_minutes, strength_training, no_spending,
-                 invested_bitcoin, meditation, gratitude,
+                 invested_or_bitcoin, meditation, gratitude,
                  read_or_learned, environmental_action, score
             FROM sovereignty
            WHERE username = ?
