@@ -23,6 +23,13 @@ st.title("🧠 AI Coaching")
 st.sidebar.markdown(f"### Logged in as {username}")
 st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 
+if st.sidebar.button("🔄 Reset Session"):
+    st.session_state.pop("coaching_thread_id", None)
+    st.session_state.pop("coaching_messages", None)
+    st.session_state.pop("coaching_started", None)
+    st.rerun()
+
+
 # 🧠 Thread & message history
 if "coaching_thread_id" not in st.session_state:
     thread = client.beta.threads.create()
