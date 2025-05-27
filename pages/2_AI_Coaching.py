@@ -59,6 +59,9 @@ def render_tracker_from_reply(reply):
         buffer = BytesIO()
         with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
             df.to_excel(writer, index=False, sheet_name='Sovereign Tracker')
+
+            buffer.seek(0)
+
             st.download_button(
                 label="📥 Download Tracker as Excel",
                 data=buffer.getvalue(),
