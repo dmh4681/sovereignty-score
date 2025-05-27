@@ -58,7 +58,16 @@ response = requests.post(
         "from": SENDER,
         "to": email,
         "subject": f"Welcome to the Sovereignty Score, {username}!",
-        "text": latest
+        "text": latest,
+        "h:Reply-To": SENDER,
+        "h:List-Unsubscribe": f"<mailto:unsubscribe@{MAILGUN_DOMAIN}>",
+        "v:username": username,
+        "v:path": selected_path,
+        "o:tracking": "yes",
+        "o:tracking-clicks": "yes",
+        "o:tracking-opens": "yes",
+        "o:require-tls": "yes",
+        "o:skip-verification": "no"
     }
 )
 
