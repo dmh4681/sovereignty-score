@@ -39,6 +39,24 @@ with st.form("meal_plan_form"):
     goals = st.multiselect("What are your goals?", [
         "Weight loss", "Muscle gain", "Energy boost", "Better digestion", "Reduce inflammation"])
     preferences = st.text_area("Any additional preferences or notes", placeholder="Share any food preferences, allergies, or specific ingredients you'd like to include/avoid...")
+    # Fasting window
+    fasting_window = st.selectbox("Do you follow any time-restricted eating schedule?",
+        ["No", "Yes - 16:8", "Yes - 14:10", "Yes - Other"])
+    # Budget sensitivity
+    budget_level = st.selectbox("Are you optimizing for cost savings?", ["Yes", "Somewhat", "No"])
+    # Meal prep style
+    prep_style = st.selectbox("Meal prep style?", ["Batch cook & store", "Fresh daily", "Minimal cooking (assembly only)"])
+    calorie_tier = st.selectbox(
+        "Which best describes your caloric needs?",
+        [
+            "Low (1,200-1,600 kcal) - Fat loss or petite frame",
+            "Moderate (1,600-2,200 kcal) - Maintenance or average needs",
+            "High (2,200-2,800 kcal) - Active or muscle gain",
+            "Very High (2,800-3,500+ kcal) - Intense training or bulking phase"
+        ]
+    )
+
+
     submitted = st.form_submit_button("Generate Meal Plan")
 
 if submitted:
@@ -52,7 +70,11 @@ if submitted:
         f"Cooking Time: {cooking_time}\n"
         f"Dietary Restrictions: {', '.join(restrictions)}\n"
         f"Goals: {', '.join(goals)}\n"
-        f"Preferences: {preferences}"
+        f"Preferences: {preferences}\n"
+        f"Fasting Window: {fasting_window}\n"
+        f"Budget Conscious: {budget_level}\n"
+        f"Meal Prep Style: {prep_style}\n"
+        f"Calorie Tier: {calorie_tier}"
     )
 
     thread = client.beta.threads.create()

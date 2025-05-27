@@ -34,6 +34,14 @@ with st.form("coaching_form"):
     time_commitment = st.selectbox("How much time can you commit daily?", [
         "5-15 minutes", "15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"])
     context = st.text_area("Any additional context (optional)", placeholder="Share any relevant details about your situation, preferences, or constraints...")
+    # Sovereign obstacle
+    obstacle = st.selectbox("What tends to derail your consistency?",
+        ["Lack of time", "Low motivation", "Mental distraction", "Overwhelm", "Lack of clarity", "Other"])
+    # Emotional driver
+    why_now = st.text_area("Why do you want to improve this now?", placeholder="What’s driving this shift at this point in your life?")
+    # Long game
+    sovereign_goal = st.text_area("If this challenge was resolved, what would that unlock for you?", placeholder="Describe your desired future state...")
+
     submitted = st.form_submit_button("Get AI Coaching")
 
 if submitted:
@@ -45,7 +53,10 @@ if submitted:
         f"Focus Area: {focus_area}\n"
         f"Challenge: {challenge}\n"
         f"Time Commitment: {time_commitment}\n"
-        f"Context: {context}"
+        f"Context: {context}\n"
+        f"Obstacle: {obstacle}\n"
+        f"Why Now: {why_now}\n"
+        f"Ultimate Goal: {sovereign_goal}"
     )
 
     thread = client.beta.threads.create()
