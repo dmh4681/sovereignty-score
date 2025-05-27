@@ -3,6 +3,9 @@ import os
 import time
 from openai import OpenAI
 from dotenv import load_dotenv
+import pandas as pd
+import json
+from io import BytesIO
 
 # Setup
 st.set_page_config(page_title="AI Coaching", page_icon="🧠", layout="wide")
@@ -29,6 +32,44 @@ if st.sidebar.button("🔄 Reset Session"):
     st.session_state.pop("coaching_started", None)
     st.rerun()
 
+# Tracker renderer
+def render_tracker_from_reply(reply):
+    if "```json" not in reply:
+        return
+
+    try:
+        json_str = reply.split("```json")[1].split("```")[0].strip()
+        tracker_data = json.loads(json_str)
+
+        df = pd.DataFrame({
+            "Day": tracker_data["days"],
+            "Morning Habit": [tracker_data["morning_habit"]] * 7,
+            "Evening Habit": [tracker_data["evening_habit"]] * 7
+        })
+
+        st.subheader("📋 Sovereign Tracker Preview")
+        st.table(df)
+
+        st.markdown("**🎯 Weekly Goals**")
+        for goal in tracker_data["weekly_goals"]:
+            st.markdown(f"- {goal}")
+
+        st.markdown(f"🧠 *{tracker_data['sovereign_reminder']}*")
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Sovereign Tracker')
+            writer.save()
+            st.download_button(
+                label="📥 Download Tracker as Excel",
+                data=buffer.getvalue(),
+                file_name="sovereign_tracker.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+    except Exception as e:
+        st.error("⚠️ Failed to parse tracker output.")
+        st.exception(e)
 
 # 🧠 Thread & message history
 if "coaching_thread_id" not in st.session_state:
@@ -91,16 +132,18 @@ if "coaching_started" not in st.session_state:
         st.session_state.coaching_messages.append({"role": "assistant", "content": reply})
         st.session_state.coaching_started = True
 
+        with st.chat_message("assistant"):
+            st.markdown(reply)
+            render_tracker_from_reply(reply)
+
 # Step 2: Follow-up conversation loop (chat-style)
 if st.session_state.get("coaching_started"):
     st.subheader("Continue the conversation with your Coach")
 
-    # Display full history
     for msg in st.session_state.coaching_messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Input box for follow-up
     follow_up = st.chat_input("Ask a follow-up question...")
 
     if follow_up:
@@ -132,5 +175,6 @@ if st.session_state.get("coaching_started"):
 
         with st.chat_message("assistant"):
             st.markdown(reply)
+            render_tracker_from_reply(reply)
 
         st.session_state.coaching_messages.append({"role": "assistant", "content": reply})
