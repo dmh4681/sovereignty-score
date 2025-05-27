@@ -1,12 +1,17 @@
 import streamlit as st
 import os
-from datetime import datetime
+from openai import OpenAI
+from dotenv import load_dotenv
+import time
 
-st.set_page_config(
-    page_title="AI Coaching",
-    page_icon="🧠",
-    layout="wide"
-)
+st.set_page_config(page_title="AI Coaching", page_icon="🧠", layout="wide")
+
+# Load API key
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+COACHING_ASSISTANT_ID = "asst_I7akt1W4Je7c5U3cN1guiefc"
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Get user info from session state
 username = st.session_state.get("username", None)
@@ -23,62 +28,36 @@ st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 # Form for coaching request
 with st.form("coaching_form"):
     st.subheader("What would you like coaching on?")
-    
-    # Area of focus
-    focus_area = st.selectbox(
-        "Select your focus area",
-        ["Physical Health", "Mental Wellbeing", "Financial Growth", "Environmental Impact", "Spiritual Development"]
-    )
-    
-    # Current challenge
-    challenge = st.text_area(
-        "Describe your current challenge or goal",
-        placeholder="I'm struggling with... or I want to achieve..."
-    )
-    
-    # Time commitment
-    time_commitment = st.selectbox(
-        "How much time can you commit daily?",
-        ["5-15 minutes", "15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"]
-    )
-    
-    # Additional context
-    context = st.text_area(
-        "Any additional context (optional)",
-        placeholder="Share any relevant details about your situation, preferences, or constraints..."
-    )
-    
+    focus_area = st.selectbox("Select your focus area", [
+        "Physical Health", "Mental Wellbeing", "Financial Growth", "Environmental Impact", "Spiritual Development"])
+    challenge = st.text_area("Describe your current challenge or goal", placeholder="I'm struggling with... or I want to achieve...")
+    time_commitment = st.selectbox("How much time can you commit daily?", [
+        "5-15 minutes", "15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"])
+    context = st.text_area("Any additional context (optional)", placeholder="Share any relevant details about your situation, preferences, or constraints...")
     submitted = st.form_submit_button("Get AI Coaching")
 
 if submitted:
-    # TODO: Replace with actual AI agent call
     st.info("🤖 AI Coach is thinking...")
-    
-    # Placeholder response
-    st.success("""
-    Based on your inputs, here's your personalized coaching plan:
-    
-    1. **Daily Practice (15 minutes)**
-       - Morning meditation focusing on your specific challenge
-       - Evening reflection on progress
-    
-    2. **Weekly Goals**
-       - Set 3 specific, measurable goals
-       - Track progress in your Sovereignty Score
-    
-    3. **Recommended Resources**
-       - Book: "Atomic Habits" by James Clear
-       - App: Headspace for guided meditation
-    
-    Would you like me to elaborate on any of these points?
-    """)
-    
-    # Add a feedback section
-    st.subheader("How helpful was this coaching?")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.button("👍 Very Helpful")
-    with col2:
-        st.button("😐 Somewhat Helpful")
-    with col3:
-        st.button("👎 Not Helpful") 
+
+    user_prompt = (
+        f"Username: {username}\n"
+        f"Sovereignty Path: {path.replace('_',' ')}\n"
+        f"Focus Area: {focus_area}\n"
+        f"Challenge: {challenge}\n"
+        f"Time Commitment: {time_commitment}\n"
+        f"Context: {context}"
+    )
+
+    thread = client.beta.threads.create()
+    client.beta.threads.messages.create(thread_id=thread.id, role="user", content=user_prompt)
+    run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=COACHING_ASSISTANT_ID)
+
+    while True:
+        run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+        if run.status == "completed":
+            break
+        time.sleep(1)
+
+    messages = client.beta.threads.messages.list(thread_id=thread.id)
+    reply = messages.data[0].content[0].text.value
+    st.success(reply)

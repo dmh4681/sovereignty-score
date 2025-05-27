@@ -1,12 +1,17 @@
 import streamlit as st
 import os
-from datetime import datetime
+from openai import OpenAI
+from dotenv import load_dotenv
+import time
 
-st.set_page_config(
-    page_title="AI Meal Plan",
-    page_icon="🍽️",
-    layout="wide"
-)
+st.set_page_config(page_title="AI Meal Plan", page_icon="🍽️", layout="wide")
+
+# Load API key
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+MEAL_ASSISTANT_ID = "asst_oKawT4ABxqNaXbUFsRq7vHIS"
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Get user info from session state
 username = st.session_state.get("username", None)
@@ -23,75 +28,43 @@ st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 # Form for meal plan request
 with st.form("meal_plan_form"):
     st.subheader("Let's create your personalized meal plan")
-    
-    # Dietary preferences
-    diet_type = st.selectbox(
-        "Select your dietary preference",
-        ["Omnivore", "Vegetarian", "Vegan", "Paleo", "Keto", "Mediterranean", "Other"]
-    )
-    
-    # Meal preferences
-    meals_per_day = st.selectbox(
-        "How many meals do you eat per day?",
-        ["2 meals", "3 meals", "4 meals", "5+ meals"]
-    )
-    
-    # Cooking time
-    cooking_time = st.selectbox(
-        "How much time can you spend cooking?",
-        ["Quick & Easy (< 15 mins)", "Moderate (15-30 mins)", "Elaborate (30+ mins)"]
-    )
-    
-    # Dietary restrictions
-    restrictions = st.multiselect(
-        "Any dietary restrictions?",
-        ["Gluten-free", "Dairy-free", "Nut-free", "Shellfish-free", "None"]
-    )
-    
-    # Goals
-    goals = st.multiselect(
-        "What are your goals?",
-        ["Weight loss", "Muscle gain", "Energy boost", "Better digestion", "Reduce inflammation"]
-    )
-    
-    # Additional preferences
-    preferences = st.text_area(
-        "Any additional preferences or notes",
-        placeholder="Share any food preferences, allergies, or specific ingredients you'd like to include/avoid..."
-    )
-    
+    diet_type = st.selectbox("Select your dietary preference", [
+        "Omnivore", "Vegetarian", "Vegan", "Paleo", "Keto", "Mediterranean", "Other"])
+    meals_per_day = st.selectbox("How many meals do you eat per day?", [
+        "2 meals", "3 meals", "4 meals", "5+ meals"])
+    cooking_time = st.selectbox("How much time can you spend cooking?", [
+        "Quick & Easy (< 15 mins)", "Moderate (15-30 mins)", "Elaborate (30+ mins)"])
+    restrictions = st.multiselect("Any dietary restrictions?", [
+        "Gluten-free", "Dairy-free", "Nut-free", "Shellfish-free", "None"])
+    goals = st.multiselect("What are your goals?", [
+        "Weight loss", "Muscle gain", "Energy boost", "Better digestion", "Reduce inflammation"])
+    preferences = st.text_area("Any additional preferences or notes", placeholder="Share any food preferences, allergies, or specific ingredients you'd like to include/avoid...")
     submitted = st.form_submit_button("Generate Meal Plan")
 
 if submitted:
-    # TODO: Replace with actual AI agent call
     st.info("🤖 AI Chef is creating your meal plan...")
-    
-    # Placeholder response
-    st.success("""
-    Here's your personalized meal plan for the week:
-    
-    **Monday**
-    - Breakfast: Protein smoothie with berries and spinach
-    - Lunch: Quinoa bowl with roasted vegetables
-    - Dinner: Grilled salmon with sweet potato
-    
-    **Tuesday**
-    - Breakfast: Overnight oats with nuts and fruit
-    - Lunch: Mediterranean salad with chickpeas
-    - Dinner: Stir-fry with tofu and vegetables
-    
-    Would you like me to:
-    1. Show the rest of the week's plan
-    2. Provide recipes for any of these meals
-    3. Adjust the plan based on your feedback
-    """)
-    
-    # Add a feedback section
-    st.subheader("How well does this meal plan match your needs?")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.button("👍 Perfect Match")
-    with col2:
-        st.button("😐 Needs Some Adjustments")
-    with col3:
-        st.button("👎 Not What I'm Looking For") 
+
+    user_prompt = (
+        f"Username: {username}\n"
+        f"Sovereignty Path: {path.replace('_',' ')}\n"
+        f"Diet Type: {diet_type}\n"
+        f"Meals Per Day: {meals_per_day}\n"
+        f"Cooking Time: {cooking_time}\n"
+        f"Dietary Restrictions: {', '.join(restrictions)}\n"
+        f"Goals: {', '.join(goals)}\n"
+        f"Preferences: {preferences}"
+    )
+
+    thread = client.beta.threads.create()
+    client.beta.threads.messages.create(thread_id=thread.id, role="user", content=user_prompt)
+    run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=MEAL_ASSISTANT_ID)
+
+    while True:
+        run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+        if run.status == "completed":
+            break
+        time.sleep(1)
+
+    messages = client.beta.threads.messages.list(thread_id=thread.id)
+    reply = messages.data[0].content[0].text.value
+    st.success(reply)
