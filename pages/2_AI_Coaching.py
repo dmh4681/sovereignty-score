@@ -48,6 +48,7 @@ if submitted:
     st.info("🤖 AI Coach is thinking...")
 
     user_prompt = (
+        f"You are a Sovereign Coach. Speak to me as if I’m your top performer preparing for battle.\n"
         f"Username: {username}\n"
         f"Sovereignty Path: {path.replace('_',' ')}\n"
         f"Focus Area: {focus_area}\n"
