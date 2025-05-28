@@ -56,11 +56,33 @@ logger.debug(f"Login params - username: {username}, path: {path}")
 
 # If no login parameters, show a friendly message
 if not username or not path:
-    logger.warning("No login parameters provided")
-    st.title("🏰 Welcome to Sovereignty Score")
-    st.info("Please log in through the landing page to access your tracker.")
-    st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
+    st.title("🏰 Sovereignty Score Login")
+    st.warning("Log in to access your tracker.")
+
+    with st.form("login_form"):
+        login_username = st.text_input("Username")
+        login_path = st.selectbox("Your Sovereignty Path", list(ALL_PATHS.keys()))
+        submitted = st.form_submit_button("Log In")
+
+    if submitted:
+        try:
+            with get_db_connection() as conn:
+                user = conn.execute(
+                    "SELECT username, path FROM users WHERE username = ? AND path = ?",
+                    [login_username, login_path]
+                ).fetchone()
+
+            if user:
+                st.session_state.username = login_username
+                st.session_state.path = login_path
+                st.success("✅ Login successful! Loading your tracker...")
+                st.experimental_rerun()
+            else:
+                st.error("❌ Invalid username or path.")
+        except Exception as e:
+            st.error(f"Database error: {str(e)}")
     st.stop()
+
 
 # Verify user exists and path is valid
 try:
