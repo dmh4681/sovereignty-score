@@ -71,7 +71,7 @@ if not username or not path:
             "password": login_password
         }
         try:
-            response = requests.post("http://localhost:8501/login", json=login_payload)
+            response = requests.post("http://localhost:5002/login", json=login_payload)
             if response.status_code == 200:
                 result = response.json()
                 st.session_state.username = result["username"]
