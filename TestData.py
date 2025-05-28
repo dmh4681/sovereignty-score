@@ -105,7 +105,7 @@ for username, path in existing_users:
             "environmental_action": env
         }
 
-        score = calculate_daily_score(data, path=path)
+        score = int(round(calculate_daily_score(data, path=path)))
 
         if day < 3:
             print(f"Day {day} | Path: {path} | Score: {score} | Data: {data}")
