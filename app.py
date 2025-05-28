@@ -237,7 +237,7 @@ if submitted:
                 datetime.utcnow(), user[0], path,
                 meals, not junk, mins, lift,
                 spend, btc, btc_usd, btc_sats,
-                med, grat, learn, env, score
+                med, grat, learn, env, int(score)
                 ])
         st.success(f"💪 Your score: {score}/100")
     except Exception as e:
