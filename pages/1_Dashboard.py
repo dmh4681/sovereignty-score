@@ -48,6 +48,23 @@ try:
         
     # Convert timestamp to datetime if it's not already
     df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+    # Focus on last 30 days
+    last_30_days = df[df['timestamp'] >= datetime.now() - timedelta(days=30)]
+
+    # Average score over 30 days
+    avg_30_score = last_30_days['score'].mean()
+    std_30_score = last_30_days['score'].std()
+
+    # Score stability: high std = volatile, low = consistent
+    score_consistency = "High" if std_30_score < 10 else "Moderate" if std_30_score < 20 else "Low"
+
+    # High-level metrics row
+    m1, m2 = st.columns(2)
+    with m1:
+        st.metric("📊 30-Day Avg Score", f"{avg_30_score:.1f}/100")
+    with m2:
+        st.metric("📉 Score Consistency", score_consistency)
     
     # Create two columns for metrics
     col1, col2 = st.columns(2)
