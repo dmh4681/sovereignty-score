@@ -84,6 +84,32 @@ try:
     with col_btc2:
         st.metric("⚡ Total Sats Stacked", f"{int(total_btc_sats):,}")
         st.metric("📈 Avg Sats/Day", f"{int(avg_sats or 0):,}")
+
+    # 🔻 Most Missed Habits (Boolean only)
+    st.subheader("🚩 Most Missed Habits")
+    bool_habits = [
+        'junk_food', 'strength_training', 'no_spending',
+        'invested_bitcoin', 'meditation', 'gratitude',
+        'read_or_learned', 'environmental_action'
+    ]
+
+    habit_miss_rates = []
+    for habit in bool_habits:
+        # Flip junk_food logic since True = bad
+        if habit == "junk_food":
+            miss_rate = df[habit].mean() * 100  # % of days junk was consumed
+            label = "Ate Junk Food"
+        else:
+            miss_rate = 100 - df[habit].mean() * 100
+            label = habit.replace('_', ' ').title()
+        
+        habit_miss_rates.append((label, miss_rate))
+
+    miss_df = pd.DataFrame(habit_miss_rates, columns=["Habit", "Miss Rate (%)"])
+    miss_df = miss_df.sort_values(by="Miss Rate (%)", ascending=False).head(5)
+
+    st.dataframe(miss_df, use_container_width=True, hide_index=True)
+
     
     # Create two columns for metrics
     col1, col2 = st.columns(2)
@@ -139,32 +165,6 @@ try:
         st.plotly_chart(fig, use_container_width=True)
         
     # Add more visualizations here as needed
-
-    # 🔻 Most Missed Habits (Boolean only)
-    st.subheader("🚩 Most Missed Habits")
-    bool_habits = [
-        'junk_food', 'strength_training', 'no_spending',
-        'invested_bitcoin', 'meditation', 'gratitude',
-        'read_or_learned', 'environmental_action'
-    ]
-
-    habit_miss_rates = []
-    for habit in bool_habits:
-        # Flip junk_food logic since True = bad
-        if habit == "junk_food":
-            miss_rate = df[habit].mean() * 100  # % of days junk was consumed
-            label = "Ate Junk Food"
-        else:
-            miss_rate = 100 - df[habit].mean() * 100
-            label = habit.replace('_', ' ').title()
-        
-        habit_miss_rates.append((label, miss_rate))
-
-    miss_df = pd.DataFrame(habit_miss_rates, columns=["Habit", "Miss Rate (%)"])
-    miss_df = miss_df.sort_values(by="Miss Rate (%)", ascending=False).head(5)
-
-    st.dataframe(miss_df, use_container_width=True, hide_index=True)
-
 
     
 except Exception as e:
