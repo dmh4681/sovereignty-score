@@ -23,6 +23,10 @@ print("Top Paths:\n", df["path"].value_counts().head(5))
 print("\nTop 10 Users:")
 print(df["username"].value_counts().head(10))
 
+print("\nTotal Sats Stacked:", df["btc_sats"].sum())
+print("Total $ Invested in BTC:", round(df["btc_usd"].sum(), 2))
+
+
 # Histogram
 plt.figure(figsize=(10, 5))
 sns.histplot(df["score"], bins=20, kde=True, color="gold")

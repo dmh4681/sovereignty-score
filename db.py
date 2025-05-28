@@ -47,14 +47,16 @@ def init_db():
         conn.execute("""
         CREATE TABLE IF NOT EXISTS sovereignty (
             timestamp            TIMESTAMP,
-            username            VARCHAR,
-            path                VARCHAR,
+            username             VARCHAR,
+            path                 VARCHAR,
             home_cooked_meals    INTEGER,
             junk_food            BOOLEAN,
             exercise_minutes     INTEGER,
             strength_training    BOOLEAN,
             no_spending          BOOLEAN,
             invested_bitcoin     BOOLEAN,
+            btc_usd              REAL DEFAULT 0,
+            btc_sats             INTEGER DEFAULT 0,
             meditation           BOOLEAN,
             gratitude            BOOLEAN,
             read_or_learned      BOOLEAN,

@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS sovereignty (
     strength_training    BOOLEAN,
     no_spending          BOOLEAN,
     invested_bitcoin     BOOLEAN,
+    btc_usd              REAL DEFAULT 0,
+    btc_sats             INTEGER DEFAULT 0,
     meditation           BOOLEAN,
     gratitude            BOOLEAN,
     read_or_learned      BOOLEAN,
@@ -76,7 +78,12 @@ for username, path in existing_users:
         meals = random.randint(1, 3)
         junk = random.random() < 0.2  # 20% chance of junk food
         spending = random.random() < 0.7  # 70% chance of no spending
-        btc = random.random() < 0.3  # 30% chance of Bitcoin investment
+        btc = random.random() < 0.5  # 50% chance of Bitcoin investment
+        if btc:
+            usd = round(random.uniform(5, 100), 2)
+            sats = int((usd / 35000) * 100_000_000)  # Example BTC price
+        else:
+            usd, sats = 0.0, 0
         env = random.random() < 0.6  # 60% chance of environmental action
 
         data = {
@@ -86,6 +93,8 @@ for username, path in existing_users:
             "strength_training": strength,
             "no_spending": spending,
             "invested_bitcoin": btc,
+            "USD": usd,
+            "Sats": sats,
             "meditation": med,
             "gratitude": grat,
             "read_or_learned": learn,
@@ -94,13 +103,15 @@ for username, path in existing_users:
         score = calculate_daily_score(data, path=path)
 
         con.execute("""
-            INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             timestamp, username, path,
             meals, junk, mins,
             strength, spending, btc,
+            usd, sats,
             med, grat, learn, env, score
         ))
+
 
 print("\n✅ Test data generated for existing users.")
 
