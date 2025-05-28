@@ -7,6 +7,7 @@ st.set_page_config(
 )
 
 import pandas as pd
+import requests
 import os, json
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
@@ -54,33 +55,34 @@ path = path or st.session_state.get("path", None)
 
 logger.debug(f"Login params - username: {username}, path: {path}")
 
-# If no login parameters, show a friendly message
+# Custom login handler inside the app
 if not username or not path:
     st.title("🏰 Sovereignty Score Login")
-    st.warning("Log in to access your tracker.")
+    st.warning("Please log in to access your tracker.")
 
     with st.form("login_form"):
         login_username = st.text_input("Username")
-        login_path = st.selectbox("Your Sovereignty Path", list(ALL_PATHS.keys()))
-        submitted = st.form_submit_button("Log In")
+        login_password = st.text_input("Password", type="password")
+        submit = st.form_submit_button("Log In")
 
-    if submitted:
+    if submit:
+        login_payload = {
+            "username": login_username,
+            "password": login_password
+        }
         try:
-            with get_db_connection() as conn:
-                user = conn.execute(
-                    "SELECT username, path FROM users WHERE username = ? AND path = ?",
-                    [login_username, login_path]
-                ).fetchone()
-
-            if user:
-                st.session_state.username = login_username
-                st.session_state.path = login_path
+            response = requests.post("http://localhost:5002/login", json=login_payload)
+            if response.status_code == 200:
+                result = response.json()
+                st.session_state.username = result["username"]
+                st.session_state.path = result["path"]
                 st.success("✅ Login successful! Loading your tracker...")
                 st.experimental_rerun()
             else:
-                st.error("❌ Invalid username or path.")
+                error_msg = response.json().get("message", "Login failed.")
+                st.error(f"❌ {error_msg}")
         except Exception as e:
-            st.error(f"Database error: {str(e)}")
+            st.error(f"Login error: {str(e)}")
     st.stop()
 
 
