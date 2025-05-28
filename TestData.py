@@ -112,13 +112,19 @@ for username, path in existing_users:
 
         # Save to DB
         con.execute("""
-            INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO sovereignty (
+                timestamp, username, path,
+                home_cooked_meals, junk_food, exercise_minutes,
+                strength_training, no_spending, invested_bitcoin,
+                btc_usd, btc_sats, meditation, gratitude,
+                read_or_learned, environmental_action, score
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             timestamp, username, path,
-            meals, junk_food, mins,
+            meals, no_junk_food, mins,
             strength, spend, btc,
             btc_usd, btc_sats,
-            med, grat, learn, env, score
+            med, grat, learn, env, int(score)
         ))
 
 print("\n✅ Test data generated for existing users.")
