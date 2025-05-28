@@ -77,7 +77,7 @@ if not username or not path:
                 st.session_state.username = result["username"]
                 st.session_state.path = result["path"]
                 st.success("✅ Login successful! Loading your tracker...")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 error_msg = response.json().get("message", "Login failed.")
                 st.error(f"❌ {error_msg}")
