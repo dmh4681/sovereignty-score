@@ -11,6 +11,7 @@ import os, json
 from datetime import datetime
 from tracker.scoring import calculate_daily_score
 import logging
+from utils import get_current_btc_price, usd_to_sats
 from db import get_db_connection, init_db
 
 # Set up logging
@@ -168,7 +169,15 @@ with st.form("tracker_form"):
     mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
     lift  = st.checkbox("Strength training?")
     spend= st.checkbox("No discretionary spending?")
-    btc  = st.checkbox("Stacked Sats?")
+    btc = st.checkbox("Stacked Sats?")
+    btc_usd = 0
+    btc_sats = 0
+    if btc:
+        btc_usd = st.number_input("How much BTC did you stack today (in USD)?", min_value=0.0, step=1.0)
+        current_btc_price = get_current_btc_price()
+        if current_btc_price:
+            btc_sats = usd_to_sats(btc_usd, current_btc_price)
+            st.success(f"🟠 {btc_sats:,} sats stacked today at ${current_btc_price:,}/BTC")
     med  = st.checkbox("Meditated?")
     grat = st.checkbox("Gratitude practice?")
     learn= st.checkbox("Read or learned something new?")
@@ -183,6 +192,8 @@ if submitted:
       "strength_training":lift,
       "no_spending":      spend,
       "invested_bitcoin": btc,
+      "btc_usd":        btc_usd,
+      "btc_sats":       btc_sats,
       "meditation":       med,
       "gratitude":        grat,
       "read_or_learned":  learn,
