@@ -218,7 +218,7 @@ if submitted:
 try:
     with get_db_connection() as conn:
         hist = conn.execute("""
-          SELECT timestamp, username, path, home_cooked_meals, junk_food,
+          SELECT timestamp, username, path, btc_usd, btc_sats, home_cooked_meals, junk_food,
                  exercise_minutes, strength_training, no_spending,
                  invested_bitcoin, meditation, gratitude,
                  read_or_learned, environmental_action, score
