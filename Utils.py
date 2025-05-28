@@ -1,4 +1,4 @@
-import streamlit as st
+# utils.py
 import requests
 
 def get_current_btc_price():
@@ -10,6 +10,8 @@ def get_current_btc_price():
         data = response.json()
         return data["bitcoin"]["usd"]
     except Exception as e:
-        st.error("⚠️ Failed to fetch Bitcoin price.")
-        st.exception(e)
+        print("⚠️ Failed to fetch BTC price:", e)
         return None
+
+def usd_to_sats(usd_amount, btc_price):
+    return int((usd_amount / btc_price) * 100_000_000)
