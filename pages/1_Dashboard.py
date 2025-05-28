@@ -35,6 +35,7 @@ try:
             SELECT timestamp, score, 
                 home_cooked_meals, junk_food, exercise_minutes, 
                 strength_training, no_spending, invested_bitcoin,
+                btc_usd, btc_sats,
                 meditation, gratitude, read_or_learned, 
                 environmental_action
             FROM sovereignty 
