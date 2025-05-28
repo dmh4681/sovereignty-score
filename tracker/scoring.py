@@ -1,53 +1,46 @@
+# tracker/scoring.py
 import json
 import os
 
-# Load all path configurations
+# Locate and load the config file
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_FILE = os.path.join(BASE_DIR, "config", "paths.json")
 
-with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+with open(CONFIG_FILE, "r") as f:
     ALL_PATHS = json.load(f)
 
 def calculate_daily_score(data: dict, path: str = "default") -> int:
     if path not in ALL_PATHS:
         raise ValueError(f"Unknown scoring path: {path}")
-    
+
     config = ALL_PATHS[path]
     score = 0
 
-    # Meal-based score
+    # Home-cooked meals (points per unit up to max)
     if "home_cooked_meals" in config:
         meal_cfg = config["home_cooked_meals"]
         meals = data.get("home_cooked_meals", 0)
-        capped_meals = min(meals, meal_cfg.get("max_units", 1))
-        score += capped_meals * meal_cfg.get("points_per_unit", 0)
+        score += min(meals, meal_cfg["max_units"]) * meal_cfg["points_per_unit"]
 
-    # Junk food avoidance
+    # No junk food (only if junk_food is False)
     if "no_junk_food" in config:
-        if not data.get("junk_food", False):
+        if not data.get("junk_food", False):  # User did NOT eat junk
             score += config["no_junk_food"]
 
     # Exercise minutes
     if "exercise_minutes" in config:
         ex_cfg = config["exercise_minutes"]
-        mins = data.get("exercise_minutes", 0)
-        capped_mins = min(mins, ex_cfg.get("max_units", 1))
-        score += capped_mins * ex_cfg.get("points_per_unit", 0)
+        minutes = data.get("exercise_minutes", 0)
+        score += min(minutes, ex_cfg["max_units"]) * ex_cfg["points_per_unit"]
 
-    # Binary habits
-    binary_keys = [
-        "strength_training",
-        "no_spending",
-        "invested_bitcoin",
-        "meditation",
-        "gratitude",
-        "read_or_learned",
-        "environmental_action"
+    # One-off booleans (strength, gratitude, etc.)
+    single_keys = [
+        "strength_training", "no_spending", "invested_bitcoin",
+        "meditation", "gratitude", "read_or_learned", "environmental_action"
     ]
-
-    for key in binary_keys:
+    for key in single_keys:
         if key in config and data.get(key, False):
             score += config[key]
 
-    # Optional max score cap (default to 100)
+    # Clamp to max_score (typically 100)
     return int(round(min(score, config.get("max_score", 100))))

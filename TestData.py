@@ -45,53 +45,49 @@ print("Found existing users:", existing_users)
 # Generate test data for each existing user
 for username, path in existing_users:
     print(f"\nGenerating data for {username} on {path} path...")
-    
-    # Generate 30 days of data
+
     for day in range(365):
         timestamp = datetime.now() - timedelta(days=day)
-        
-        # Generate realistic data based on path
+
+        # Behavior based on path
         if path == "mental_resilience":
-            # Higher probability of meditation, learning, and gratitude
             med = random.random() < 0.8
             grat = random.random() < 0.7
             learn = random.random() < 0.9
-            # Moderate exercise
             mins = random.randint(20, 60)
             strength = random.random() < 0.4
         elif path == "physical_optimization":
-            # Higher probability of exercise and strength training
             mins = random.randint(30, 90)
             strength = random.random() < 0.8
             med = random.random() < 0.5
             grat = random.random() < 0.5
             learn = random.random() < 0.6
         else:
-            # Default balanced approach
             mins = random.randint(15, 45)
             strength = random.random() < 0.5
             med = random.random() < 0.6
             grat = random.random() < 0.6
             learn = random.random() < 0.7
 
-        # Common metrics with some randomness
+        # Common behaviors
         meals = random.randint(1, 3)
-        junk = random.random() < 0.2  # 20% chance of junk food
-        spending = random.random() < 0.7  # 70% chance of no spending
-        btc = random.random() < 0.5  # 50% chance of Bitcoin investment
+        junk = random.random() < 0.2  # 20% junk food = True
+        spend = random.random() < 0.7
+        btc = random.random() < 0.5
         if btc:
             btc_usd = round(random.uniform(5, 100), 2)
-            btc_sats = int((btc_usd / 35000) * 100_000_000)  # Example BTC price
+            btc_sats = int((btc_usd / 35000) * 100_000_000)
         else:
             btc_usd, btc_sats = 0.0, 0
-        env = random.random() < 0.6  # 60% chance of environmental action
+        env = random.random() < 0.6
 
+        # Data for scoring
         data = {
             "home_cooked_meals": meals,
-            "junk_food": junk,
+            "junk_food": junk,  # True = ate junk, False = didn't (which earns points)
             "exercise_minutes": mins,
             "strength_training": strength,
-            "no_spending": spending,
+            "no_spending": spend,
             "invested_bitcoin": btc,
             "btc_usd": btc_usd,
             "btc_sats": btc_sats,
@@ -100,23 +96,23 @@ for username, path in existing_users:
             "read_or_learned": learn,
             "environmental_action": env
         }
+
         score = calculate_daily_score(data, path=path)
 
+        # Save to DB
         con.execute("""
             INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             timestamp, username, path,
             meals, junk, mins,
-            strength, spending, btc,
+            strength, spend, btc,
             btc_usd, btc_sats,
             med, grat, learn, env, score
         ))
 
-
 print("\n✅ Test data generated for existing users.")
 
-# Preview the data
-print("\nData Preview:")
+# Optional: Preview scores
 preview = con.execute("""
     SELECT username, path, COUNT(*) as entries, 
            AVG(score) as avg_score,
