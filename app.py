@@ -162,14 +162,17 @@ except Exception as e:
     # Don't stop the app, just show the error and continue
     st.warning("Some features may be limited due to configuration issues.")
 
-# Habit-logging form
+# Place this *before* the form so the checkbox state persists and controls the rest
+btc = st.checkbox("Stacked Sats?")
+
+# Now the rest of your form
 with st.form("tracker_form"):
     meals = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
     junk  = st.checkbox("No junk food today?")
     mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
     lift  = st.checkbox("Strength training?")
-    spend= st.checkbox("No discretionary spending?")
-    btc = st.checkbox("Stacked Sats?")
+    spend = st.checkbox("No discretionary spending?")
+
     btc_usd = 0
     btc_sats = 0
     if btc:
@@ -178,11 +181,13 @@ with st.form("tracker_form"):
         if current_btc_price:
             btc_sats = usd_to_sats(btc_usd, current_btc_price)
             st.success(f"🟠 {btc_sats:,} sats stacked today at ${current_btc_price:,}/BTC")
+
     med  = st.checkbox("Meditated?")
     grat = st.checkbox("Gratitude practice?")
-    learn= st.checkbox("Read or learned something new?")
+    learn = st.checkbox("Read or learned something new?")
     env  = st.checkbox("Took environmentally friendly action today?")
     submitted = st.form_submit_button("Submit & Save")
+
 
 if submitted:
     data = {
