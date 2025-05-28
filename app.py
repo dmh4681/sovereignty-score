@@ -228,7 +228,7 @@ if submitted:
       "read_or_learned":  learn,
       "environmental_action":env
     }
-    score = calculate_daily_score({**data, "path":path}, path=path)
+    score = calculate_daily_score(data, path=path)
     try:
         with get_db_connection() as conn:
             conn.execute("""
