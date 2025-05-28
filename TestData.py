@@ -3,9 +3,15 @@ import random
 from datetime import datetime, timedelta
 import duckdb
 from tracker.scoring import calculate_daily_score
+from utils import get_current_btc_price, usd_to_sats
 
 # Connect to DuckDB
 con = duckdb.connect("data/sovereignty.duckdb")
+
+btc_price = get_current_btc_price()
+if not btc_price:
+    print("⚠️ Could not fetch BTC price. Defaulting to $35,000.")
+    btc_price = 100000  # fallback
 
 # Load path definitions
 with open("config/paths.json", "r", encoding="utf-8") as f:
@@ -42,14 +48,14 @@ existing_users = con.execute("""
 
 print("Found existing users:", existing_users)
 
-# Generate test data for each existing user
+# Generate test data
 for username, path in existing_users:
     print(f"\nGenerating data for {username} on {path} path...")
 
     for day in range(365):
         timestamp = datetime.now() - timedelta(days=day)
 
-        # Behavior based on path
+        # Behavior by path
         if path == "mental_resilience":
             med = random.random() < 0.8
             grat = random.random() < 0.7
@@ -69,22 +75,24 @@ for username, path in existing_users:
             grat = random.random() < 0.6
             learn = random.random() < 0.7
 
-        # Common behaviors
+        # Shared behaviors
         meals = random.randint(1, 3)
-        junk = random.random() < 0.2  # 20% junk food = True
+        junk_food = random.random() < 0.2  # True = ate junk
+        no_junk_food = not junk_food       # This is what scores points
         spend = random.random() < 0.7
         btc = random.random() < 0.5
         if btc:
             btc_usd = round(random.uniform(5, 100), 2)
-            btc_sats = int((btc_usd / 35000) * 100_000_000)
+            btc_sats = usd_to_sats(btc_usd, btc_price)
         else:
             btc_usd, btc_sats = 0.0, 0
         env = random.random() < 0.6
 
-        # Data for scoring
+        # Pass all expected fields, including `no_junk_food`
         data = {
             "home_cooked_meals": meals,
-            "junk_food": junk,  # True = ate junk, False = didn't (which earns points)
+            "junk_food": junk_food,
+            "no_junk_food": no_junk_food,
             "exercise_minutes": mins,
             "strength_training": strength,
             "no_spending": spend,
@@ -99,12 +107,15 @@ for username, path in existing_users:
 
         score = calculate_daily_score(data, path=path)
 
+        if day < 3:
+            print(f"Day {day} | Path: {path} | Score: {score} | Data: {data}")
+
         # Save to DB
         con.execute("""
             INSERT INTO sovereignty VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             timestamp, username, path,
-            meals, junk, mins,
+            meals, junk_food, mins,
             strength, spend, btc,
             btc_usd, btc_sats,
             med, grat, learn, env, score
@@ -112,7 +123,7 @@ for username, path in existing_users:
 
 print("\n✅ Test data generated for existing users.")
 
-# Optional: Preview scores
+# Show preview
 preview = con.execute("""
     SELECT username, path, COUNT(*) as entries, 
            AVG(score) as avg_score,
