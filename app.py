@@ -203,13 +203,13 @@ if submitted:
     try:
         with get_db_connection() as conn:
             conn.execute("""
-              INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-            """, [
-              datetime.utcnow(), user[0], path,
-              meals, not junk, mins, lift,
-              spend, btc, med, grat,
-              learn, env, score
-            ])
+                INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                """, [
+                datetime.utcnow(), user[0], path,
+                meals, not junk, mins, lift,
+                spend, btc, btc_usd, btc_sats,
+                med, grat, learn, env, score
+                ])
         st.success(f"💪 Your score: {score}/100")
     except Exception as e:
         st.error(f"Error saving data: {str(e)}")

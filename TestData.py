@@ -47,7 +47,7 @@ for username, path in existing_users:
     print(f"\nGenerating data for {username} on {path} path...")
     
     # Generate 30 days of data
-    for day in range(30):
+    for day in range(365):
         timestamp = datetime.now() - timedelta(days=day)
         
         # Generate realistic data based on path
@@ -80,10 +80,10 @@ for username, path in existing_users:
         spending = random.random() < 0.7  # 70% chance of no spending
         btc = random.random() < 0.5  # 50% chance of Bitcoin investment
         if btc:
-            usd = round(random.uniform(5, 100), 2)
-            sats = int((usd / 35000) * 100_000_000)  # Example BTC price
+            btc_usd = round(random.uniform(5, 100), 2)
+            btc_sats = int((btc_usd / 35000) * 100_000_000)  # Example BTC price
         else:
-            usd, sats = 0.0, 0
+            btc_usd, btc_sats = 0.0, 0
         env = random.random() < 0.6  # 60% chance of environmental action
 
         data = {
@@ -93,8 +93,8 @@ for username, path in existing_users:
             "strength_training": strength,
             "no_spending": spending,
             "invested_bitcoin": btc,
-            "USD": usd,
-            "Sats": sats,
+            "btc_usd": btc_usd,
+            "btc_sats": btc_sats,
             "meditation": med,
             "gratitude": grat,
             "read_or_learned": learn,
@@ -108,7 +108,7 @@ for username, path in existing_users:
             timestamp, username, path,
             meals, junk, mins,
             strength, spending, btc,
-            usd, sats,
+            btc_usd, btc_sats,
             med, grat, learn, env, score
         ))
 
