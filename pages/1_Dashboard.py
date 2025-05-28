@@ -33,10 +33,10 @@ try:
     with get_db_connection() as conn:
         df = conn.execute("""
             SELECT timestamp, score, 
-                   home_cooked_meals, junk_food, exercise_minutes, 
-                   strength_training, no_spending, invested_bitcoin,
-                   meditation, gratitude, read_or_learned, 
-                   environmental_action
+                home_cooked_meals, junk_food, exercise_minutes, 
+                strength_training, no_spending, invested_bitcoin,
+                meditation, gratitude, read_or_learned, 
+                environmental_action
             FROM sovereignty 
             WHERE username = ?
             ORDER BY timestamp DESC
