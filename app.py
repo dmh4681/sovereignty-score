@@ -197,14 +197,14 @@ with st.form("tracker_form"):
     lift  = st.checkbox("Strength training?")
     spend = st.checkbox("No discretionary spending?")
 
-    btc_usd = 0
-    btc_sats = 0
-    if btc:
-        btc_usd = st.number_input("How much BTC did you stack today (in USD)?", min_value=0.0, step=1.0)
-        current_btc_price = get_current_btc_price()
-        if current_btc_price:
-            btc_sats = usd_to_sats(btc_usd, current_btc_price)
-            st.success(f"🟠 {btc_sats:,} sats stacked today at ${current_btc_price:,}/BTC")
+    btc_usd = st.number_input("How much BTC did you stack today (in USD)?", min_value=0.0, step=1.0)
+    current_btc_price = get_current_btc_price()
+    btc_sats = usd_to_sats(btc_usd, current_btc_price) if current_btc_price else 0
+
+    if not btc or btc_usd <= 0:
+        btc = False
+        btc_usd = 0.0
+        btc_sats = 0
 
     med  = st.checkbox("Meditated?")
     grat = st.checkbox("Gratitude practice?")
@@ -234,8 +234,8 @@ if submitted:
             conn.execute("""
                 INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
                 """, [
-                datetime.utcnow(), user[0], path,
-                meals, not junk, mins, lift,
+                datetime.utcnow(), username, path,
+                meals, junk, mins, lift,
                 spend, btc, btc_usd, btc_sats,
                 med, grat, learn, env, int(score)
                 ])
@@ -254,7 +254,7 @@ try:
             FROM sovereignty
            WHERE username = ?
         ORDER BY timestamp DESC
-        """,[user[0]]).df()
+        """,[username]).df()
 
     st.subheader("📜 Your History")
     if hist.empty:
