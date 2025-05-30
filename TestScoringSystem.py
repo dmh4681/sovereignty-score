@@ -222,9 +222,10 @@ class TestDatabaseOperations(unittest.TestCase):
     
     def setUp(self):
         """Create temporary database for testing"""
-        self.test_db = tempfile.NamedTemporaryFile(delete=False, suffix='.duckdb')
-        self.test_db.close()
-        self.conn = duckdb.connect(self.test_db.name)
+        # Create a proper temp file path for Windows compatibility
+        import tempfile
+        self.test_db_path = tempfile.mktemp(suffix='.duckdb')
+        self.conn = duckdb.connect(self.test_db_path)
         
         # Create test table
         self.conn.execute("""
@@ -251,7 +252,10 @@ class TestDatabaseOperations(unittest.TestCase):
     def tearDown(self):
         """Clean up test database"""
         self.conn.close()
-        os.unlink(self.test_db.name)
+        try:
+            os.unlink(self.test_db_path)
+        except:
+            pass  # File cleanup might fail on Windows, that's ok
     
     def test_insert_and_retrieve_data(self):
         """Test that data inserted matches data retrieved"""
