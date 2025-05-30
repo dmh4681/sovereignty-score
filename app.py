@@ -120,6 +120,31 @@ if not username or not path:
                 st.error(f"❌ {error_msg}")
         except Exception as e:
             st.error(f"Login error: {str(e)}")
+    
+    # Add navigation back to registration
+    st.markdown("---")
+    st.markdown("### 🆕 New User?")
+    st.markdown("Need to create an account? Go back to the registration page:")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 Register New Account", type="primary", use_container_width=True):
+            st.markdown("""
+                <script>
+                window.open('https://dmh4681.github.io/sovereignty-score/', '_blank');
+                </script>
+            """, unsafe_allow_html=True)
+        
+        # Also provide a direct link as backup
+        st.markdown("""
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="https://dmh4681.github.io/sovereignty-score/" target="_blank" 
+                   style="text-decoration: none;">
+                    🔗 Or click here to register
+                </a>
+            </div>
+        """, unsafe_allow_html=True)
+    
     st.stop()
 
 # Verify user exists and path is valid
@@ -147,6 +172,20 @@ except Exception as e:
 st.title("🏰 Sovereignty Score Tracker")
 st.sidebar.markdown(f"### Logged in as {username}")
 st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
+
+# Add logout option
+st.sidebar.markdown("---")
+if st.sidebar.button("🚪 Logout"):
+    # Clear session state
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+# Add link to register new users
+with st.sidebar.expander("👥 User Management"):
+    st.markdown("**Need to register a new user?**")
+    st.markdown("[🚀 Go to Registration Page](https://dmh4681.github.io/sovereignty-score/)")
+    st.markdown("*Opens in new tab*")
 
 # Show how this path is scored
 try:
