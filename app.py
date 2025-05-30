@@ -23,20 +23,51 @@ logger = logging.getLogger(__name__)
 BASE = os.path.dirname(__file__)
 logger.debug(f"Base directory: {BASE}")
 
-# Load path-definitions
+# Load path-definitions with error handling
 try:
     paths_file = os.path.join(BASE, "config", "paths.json")
     logger.debug(f"Loading paths from: {paths_file}")
-    with open(paths_file) as f:
+    with open(paths_file, 'r', encoding='utf-8') as f:
         ALL_PATHS = json.load(f)
     logger.debug(f"Loaded paths: {list(ALL_PATHS.keys())}")
 except Exception as e:
     logger.error(f"Error loading paths configuration: {str(e)}")
-    st.error(f"Error loading paths configuration: {str(e)}")
+    st.error(f"Critical Error: Could not load paths configuration. Please check config/paths.json")
     st.stop()
 
+# ── Utility Functions ──────────────────────────────────────────────────────────
+def validate_form_data(data):
+    """Validate form data before processing"""
+    errors = []
+    
+    # Check for negative values where they don't make sense
+    if data.get('home_cooked_meals', 0) < 0:
+        errors.append("Home cooked meals cannot be negative")
+    if data.get('exercise_minutes', 0) < 0:
+        errors.append("Exercise minutes cannot be negative")
+    if data.get('btc_usd', 0) < 0:
+        errors.append("Bitcoin investment cannot be negative")
+    
+    # Check for reasonable upper bounds
+    if data.get('home_cooked_meals', 0) > 10:
+        errors.append("More than 10 meals per day seems unrealistic")
+    if data.get('exercise_minutes', 0) > 500:
+        errors.append("More than 8 hours of exercise seems unrealistic")
+    
+    return errors
+
+def safe_calculate_score(data, path):
+    """Safely calculate score with error handling"""
+    try:
+        score = calculate_daily_score(data, path=path)
+        # Ensure score is within valid range
+        score = max(0, min(100, int(round(score))))
+        return score, None
+    except Exception as e:
+        logger.error(f"Error calculating score: {str(e)}")
+        return 0, str(e)
+
 # ── Handle Login via Query-Params ─────────────────────────────────────────────
-# Debug all query parameters
 all_params = dict(st.query_params)
 logger.debug(f"All query parameters: {all_params}")
 
@@ -46,7 +77,7 @@ path = st.query_params.get("path", None)
 # Store in session state if we got it from query params
 if username:
     st.session_state.username = username
-if path:
+if path and path in ALL_PATHS:  # Validate path exists
     st.session_state.path = path
 
 # Use session state if query params not available
@@ -54,6 +85,12 @@ username = username or st.session_state.get("username", None)
 path = path or st.session_state.get("path", None)
 
 logger.debug(f"Login params - username: {username}, path: {path}")
+
+# Validate path exists in configuration
+if path and path not in ALL_PATHS:
+    logger.warning(f"Invalid path {path} specified")
+    st.error(f"❌ Invalid path: {path}. Please contact support.")
+    st.stop()
 
 # Custom login handler inside the app
 if not username or not path:
@@ -85,32 +122,18 @@ if not username or not path:
             st.error(f"Login error: {str(e)}")
     st.stop()
 
-
 # Verify user exists and path is valid
 try:
     logger.debug(f"Verifying user {username} with path {path}")
     with get_db_connection() as conn:
-        # First check if the user exists
-        user_check = conn.execute(
-            "SELECT username FROM users WHERE username = ?",
-            [username]
-        ).fetchone()
-        
-        if not user_check:
-            logger.warning(f"User {username} not found in database")
-            st.error("❌ User not found. Please register first.")
-            st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
-            st.stop()
-            
-        # Then check if the path matches
         user = conn.execute(
             "SELECT username, path FROM users WHERE username = ? AND path = ?",
             [username, path]
         ).fetchone()
         
         if not user:
-            logger.warning(f"Path {path} not valid for user {username}")
-            st.error("❌ Invalid path for this user. Please try logging in again.")
+            logger.warning(f"User {username} with path {path} not found")
+            st.error("❌ User not found or invalid path. Please register first.")
             st.markdown("[Return to Landing Page](https://dmh4681.github.io/sovereignty-score/)")
             st.stop()
             
@@ -127,18 +150,12 @@ st.sidebar.markdown(f"### Path: {path.replace('_',' ').title()}")
 
 # Show how this path is scored
 try:
-    logger.debug(f"Loading configuration for path: {path}")
-    if path not in ALL_PATHS:
-        logger.error(f"Path {path} not found in configuration")
-        st.error(f"❌ Invalid path configuration. Please contact support.")
-        st.stop()
-        
     cfg = ALL_PATHS[path]
     
     # Display path description
     st.sidebar.markdown(f"**{cfg.get('description', '')}**")
     
-    # Create a more compact metrics display with smaller text
+    # Create a more compact metrics display
     st.sidebar.markdown("### 📊 Scoring Guide")
     st.sidebar.markdown("""
         <style>
@@ -150,7 +167,7 @@ try:
     
     # Group metrics by category
     categories = {
-        "Physical": ["home_cooked_meals", "junk_food", "exercise_minutes", "strength_training"],
+        "Physical": ["home_cooked_meals", "no_junk_food", "exercise_minutes", "strength_training"],
         "Financial": ["no_spending", "invested_bitcoin"],
         "Mental / Spiritual": ["meditation", "gratitude", "read_or_learned"],
         "Environmental": ["environmental_action"]
@@ -183,85 +200,183 @@ try:
 except Exception as e:
     logger.error(f"Error loading path configuration: {str(e)}")
     st.error(f"Error loading path configuration: {str(e)}")
-    # Don't stop the app, just show the error and continue
-    st.warning("Some features may be limited due to configuration issues.")
 
-# Place this *before* the form so the checkbox state persists and controls the rest
-btc = st.checkbox("Stacked Sats?")
-
-# Now the rest of your form
+# ── Main Form ──────────────────────────────────────────────────────────────────
 with st.form("tracker_form"):
-    meals = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0)
-    junk  = st.checkbox("No junk food today?")
-    mins  = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0)
-    lift  = st.checkbox("Strength training?")
-    spend = st.checkbox("No discretionary spending?")
-
-    btc_usd = st.number_input("How much BTC did you stack today (in USD)?", min_value=0.0, step=1.0)
+    st.markdown("### Today's Activities")
+    
+    # Physical activities
+    st.markdown("#### 🏋️ Physical")
+    meals = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0, 
+                           help="How many meals did you cook at home today?")
+    no_junk = st.checkbox("No junk food today?", 
+                         help="Check if you avoided junk food completely today")
+    mins = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0,
+                          help="Total minutes of exercise today")
+    lift = st.checkbox("Strength training?", 
+                      help="Did you do any strength/resistance training?")
+    
+    # Financial activities
+    st.markdown("#### 💰 Financial")
+    spend = st.checkbox("No discretionary spending?",
+                       help="Did you avoid unnecessary purchases today?")
+    
+    # Bitcoin investment with improved UX
+    btc_usd = st.number_input("Bitcoin investment today (USD)", min_value=0.0, step=1.0, value=0.0,
+                             help="How much did you invest in Bitcoin today?")
+    
+    # Show current BTC price and sats calculation
     current_btc_price = get_current_btc_price()
-    btc_sats = usd_to_sats(btc_usd, current_btc_price) if current_btc_price else 0
-
-    if not btc or btc_usd <= 0:
-        btc = False
-        btc_usd = 0.0
+    if current_btc_price and btc_usd > 0:
+        btc_sats = usd_to_sats(btc_usd, current_btc_price)
+        st.info(f"💡 ${btc_usd:.2f} = {btc_sats:,} sats (@ ${current_btc_price:,.0f}/BTC)")
+    else:
         btc_sats = 0
+        if btc_usd > 0:
+            st.warning("⚠️ Could not fetch current BTC price for sats conversion")
+    
+    btc = btc_usd > 0  # Set bitcoin investment flag
+    
+    # Mental/Spiritual activities
+    st.markdown("#### 🧠 Mental & Spiritual")
+    med = st.checkbox("Meditated?", 
+                     help="Did you practice meditation or mindfulness?")
+    grat = st.checkbox("Gratitude practice?",
+                      help="Did you practice gratitude today?")
+    learn = st.checkbox("Read or learned something new?",
+                       help="Did you read, study, or learn something today?")
+    
+    # Environmental
+    st.markdown("#### 🌍 Environmental")
+    env = st.checkbox("Environmentally friendly action?",
+                     help="Did you take action to help the environment today?")
+    
+    submitted = st.form_submit_button("Submit & Save", type="primary")
 
-    med  = st.checkbox("Meditated?")
-    grat = st.checkbox("Gratitude practice?")
-    learn = st.checkbox("Read or learned something new?")
-    env  = st.checkbox("Took environmentally friendly action today?")
-    submitted = st.form_submit_button("Submit & Save")
-
-
+# ── Process Form Submission ────────────────────────────────────────────────────
 if submitted:
+    # Create data structure for scoring
     data = {
-      "home_cooked_meals": meals,
-      "junk_food":        not junk,
-      "exercise_minutes": mins,
-      "strength_training":lift,
-      "no_spending":      spend,
-      "invested_bitcoin": btc,
-      "btc_usd":        btc_usd,
-      "btc_sats":       btc_sats,
-      "meditation":       med,
-      "gratitude":        grat,
-      "read_or_learned":  learn,
-      "environmental_action":env
+        "home_cooked_meals": meals,
+        "junk_food": not no_junk,  # Invert: True means ate junk food
+        "exercise_minutes": mins,
+        "strength_training": lift,
+        "no_spending": spend,
+        "invested_bitcoin": btc,
+        "btc_usd": float(btc_usd),
+        "btc_sats": int(btc_sats),
+        "meditation": med,
+        "gratitude": grat,
+        "read_or_learned": learn,
+        "environmental_action": env
     }
-    score = int(round(calculate_daily_score(data, path=path)))
-    try:
-        with get_db_connection() as conn:
-            conn.execute("""
-                INSERT INTO sovereignty VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-                """, [
-                datetime.utcnow(), username, path,
-                meals, junk, mins, lift,
-                spend, btc, btc_usd, btc_sats,
-                med, grat, learn, env, int(score)
-                ])
-        st.success(f"💪 Your score: {score}/100")
-    except Exception as e:
-        st.error(f"Error saving data: {str(e)}")
+    
+    # Validate data
+    validation_errors = validate_form_data(data)
+    if validation_errors:
+        st.error("❌ Please fix the following issues:")
+        for error in validation_errors:
+            st.error(f"• {error}")
+    else:
+        # Calculate score safely
+        score, score_error = safe_calculate_score(data, path)
+        
+        if score_error:
+            st.error(f"❌ Error calculating score: {score_error}")
+        else:
+            # Save to database using named columns (FIXED!)
+            try:
+                with get_db_connection() as conn:
+                    conn.execute("""
+                        INSERT INTO sovereignty (
+                            timestamp, username, path,
+                            home_cooked_meals, junk_food, exercise_minutes, strength_training,
+                            no_spending, invested_bitcoin, btc_usd, btc_sats,
+                            meditation, gratitude, read_or_learned, environmental_action, score
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, [
+                        datetime.utcnow(), username, path,
+                        meals, not no_junk, mins, lift,
+                        spend, btc, float(btc_usd), int(btc_sats),
+                        med, grat, learn, env, int(score)
+                    ])
+                
+                st.success(f"💪 Your score: {score}/100")
+                
+                # Show score breakdown if it's not the maximum
+                if score < cfg.get('max_score', 100):
+                    with st.expander("🔍 See score breakdown"):
+                        st.json(data)
+                        
+            except Exception as e:
+                logger.error(f"Database error saving data: {str(e)}")
+                st.error(f"❌ Error saving data: {str(e)}")
 
-# Show history
+# ── Show History ───────────────────────────────────────────────────────────────
 try:
     with get_db_connection() as conn:
+        # Use explicit column names in SELECT to match database schema
         hist = conn.execute("""
-          SELECT timestamp, username, path, btc_usd, btc_sats, home_cooked_meals, junk_food,
-                 exercise_minutes, strength_training, no_spending,
-                 invested_bitcoin, meditation, gratitude,
-                 read_or_learned, environmental_action, score
+            SELECT 
+                timestamp, path, score,
+                home_cooked_meals, junk_food, exercise_minutes, strength_training,
+                no_spending, invested_bitcoin, btc_usd, btc_sats,
+                meditation, gratitude, read_or_learned, environmental_action
             FROM sovereignty
-           WHERE username = ?
-        ORDER BY timestamp DESC
-        """,[username]).df()
+            WHERE username = ?
+            ORDER BY timestamp DESC
+            LIMIT 50
+        """, [username]).df()
 
-    st.subheader("📜 Your History")
+    st.subheader("📜 Your Recent History")
     if hist.empty:
-        st.info("📘 No entries yet; submit above to get started.")
+        st.info("📘 No entries yet. Submit your first day above to get started!")
     else:
-        # Drop the username column from display since we already know who we are
-        display_df = hist.drop(columns=['username'])
-        st.dataframe(display_df, use_container_width=True)
+        # Format the dataframe for better display
+        if not hist.empty:
+            # Convert timestamp to readable format
+            hist['timestamp'] = pd.to_datetime(hist['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
+            
+            # Rename columns for display
+            display_columns = {
+                'timestamp': 'Date',
+                'score': 'Score',
+                'path': 'Path',
+                'home_cooked_meals': 'Meals',
+                'junk_food': 'Ate Junk',
+                'exercise_minutes': 'Exercise (min)',
+                'strength_training': 'Strength',
+                'no_spending': 'No Spending',
+                'invested_bitcoin': 'Stacked Sats',
+                'btc_usd': 'BTC ($)',
+                'btc_sats': 'Sats',
+                'meditation': 'Meditation',
+                'gratitude': 'Gratitude',
+                'read_or_learned': 'Learning',
+                'environmental_action': 'Environmental'
+            }
+            
+            hist = hist.rename(columns=display_columns)
+            
+            # Show summary stats
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Average Score", f"{hist['Score'].mean():.1f}")
+            with col2:
+                st.metric("Total Days", len(hist))
+            with col3:
+                st.metric("Total Sats", f"{hist['Sats'].sum():,}")
+            with col4:
+                st.metric("Total BTC Invested", f"${hist['BTC ($)'].sum():.2f}")
+            
+            # Display the data
+            st.dataframe(hist, use_container_width=True, hide_index=True)
+            
 except Exception as e:
-    st.error(f"Error loading history: {str(e)}")
+    logger.error(f"Error loading history: {str(e)}")
+    st.error(f"❌ Error loading history: {str(e)}")
+    st.info("If this persists, you may need to reset your data due to database corruption.")
+
+# ── Footer ─────────────────────────────────────────────────────────────────────
+st.markdown("---")
+st.markdown("🛡️ **Sovereignty is the new health plan.** Track daily, build consistently, own your future.")
