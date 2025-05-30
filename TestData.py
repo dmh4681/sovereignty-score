@@ -337,15 +337,19 @@ def show_summary_stats(username):
             
             # Get recent vs early performance
             recent_avg = conn.execute("""
-                SELECT AVG(score) FROM sovereignty 
-                WHERE username = ? 
-                ORDER BY timestamp DESC LIMIT 30
+                SELECT AVG(score) FROM (
+                    SELECT score FROM sovereignty 
+                    WHERE username = ? 
+                    ORDER BY timestamp DESC LIMIT 30
+                )
             """, [username]).fetchone()[0]
             
             early_avg = conn.execute("""
-                SELECT AVG(score) FROM sovereignty 
-                WHERE username = ? 
-                ORDER BY timestamp ASC LIMIT 30
+                SELECT AVG(score) FROM (
+                    SELECT score FROM sovereignty 
+                    WHERE username = ? 
+                    ORDER BY timestamp ASC LIMIT 30
+                )
             """, [username]).fetchone()[0]
             
             improvement = recent_avg - early_avg
