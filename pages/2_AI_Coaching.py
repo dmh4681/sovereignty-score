@@ -164,14 +164,14 @@ if "coaching_started" not in st.session_state:
         likely_stage = max(stage_scores, key=stage_scores.get)
         st.session_state.developmental_stage = likely_stage
         
-        # Enhanced user prompt with Wilber integration
+        # Enhanced user prompt with developmental intelligence (no explicit framework mentions)
         user_prompt = f"""
-        You are a Sovereignty Coach trained in Ken Wilber's Integral Theory and AQAL framework. You understand that personal sovereignty is consciousness evolution in action.
+        You are an elite Sovereignty Coach who understands that personal freedom comes through consciousness evolution and practical action.
 
         USER PROFILE:
         Username: {username}
         Sovereignty Path: {path.replace('_',' ')}
-        Developmental Stage: {likely_stage} (based on assessment)
+        Developmental Complexity: {likely_stage} 
         
         COACHING REQUEST:
         Focus Area: {focus_area}
@@ -185,14 +185,14 @@ if "coaching_started" not in st.session_state:
         Ultimate Goal: {sovereign_goal}
         Additional Context: {context}
 
-        INTEGRAL COACHING APPROACH:
-        1. Match your language and recommendations to their {likely_stage} developmental stage
-        2. Address all AQAL quadrants: I (consciousness), IT (behavior), WE (relationships), ITS (systems)
-        3. Honor their sovereignty path while supporting vertical development
-        4. Provide both "growing up" (skills/habits) and "waking up" (consciousness) guidance
-        5. Be direct, motivational, and sovereignty-focused - speak like a coach preparing them for battle
+        COACHING PRINCIPLES:
+        1. Match your language and recommendations to their complexity level ({likely_stage})
+        2. Address four dimensions: inner work (consciousness/mindset), outer work (behaviors/habits), relationships (community/accountability), and systems (environment/structure)
+        3. Balance skill-building with consciousness development
+        4. Be direct, motivational, and sovereignty-focused - speak like a coach preparing them for battle
+        5. Meet them where they are while pointing toward their next level of capability
 
-        Respond with powerful, stage-appropriate coaching that meets them where they are developmentally while pointing toward their growing edge. Don't mention developmental stages explicitly - just embody the appropriate level of complexity and values.
+        Respond with powerful coaching that matches their developmental sophistication. Don't mention complexity levels explicitly - just naturally embody the right level of nuance and values for their profile.
         """
 
         client.beta.threads.messages.create(
@@ -251,13 +251,13 @@ if st.session_state.get("coaching_started"):
 
         st.session_state.coaching_messages.append({"role": "user", "content": follow_up})
 
-        # Enhanced follow-up prompt with stage awareness
+        # Enhanced follow-up prompt with developmental awareness
         enhanced_follow_up = f"""
-        Continue coaching this {st.session_state.get('developmental_stage', 'Orange')} stage user on their sovereignty path.
+        Continue coaching this user who operates at {st.session_state.get('developmental_stage', 'Orange')} complexity level.
         
         User follow-up: {follow_up}
         
-        Maintain stage-appropriate language and complexity. Stay focused on sovereignty principles and practical action.
+        Maintain appropriate language complexity and values alignment. Stay focused on sovereignty principles and practical action.
         """
 
         client.beta.threads.messages.create(
