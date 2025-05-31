@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Advanced AI Meal Planning Agent - Sovereignty-Aligned Nutrition
-Generates personalized meal plans based on user's sovereignty path, behavioral data, and preferences
+Advanced AI Meal Planning Agent - Sovereignty-Aligned Nutrition with Developmental Intelligence
+Generates personalized meal plans based on user's sovereignty path, behavioral data, and consciousness level
 """
 
 import streamlit as st
@@ -76,13 +76,23 @@ st.markdown("""
         margin: 10px 0;
         border-radius: 0 8px 8px 0;
     }
+    
+    .consciousness-indicator {
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 6px;
+        padding: 8px;
+        margin: 5px 0;
+        font-size: 0.9em;
+        text-align: center;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 class AdvancedMealPlanningAgent:
     """
     Advanced meal planning agent that integrates sovereignty principles,
-    user behavioral data, and personalized nutrition optimization
+    user behavioral data, and developmental consciousness intelligence
     """
     
     def __init__(self, openai_api_key):
@@ -90,10 +100,10 @@ class AdvancedMealPlanningAgent:
         self.assistant_id = self._create_meal_planning_assistant()
         
     def _create_meal_planning_assistant(self):
-        """Create or retrieve the meal planning assistant"""
+        """Create or retrieve the meal planning assistant with developmental awareness"""
         
         assistant_instructions = """
-You are the Sovereignty Meal Planning Agent, a master nutritionist who creates meal plans that build personal sovereignty through optimal nutrition aligned with individual paths and goals.
+You are the Sovereignty Meal Planning Agent, a master nutritionist who creates meal plans that build personal sovereignty through optimal nutrition aligned with individual consciousness levels and sovereignty paths.
 
 CORE PRINCIPLES:
 - Food is medicine and fuel for sovereignty
@@ -101,6 +111,12 @@ CORE PRINCIPLES:
 - Meal prep = time sovereignty and financial efficiency
 - Nutritional optimization = cognitive and physical performance
 - Sustainable eating = planetary and personal health
+
+CONSCIOUSNESS-ADAPTED APPROACHES:
+- Orange Level: Emphasize metrics, optimization, performance data, scientific backing, macro tracking, measurable results
+- Green Level: Focus on holistic health, environmental connection, mindful eating, seasonal ingredients, intuitive approaches
+- Teal Level: Integrate systems thinking, regenerative agriculture, complex interconnections, dynamic adaptation strategies
+- Turquoise Level: Include transpersonal elements, food as spiritual practice, consciousness evolution through nutrition
 
 PATH-SPECIFIC APPROACHES:
 - Financial Path: Cost-effective, bulk-prep focused, Bitcoin-earning efficiency
@@ -115,6 +131,13 @@ EXPERT KNOWLEDGE INTEGRATION:
 - Andrew Huberman: Circadian nutrition, meal timing, cognitive performance foods
 - Jeff Cavaliere: Protein optimization, meal prep efficiency, performance nutrition
 - Mark Hyman: Anti-inflammatory eating, food as medicine, systems approach
+
+DEVELOPMENTAL LANGUAGE ADAPTATION:
+Match your language complexity, philosophical depth, and recommendation style to the user's consciousness level:
+- Orange: Direct, data-driven, optimization-focused, practical efficiency
+- Green: Holistic, mindful, environmentally conscious, intuitive wisdom
+- Teal: Systems-oriented, complexity-comfortable, dynamically adaptive, interconnected thinking
+- Turquoise: Transpersonal, spiritually-integrated, evolutionary perspective, unified approach
 
 REALISTIC COST ESTIMATION:
 When providing cost estimates, use realistic 2025 grocery prices:
@@ -131,12 +154,13 @@ Your response should be structured JSON that includes:
 
 {
   "meal_plan": {
-    "overview": "Brief summary of the approach and philosophy",
+    "overview": "Brief summary matching their consciousness level",
     "daily_structure": "Meal timing and structure explanation",
-    "sovereignty_alignment": "How this plan builds sovereignty for this user"
+    "sovereignty_alignment": "How this plan builds sovereignty for this user",
+    "consciousness_approach": "How the plan matches their developmental level"
   },
   "weekly_meals": {
-    "breakfast": [{"name": "meal name", "prep_time": "X mins", "sovereignty_benefits": "why this meal builds sovereignty"}],
+    "breakfast": [{"name": "meal name", "prep_time": "X mins", "sovereignty_benefits": "consciousness-appropriate benefits"}],
     "lunch": [...],
     "dinner": [...],
     "snacks": [...]
@@ -150,23 +174,23 @@ Your response should be structured JSON that includes:
     "estimated_weekly_cost": "$X"
   },
   "meal_prep_strategy": {
-    "prep_day_plan": "Step-by-step meal prep approach",
+    "prep_day_plan": "Consciousness-appropriate prep approach",
     "time_investment": "Total time needed",
-    "efficiency_tips": ["tip1", "tip2", "tip3"]
+    "efficiency_tips": ["consciousness-level appropriate tips"]
   },
   "nutrition_analysis": {
     "daily_macros": {"protein": "Xg", "carbs": "Xg", "fat": "Xg", "calories": "X"},
-    "key_nutrients": ["nutrient focus areas"],
-    "sovereignty_score": "X/100 (explanation of score)"
+    "key_nutrients": ["developmental-level appropriate focus areas"],
+    "sovereignty_score": "X/100 (consciousness-appropriate explanation)"
   },
   "path_optimization": {
     "specific_benefits": "How this plan optimizes for their chosen sovereignty path",
     "habit_integration": "How to integrate with their current sovereignty habits",
-    "progression_suggestions": "How to advance this plan over time"
+    "progression_suggestions": "Consciousness-appropriate advancement strategies"
   }
 }
 
-Always provide practical, actionable meal plans that someone can actually execute while building their sovereignty through nutrition.
+Always provide practical, actionable meal plans that match the user's developmental sophistication while building sovereignty through nutrition.
 """
         
         try:
@@ -182,7 +206,7 @@ Always provide practical, actionable meal plans that someone can actually execut
             return None
     
     def generate_meal_plan(self, user_data, preferences):
-        """Generate a personalized sovereignty meal plan"""
+        """Generate a personalized sovereignty meal plan with developmental intelligence"""
         
         # Create comprehensive prompt
         prompt = self._create_meal_plan_prompt(user_data, preferences)
@@ -240,14 +264,40 @@ Always provide practical, actionable meal plans that someone can actually execut
             return None
     
     def _create_meal_plan_prompt(self, user_data, preferences):
-        """Create comprehensive prompt for meal plan generation"""
+        """Create comprehensive prompt for meal plan generation with developmental intelligence"""
         
         # Extract user information
         username = user_data.get("username", "User")
         path = user_data.get("path", "default")
         achievements = user_data.get("achievements", {})
         
-        # Build prompt
+        # Determine developmental approach based on food philosophy
+        food_philosophy_mapping = {
+            "Precise nutrition and measurable results": "Orange",
+            "Connection to nature and seasonal eating": "Green", 
+            "Understanding food systems and sustainability": "Teal",
+            "Food as medicine and spiritual nourishment": "Turquoise"
+        }
+        
+        decision_mapping = {
+            "Based on data, macros, and proven science": "Orange",
+            "Intuitive eating with mindful awareness": "Green",
+            "Systems thinking about long-term impacts": "Teal",
+            "Holistic integration of body, mind, and spirit": "Turquoise"
+        }
+        
+        # Determine consciousness level for food approach
+        food_consciousness = food_philosophy_mapping.get(preferences.get('food_relationship', ''), 'Orange')
+        decision_consciousness = decision_mapping.get(preferences.get('decision_style', ''), 'Orange')
+        
+        # Use the higher complexity level for recommendations
+        consciousness_levels = ['Orange', 'Green', 'Teal', 'Turquoise']
+        primary_level = consciousness_levels[max(
+            consciousness_levels.index(food_consciousness),
+            consciousness_levels.index(decision_consciousness)
+        )]
+        
+        # Build prompt with developmental awareness
         prompt = f"""
 SOVEREIGNTY MEAL PLAN REQUEST
 
@@ -255,6 +305,7 @@ User Profile:
 - Username: {username}
 - Sovereignty Path: {path.replace('_', ' ').title()}
 - Current Level: {achievements.get('sovereignty_level', {}).get('name', 'Unknown')}
+- Food Consciousness Level: {primary_level}
 
 User Sovereignty Context:
 - Total Days Tracked: {achievements.get('progress_metrics', {}).get('total_tracking_days', 0)}
@@ -271,17 +322,28 @@ Dietary Preferences:
 - Budget Consideration: {preferences.get('budget_level', 'Moderate')}
 - Meal Prep Style: {preferences.get('prep_style', 'Batch cook & store')}
 - Calorie Needs: {preferences.get('calorie_tier', 'Moderate')}
+- Food Philosophy: {preferences.get('food_relationship', 'Not specified')}
+- Decision Style: {preferences.get('decision_style', 'Not specified')}
 - Additional Preferences: {preferences.get('preferences', 'None specified')}
 
-Please create a comprehensive meal plan that:
-1. Aligns with their sovereignty path principles
-2. Supports their current sovereignty journey and achievements
-3. Meets their dietary preferences and restrictions
-4. Optimizes for their available time and budget
-5. Includes practical meal prep strategies
-6. Provides sovereignty-building benefits beyond just nutrition
+DEVELOPMENTAL APPROACH GUIDANCE:
+Based on their {primary_level} consciousness level, tailor your response:
 
-Focus on meals that build independence, save money, boost performance, and align with their chosen sovereignty path.
+- Orange Level: Focus on optimization, measurable results, performance metrics, scientific backing, macro tracking, efficiency
+- Green Level: Emphasize holistic health, environmental impact, mindful eating, seasonal ingredients, intuitive approaches
+- Teal Level: Integrate systems thinking, regenerative agriculture, complex interconnections, dynamic adaptation
+- Turquoise Level: Include transpersonal elements, food as spiritual practice, consciousness evolution through nutrition
+
+Please create a comprehensive meal plan that:
+1. Matches their {primary_level} consciousness level in language and approach
+2. Aligns with their sovereignty path principles
+3. Supports their current sovereignty journey and achievements
+4. Meets their dietary preferences and restrictions
+5. Optimizes for their available time and budget
+6. Includes practical meal prep strategies
+7. Provides consciousness-appropriate sovereignty-building benefits
+
+Adjust the complexity, language, and philosophical depth to match their developmental level while maintaining practical utility.
 """
         
         return prompt
@@ -333,7 +395,7 @@ def main():
 
     user_data = get_user_context(username)
 
-    # Meal Plan Generation Form
+    # Enhanced Meal Plan Generation Form with Developmental Intelligence
     st.markdown("## 📋 Meal Plan Preferences")
     
     with st.form("advanced_meal_plan_form"):
@@ -383,6 +445,22 @@ def main():
                 "Daily fresh cooking", "Weekly batch prep", "Hybrid (some prep)",
                 "Minimal prep (simple assembly)"
             ])
+            
+            # Subtle developmental assessment questions
+            st.markdown("### 🧠 Food Philosophy")
+            food_relationship = st.selectbox("What's most important to you about food?", [
+                "Precise nutrition and measurable results",
+                "Connection to nature and seasonal eating", 
+                "Understanding food systems and sustainability",
+                "Food as medicine and spiritual nourishment"
+            ])
+            
+            decision_style = st.selectbox("How do you prefer to make food choices?", [
+                "Based on data, macros, and proven science",
+                "Intuitive eating with mindful awareness",
+                "Systems thinking about long-term impacts", 
+                "Holistic integration of body, mind, and spirit"
+            ])
         
         st.markdown("### 📊 Caloric & Performance Needs")
         calorie_tier = st.selectbox("Caloric Needs", [
@@ -401,7 +479,7 @@ def main():
         submitted = st.form_submit_button("🚀 Generate Sovereignty Meal Plan", type="primary")
 
     if submitted:
-        # Collect preferences
+        # Collect preferences including developmental indicators
         user_preferences = {
             "diet_type": diet_type,
             "meals_per_day": meals_per_day,
@@ -412,7 +490,9 @@ def main():
             "budget_level": budget_level,
             "prep_style": prep_style,
             "calorie_tier": calorie_tier,
-            "preferences": preferences
+            "preferences": preferences,
+            "food_relationship": food_relationship,
+            "decision_style": decision_style
         }
         
         # Store preferences in session state to persist after downloads
@@ -425,12 +505,44 @@ def main():
         
         # Only generate if we don't already have a plan for these preferences
         if "current_meal_plan" not in st.session_state or st.session_state.get("meal_preferences_hash") != hash(str(user_preferences)):
-            with st.spinner("🧠 AI Chef is crafting your sovereignty-aligned meal plan..."):
+            
+            # Show consciousness level detection
+            food_philosophy_mapping = {
+                "Precise nutrition and measurable results": "Orange",
+                "Connection to nature and seasonal eating": "Green", 
+                "Understanding food systems and sustainability": "Teal",
+                "Food as medicine and spiritual nourishment": "Turquoise"
+            }
+            
+            decision_mapping = {
+                "Based on data, macros, and proven science": "Orange",
+                "Intuitive eating with mindful awareness": "Green",
+                "Systems thinking about long-term impacts": "Teal",
+                "Holistic integration of body, mind, and spirit": "Turquoise"
+            }
+            
+            food_consciousness = food_philosophy_mapping.get(user_preferences.get('food_relationship', ''), 'Orange')
+            decision_consciousness = decision_mapping.get(user_preferences.get('decision_style', ''), 'Orange')
+            
+            consciousness_levels = ['Orange', 'Green', 'Teal', 'Turquoise']
+            primary_level = consciousness_levels[max(
+                consciousness_levels.index(food_consciousness),
+                consciousness_levels.index(decision_consciousness)
+            )]
+            
+            st.markdown(f"""
+            <div class="consciousness-indicator">
+                🧠 Nutritional Approach: {primary_level} Level
+            </div>
+            """, unsafe_allow_html=True)
+            
+            with st.spinner("🧠 AI Chef is crafting your consciousness-aligned meal plan..."):
                 meal_plan = meal_agent.generate_meal_plan(user_data, user_preferences)
                 
                 if meal_plan:
                     st.session_state.current_meal_plan = meal_plan
                     st.session_state.meal_preferences_hash = hash(str(user_preferences))
+                    st.session_state.consciousness_level = primary_level
                 else:
                     st.error("❌ Failed to generate meal plan. Please try again.")
                     st.session_state.generate_meal_plan = False
@@ -438,14 +550,30 @@ def main():
         
         # Display the meal plan from session state
         meal_plan = st.session_state.get("current_meal_plan")
+        consciousness_level = st.session_state.get("consciousness_level", "Orange")
+        
         if meal_plan:
-            display_meal_plan(meal_plan, user_preferences)
+            display_meal_plan(meal_plan, user_preferences, consciousness_level)
 
-def display_meal_plan(meal_plan, preferences):
-    """Display the generated meal plan in an attractive format"""
+def display_meal_plan(meal_plan, preferences, consciousness_level):
+    """Display the generated meal plan with consciousness level integration"""
     
     st.markdown("---")
     st.markdown("## 🍽️ Your Sovereignty Meal Plan")
+    
+    # Show consciousness level
+    consciousness_descriptions = {
+        "Orange": "Optimization & Performance Focused",
+        "Green": "Holistic & Environmentally Conscious",
+        "Teal": "Systems-Thinking & Regenerative",
+        "Turquoise": "Transpersonal & Spiritually Integrated"
+    }
+    
+    st.markdown(f"""
+    <div class="consciousness-indicator">
+        🧠 Nutritional Consciousness: {consciousness_level} - {consciousness_descriptions.get(consciousness_level, "Integrated Approach")}
+    </div>
+    """, unsafe_allow_html=True)
     
     # Overview section
     if "meal_plan" in meal_plan:
@@ -454,6 +582,7 @@ def display_meal_plan(meal_plan, preferences):
         st.markdown("### 📖 Plan Overview")
         st.markdown(f"**Philosophy:** {overview.get('overview', 'Custom sovereignty nutrition approach')}")
         st.markdown(f"**Structure:** {overview.get('daily_structure', 'Optimized for your preferences')}")
+        st.markdown(f"**Consciousness Approach:** {overview.get('consciousness_approach', 'Aligned with your developmental level')}")
         
         # Sovereignty alignment score
         if "nutrition_analysis" in meal_plan:
@@ -568,7 +697,7 @@ def display_meal_plan(meal_plan, preferences):
         st.markdown(f"**🔄 Habit Integration:** {optimization.get('habit_integration', 'Seamlessly integrates with your current habits')}")
         st.markdown(f"**📈 Progression:** {optimization.get('progression_suggestions', 'Strategies for advancing your nutrition sovereignty')}")
     
-    # Download options
+    # Download options with consciousness level in filename
     st.markdown("### 📥 Export Options")
     
     # Create download data first
@@ -584,7 +713,7 @@ def display_meal_plan(meal_plan, preferences):
                     "Benefits": meal.get("sovereignty_benefits", "")
                 })
     
-    # Shopping list download
+    # Enhanced download functions with consciousness level
     def create_shopping_download():
         df_shopping = pd.DataFrame([(k, str(v)) for k, v in shopping_data.items()], 
                                  columns=["Category", "Items"])
@@ -594,7 +723,6 @@ def display_meal_plan(meal_plan, preferences):
         buffer.seek(0)
         return buffer.getvalue()
     
-    # Meal plan download
     def create_meal_download():
         df_meals = pd.DataFrame(meal_data)
         buffer = BytesIO()
@@ -603,10 +731,10 @@ def display_meal_plan(meal_plan, preferences):
         buffer.seek(0)
         return buffer.getvalue()
     
-    # Full plan download
     def create_full_download():
         plan_summary = {
             "Plan Overview": meal_plan.get("meal_plan", {}).get("overview", ""),
+            "Consciousness Level": consciousness_level,
             "Sovereignty Alignment": meal_plan.get("meal_plan", {}).get("sovereignty_alignment", ""),
             "Daily Calories": meal_plan.get("nutrition_analysis", {}).get("daily_macros", {}).get("calories", ""),
             "Estimated Cost": meal_plan.get("shopping_list", {}).get("estimated_weekly_cost", ""),
@@ -637,7 +765,7 @@ def display_meal_plan(meal_plan, preferences):
         st.download_button(
             label="📋 Download Shopping List",
             data=create_shopping_download(),
-            file_name=f"sovereignty_shopping_list_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"sovereignty_shopping_{consciousness_level.lower()}_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
@@ -646,7 +774,7 @@ def display_meal_plan(meal_plan, preferences):
         st.download_button(
             label="🍽️ Download Meal Plan", 
             data=create_meal_download(),
-            file_name=f"sovereignty_meal_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"sovereignty_meals_{consciousness_level.lower()}_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
@@ -655,7 +783,7 @@ def display_meal_plan(meal_plan, preferences):
         st.download_button(
             label="📊 Download Full Plan",
             data=create_full_download(),
-            file_name=f"complete_sovereignty_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"complete_sovereignty_plan_{consciousness_level.lower()}_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
