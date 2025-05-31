@@ -544,79 +544,94 @@ def display_meal_plan(meal_plan, preferences):
     # Download options
     st.markdown("### 📥 Export Options")
     
+    # Create download data first
+    shopping_data = meal_plan.get("shopping_list", {})
+    meal_data = []
+    if "weekly_meals" in meal_plan:
+        for meal_type, meals in meal_plan["weekly_meals"].items():
+            for meal in meals:
+                meal_data.append({
+                    "Type": meal_type.title(),
+                    "Name": meal.get("name", ""),
+                    "Prep Time": meal.get("prep_time", ""),
+                    "Benefits": meal.get("sovereignty_benefits", "")
+                })
+    
+    # Shopping list download
+    def create_shopping_download():
+        df_shopping = pd.DataFrame([(k, str(v)) for k, v in shopping_data.items()], 
+                                 columns=["Category", "Items"])
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df_shopping.to_excel(writer, index=False, sheet_name="Shopping List")
+        buffer.seek(0)
+        return buffer.getvalue()
+    
+    # Meal plan download
+    def create_meal_download():
+        df_meals = pd.DataFrame(meal_data)
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df_meals.to_excel(writer, index=False, sheet_name="Meal Plan")
+        buffer.seek(0)
+        return buffer.getvalue()
+    
+    # Full plan download
+    def create_full_download():
+        plan_summary = {
+            "Plan Overview": meal_plan.get("meal_plan", {}).get("overview", ""),
+            "Sovereignty Alignment": meal_plan.get("meal_plan", {}).get("sovereignty_alignment", ""),
+            "Daily Calories": meal_plan.get("nutrition_analysis", {}).get("daily_macros", {}).get("calories", ""),
+            "Estimated Cost": meal_plan.get("shopping_list", {}).get("estimated_weekly_cost", ""),
+            "Prep Time": meal_plan.get("meal_prep_strategy", {}).get("time_investment", "")
+        }
+        
+        df_summary = pd.DataFrame(list(plan_summary.items()), columns=["Aspect", "Details"])
+        df_meals = pd.DataFrame(meal_data)
+        
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df_summary.to_excel(writer, index=False, sheet_name="Plan Summary")
+            if not df_meals.empty:
+                df_meals.to_excel(writer, index=False, sheet_name="Meals")
+            
+            # Add shopping list sheet
+            if shopping_data:
+                df_shopping = pd.DataFrame([(k, str(v)) for k, v in shopping_data.items()], 
+                                         columns=["Category", "Items"])
+                df_shopping.to_excel(writer, index=False, sheet_name="Shopping List")
+        
+        buffer.seek(0)
+        return buffer.getvalue()
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📋 Download Shopping List", use_container_width=True):
-            # Create shopping list download
-            shopping_data = meal_plan.get("shopping_list", {})
-            df_shopping = pd.DataFrame([(k, v) for k, v in shopping_data.items()], 
-                                     columns=["Category", "Items"])
-            
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                df_shopping.to_excel(writer, index=False, sheet_name="Shopping List")
-            
-            buffer.seek(0)
-            st.download_button(
-                label="💾 Download Excel",
-                data=buffer,
-                file_name=f"sovereignty_shopping_list_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        st.download_button(
+            label="📋 Download Shopping List",
+            data=create_shopping_download(),
+            file_name=f"sovereignty_shopping_list_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
     
     with col2:
-        if st.button("🍽️ Download Meal Plan", use_container_width=True):
-            # Create comprehensive meal plan download
-            meal_data = []
-            if "weekly_meals" in meal_plan:
-                for meal_type, meals in meal_plan["weekly_meals"].items():
-                    for meal in meals:
-                        meal_data.append({
-                            "Type": meal_type.title(),
-                            "Name": meal.get("name", ""),
-                            "Prep Time": meal.get("prep_time", ""),
-                            "Benefits": meal.get("sovereignty_benefits", "")
-                        })
-            
-            df_meals = pd.DataFrame(meal_data)
-            
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                df_meals.to_excel(writer, index=False, sheet_name="Meal Plan")
-            
-            buffer.seek(0)
-            st.download_button(
-                label="💾 Download Excel",
-                data=buffer,
-                file_name=f"sovereignty_meal_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        st.download_button(
+            label="🍽️ Download Meal Plan", 
+            data=create_meal_download(),
+            file_name=f"sovereignty_meal_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
     
     with col3:
-        if st.button("📊 Download Full Plan", use_container_width=True):
-            # Create complete plan download with all sections
-            plan_summary = {
-                "Plan Overview": meal_plan.get("meal_plan", {}).get("overview", ""),
-                "Sovereignty Alignment": meal_plan.get("meal_plan", {}).get("sovereignty_alignment", ""),
-                "Daily Calories": meal_plan.get("nutrition_analysis", {}).get("daily_macros", {}).get("calories", ""),
-                "Estimated Cost": meal_plan.get("shopping_list", {}).get("estimated_weekly_cost", ""),
-                "Prep Time": meal_plan.get("meal_prep_strategy", {}).get("time_investment", "")
-            }
-            
-            df_summary = pd.DataFrame(list(plan_summary.items()), columns=["Aspect", "Details"])
-            
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                df_summary.to_excel(writer, index=False, sheet_name="Plan Summary")
-            
-            buffer.seek(0)
-            st.download_button(
-                label="💾 Download Excel",
-                data=buffer,
-                file_name=f"complete_sovereignty_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        st.download_button(
+            label="📊 Download Full Plan",
+            data=create_full_download(),
+            file_name=f"complete_sovereignty_plan_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
 
 if __name__ == "__main__":
     main()
