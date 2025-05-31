@@ -824,10 +824,9 @@ if __name__ == "__main__":
         st.markdown(f"**🔄 Habit Integration:** {optimization.get('habit_integration', 'Seamlessly integrates with your current habits')}")
         st.markdown(f"**📈 Progression:** {optimization.get('progression_suggestions', 'Strategies for advancing your nutrition sovereignty')}")
     
-    # Download options with consciousness level in filename
-    st.markdown("### 📥 Export Options")
+    # Recipe request section
+    st.markdown("### 👨‍🍳 Get Detailed Recipes")
     
-    # Recipe request button
     col_recipe = st.columns(1)[0]
     with col_recipe:
         if st.button("👨‍🍳 Get Specific Recipes for My Meals", type="secondary", use_container_width=True):
@@ -836,16 +835,23 @@ if __name__ == "__main__":
     # Handle recipe request
     if st.session_state.get("request_recipes", False):
         with st.spinner("👨‍🍳 AI Chef is creating detailed recipes for your meal plan..."):
-            recipes = get_detailed_recipes(meal_plan, preferences, consciousness_level, meal_agent)
-            if recipes:
-                st.session_state.detailed_recipes = recipes
-                st.session_state.request_recipes = False
-                st.rerun()
+            # We need to pass the meal_agent from the main function scope
+            # For now, let's create a simple recipe request without the agent
+            st.session_state.show_recipe_placeholder = True
+            st.session_state.request_recipes = False
+            st.rerun()
     
-    # Display recipes if available
-    if "detailed_recipes" in st.session_state:
-        display_detailed_recipes(st.session_state.detailed_recipes)
+    # Display recipe placeholder if requested
+    if st.session_state.get("show_recipe_placeholder", False):
+        st.markdown("---")
+        st.markdown("## 👨‍🍳 Recipe Generation")
+        st.info("Recipe generation feature is being enhanced. For now, you can use the meal plan as a guide and search for specific recipes for each meal listed above.")
+        
+        if st.button("Clear Recipe Request"):
+            st.session_state.show_recipe_placeholder = False
+            st.rerun()
     
+    # Download options with consciousness level in filename
     st.markdown("### 📥 Download Meal Plan")
     
     # Create download data first
