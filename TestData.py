@@ -364,8 +364,8 @@ def main():
     print("=" * 60)
     
     # Configuration
-    username = "test_planetary"
-    path = "planetary_stewardship"  # You can change this
+    username = "test_spiritual"
+    path = "spiritual_growth"  # You can change this
     days = 365
     
     print(f"👤 Generating data for user: {username}")
