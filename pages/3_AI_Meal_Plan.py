@@ -642,7 +642,8 @@ Format as a comprehensive recipe collection that empowers sovereignty through co
         st.error(f"Error generating recipes: {e}")
         return None
 
-def display_detailed_recipes(recipes_text):
+def display_meal_plan(meal_plan, preferences, consciousness_level):
+    """Display the generated meal plan with consciousness level integration"""
     """Display the detailed recipes in an attractive format"""
     
     st.markdown("---")
@@ -679,6 +680,9 @@ Building independence through conscious nutrition
         mime="text/plain",
         use_container_width=True
     )
+
+if __name__ == "__main__":
+    main()
     """Display the generated meal plan with consciousness level integration"""
     
     st.markdown("---")
