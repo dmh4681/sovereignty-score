@@ -116,6 +116,16 @@ EXPERT KNOWLEDGE INTEGRATION:
 - Jeff Cavaliere: Protein optimization, meal prep efficiency, performance nutrition
 - Mark Hyman: Anti-inflammatory eating, food as medicine, systems approach
 
+REALISTIC COST ESTIMATION:
+When providing cost estimates, use realistic 2025 grocery prices:
+- Proteins: Chicken breast $4-6/lb, Ground beef $5-7/lb, Salmon $12-15/lb, Eggs $3-4/dozen
+- Vegetables: Fresh produce $1-4/lb depending on type and season
+- Grains: Rice/oats $1-2/lb, Quinoa $4-6/lb, Bread $2-4/loaf
+- Pantry staples: Olive oil $8-12/bottle, Spices $2-5 each, Nuts $6-10/lb
+- Weekly grocery budget realistic ranges: Budget-conscious $50-80, Moderate $80-120, Premium $120-180
+
+Include quantity estimates and calculate realistic totals. Don't lowball costs - people need accurate budgeting info.
+
 OUTPUT FORMAT:
 Your response should be structured JSON that includes:
 
@@ -405,14 +415,31 @@ def main():
             "preferences": preferences
         }
         
-        # Generate meal plan
-        with st.spinner("🧠 AI Chef is crafting your sovereignty-aligned meal plan..."):
-            meal_plan = meal_agent.generate_meal_plan(user_data, user_preferences)
+        # Store preferences in session state to persist after downloads
+        st.session_state.meal_preferences = user_preferences
+        st.session_state.generate_meal_plan = True
+
+    # Generate meal plan (either from form submission or session state)
+    if st.session_state.get("generate_meal_plan", False):
+        user_preferences = st.session_state.get("meal_preferences", {})
         
+        # Only generate if we don't already have a plan for these preferences
+        if "current_meal_plan" not in st.session_state or st.session_state.get("meal_preferences_hash") != hash(str(user_preferences)):
+            with st.spinner("🧠 AI Chef is crafting your sovereignty-aligned meal plan..."):
+                meal_plan = meal_agent.generate_meal_plan(user_data, user_preferences)
+                
+                if meal_plan:
+                    st.session_state.current_meal_plan = meal_plan
+                    st.session_state.meal_preferences_hash = hash(str(user_preferences))
+                else:
+                    st.error("❌ Failed to generate meal plan. Please try again.")
+                    st.session_state.generate_meal_plan = False
+                    st.stop()
+        
+        # Display the meal plan from session state
+        meal_plan = st.session_state.get("current_meal_plan")
         if meal_plan:
             display_meal_plan(meal_plan, user_preferences)
-        else:
-            st.error("❌ Failed to generate meal plan. Please try again.")
 
 def display_meal_plan(meal_plan, preferences):
     """Display the generated meal plan in an attractive format"""
