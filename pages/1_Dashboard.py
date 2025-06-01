@@ -26,6 +26,12 @@ if private_path not in sys.path:
 from db import get_db_connection
 from sovereignty_achievements import SovereigntyAchievementEngine
 
+try:
+    from sovereignty_achievements import IntegratedSovereigntyEngine
+    AQAL_AVAILABLE = True
+except ImportError:
+    AQAL_AVAILABLE = False
+
 # Custom CSS for sovereignty styling
 st.markdown("""
 <style>
@@ -113,6 +119,12 @@ st.markdown(f"""
 
 # Initialize achievement engine
 @st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_integrated_profile(username):
+    """Get integrated sovereignty + AQAL profile"""
+    if AQAL_AVAILABLE:
+        engine = IntegratedSovereigntyEngine()
+        return engine.calculate_complete_user_profile(username)
+    return None
 def get_user_achievements(username):
     """Get user achievements with caching"""
     engine = SovereigntyAchievementEngine()
@@ -125,6 +137,8 @@ with st.spinner("🔍 Analyzing your sovereignty journey..."):
 if "error" in achievements_data:
     st.error(f"❌ Error loading achievements: {achievements_data['error']}")
     st.stop()
+
+integrated_profile = get_integrated_profile(username) if AQAL_AVAILABLE else None
 
 # Extract achievement data
 sovereignty_level = achievements_data.get("sovereignty_level", {})
@@ -174,6 +188,100 @@ with level_col3:
     </div>
     """, unsafe_allow_html=True)
 
+
+# ADD THIS SECTION after your existing "🏆 SOVEREIGNTY LEVEL DISPLAY" section:
+
+if AQAL_AVAILABLE and integrated_profile and "error" not in integrated_profile:
+    # Extract AQAL data
+    aqal_data = integrated_profile.get("aqal_consciousness", {})
+    if aqal_data and "error" not in aqal_data:
+        consciousness_level = aqal_data.get("consciousness_level", {})
+        quadrant_development = aqal_data.get("quadrant_development", {})
+        unified_progress = integrated_profile.get("unified_progress_score", {})
+        
+        st.markdown("---")
+        st.markdown("## 🧠 Consciousness Development (Wilber AQAL)")
+        
+        # Consciousness Level & Unified Progress
+        consciousness_col1, consciousness_col2 = st.columns([2, 1])
+        
+        with consciousness_col1:
+            level_name = consciousness_level.get("name", "🔴 Red - Power/Action")
+            sovereignty_focus = consciousness_level.get("sovereignty_focus", "Personal power development")
+            characteristic = consciousness_level.get("characteristic", "Developing")
+            
+            # Determine level color based on name
+            level_colors = {
+                "Red": "#FF0000", "Amber": "#FFBF00", "Orange": "#FF8C00", 
+                "Green": "#32CD32", "Teal": "#008080", "Turquoise": "#40E0D0"
+            }
+            level_color = "#6366f1"  # default
+            for color_key, color_value in level_colors.items():
+                if color_key in level_name:
+                    level_color = color_value
+                    break
+            
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, {level_color}20, {level_color}10); 
+                        border: 2px solid {level_color}60; 
+                        border-radius: 12px; 
+                        padding: 20px; 
+                        text-align: center;">
+                <h3 style="margin: 0 0 12px 0; color: {level_color};">{level_name}</h3>
+                <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+                    <strong>Focus:</strong> {sovereignty_focus}
+                </p>
+                <p style="margin: 0; color: #9ca3af; font-size: 13px;">
+                    {characteristic} Consciousness
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with consciousness_col2:
+            unified_score = unified_progress.get("unified_score", 0)
+            integration_level = unified_progress.get("integration_level", "Developing")
+            
+            st.markdown(f"""
+            <div class="sovereignty-metric">
+                <h2 style="margin: 0; color: #8b5cf6;">{unified_score:.1f}</h2>
+                <p style="margin: 5px 0; color: #9ca3af;">Unified Progress</p>
+                <p style="margin: 0; font-size: 12px; color: #6b7280;">{integration_level}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # AQAL Four Quadrants Mini-Display
+        st.markdown("### 🎯 AQAL Four Quadrants Development")
+        
+        quad_col1, quad_col2, quad_col3, quad_col4 = st.columns(4)
+        
+        quadrant_info = [
+            ("upper_left", "🧠 Interior (I)", "Consciousness"),
+            ("upper_right", "💪 Exterior (IT)", "Behaviors"), 
+            ("lower_left", "🤝 Culture (WE)", "Relationships"),
+            ("lower_right", "⚙️ Systems (ITS)", "Environment")
+        ]
+        
+        for i, (quad_id, quad_name, quad_focus) in enumerate(quadrant_info):
+            quad_data = quadrant_development.get(quad_id, {})
+            quad_score = quad_data.get("performance_score", 0)
+            quad_level = quad_data.get("development_level", "Developing")
+            
+            col = [quad_col1, quad_col2, quad_col3, quad_col4][i]
+            with col:
+                st.markdown(f"""
+                <div style="background: rgba(99, 102, 241, 0.1); 
+                            border: 1px solid rgba(99, 102, 241, 0.3); 
+                            border-radius: 8px; 
+                            padding: 12px; 
+                            text-align: center;
+                            margin: 4px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #6366f1; font-size: 14px;">{quad_name}</h4>
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #9ca3af;">{quad_focus}</p>
+                    <h3 style="margin: 0 0 4px 0; color: #6366f1;">{quad_score:.0f}</h3>
+                    <p style="margin: 0; font-size: 11px; color: #6b7280;">{quad_level}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
 # ═══════════════════════════════════════════════════════════════════
 # 🏅 ACHIEVEMENT SHOWCASE
 # ═══════════════════════════════════════════════════════════════════
@@ -221,6 +329,140 @@ if earned_achievements:
 
 else:
     st.info("🎯 Start tracking consistently to earn your first achievements!")
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 🌟 SECTION 2: AQAL ACHIEVEMENTS & CONSCIOUSNESS INSIGHTS (ADD AFTER TRADITIONAL ACHIEVEMENTS)
+# ═══════════════════════════════════════════════════════════════════
+
+# ADD THIS SECTION after your existing "🏆 Achievement Showcase" section:
+
+if AQAL_AVAILABLE and integrated_profile and "error" not in integrated_profile:
+    aqal_data = integrated_profile.get("aqal_consciousness", {})
+    if aqal_data and "error" not in aqal_data:
+        aqal_achievements = aqal_data.get("aqal_achievements", [])
+        integrated_insights = integrated_profile.get("integrated_insights", [])
+        recommendations = integrated_profile.get("development_recommendations", [])
+        
+        st.markdown("---")
+        st.markdown("## 🌟 Consciousness Achievements & Insights")
+        
+        insights_col1, insights_col2 = st.columns([1, 1])
+        
+        with insights_col1:
+            st.markdown("### 🧠 AQAL Consciousness Achievements")
+            
+            if aqal_achievements:
+                # Group AQAL achievements by rarity
+                aqal_rarities = {"aqal_legendary": [], "aqal_epic": [], "aqal_rare": [], "aqal_common": []}
+                for ach in aqal_achievements:
+                    rarity = ach.get("rarity", "aqal_common")
+                    if rarity in aqal_rarities:
+                        aqal_rarities[rarity].append(ach)
+                
+                # Display AQAL achievements
+                aqal_rarity_colors = {
+                    "aqal_legendary": "#f59e0b", 
+                    "aqal_epic": "#8b5cf6", 
+                    "aqal_rare": "#3b82f6", 
+                    "aqal_common": "#6b7280"
+                }
+                
+                aqal_rarity_names = {
+                    "aqal_legendary": "🌟 Legendary", 
+                    "aqal_epic": "💜 Epic", 
+                    "aqal_rare": "🔵 Rare", 
+                    "aqal_common": "🔘 Common"
+                }
+                
+                for rarity, achievements in aqal_rarities.items():
+                    if achievements:
+                        color = aqal_rarity_colors[rarity]
+                        name = aqal_rarity_names[rarity]
+                        
+                        st.markdown(f"**{name} Consciousness ({len(achievements)})**")
+                        for achievement in achievements[:2]:  # Show max 2 per rarity
+                            quadrant = achievement.get("quadrant", "general").replace("_", " ").title()
+                            level = achievement.get("level", "").title()
+                            
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(45deg, {color}20, {color}10); 
+                                        border: 1px solid {color}60; 
+                                        border-radius: 8px; 
+                                        padding: 12px; 
+                                        margin: 6px 0;">
+                                <h5 style="margin: 0 0 4px 0; color: {color};">{achievement['name']}</h5>
+                                <p style="margin: 0 0 4px 0; font-size: 12px; color: #6b7280;">
+                                    {achievement['consciousness_marker']}
+                                </p>
+                                <p style="margin: 0; font-size: 11px; color: #9ca3af;">
+                                    {quadrant} • {level} Level
+                                </p>
+                            </div>
+                            """, unsafe_allow_html=True)
+            else:
+                st.info("🎯 Continue developing consciousness through sovereignty practices to unlock AQAL achievements!")
+        
+        with insights_col2:
+            st.markdown("### 💡 Integrated Development Insights")
+            
+            # Show integrated insights
+            if integrated_insights:
+                for insight in integrated_insights[:3]:  # Show top 3 insights
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); 
+                                border-left: 4px solid #10b981; 
+                                padding: 12px; 
+                                margin: 8px 0; 
+                                border-radius: 0 8px 8px 0;">
+                        <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.4;">
+                            💡 {insight}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            # Show development recommendations
+            st.markdown("**🎯 Development Recommendations:**")
+            if recommendations:
+                for rec in recommendations[:3]:  # Show top 3 recommendations
+                    st.markdown(f"""
+                    <div style="background: rgba(139, 92, 246, 0.1); 
+                                border-left: 3px solid #8b5cf6; 
+                                padding: 10px; 
+                                margin: 6px 0; 
+                                border-radius: 0 6px 6px 0;">
+                        <p style="margin: 0; font-size: 13px; color: #4b5563;">
+                            📋 {rec}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Continue tracking to receive personalized development recommendations!")
+
+# Add this at the very end of your dashboard, in the footer section:
+elif AQAL_AVAILABLE:
+    st.markdown("---")
+    st.markdown("## 🧠 Consciousness Development")
+    st.info("🔮 Enable AQAL consciousness tracking by updating your sovereignty achievements engine!")
+else:
+    # Add a teaser section for non-AQAL users
+    st.markdown("---")
+    st.markdown("## 🧠 Unlock Consciousness Development")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); 
+                border: 2px solid rgba(139, 92, 246, 0.3); 
+                border-radius: 12px; 
+                padding: 20px; 
+                text-align: center;">
+        <h3 style="color: #8b5cf6; margin: 0 0 12px 0;">🚀 Coming Soon: AQAL Consciousness Tracking</h3>
+        <p style="margin: 0 0 12px 0; color: #6b7280;">
+            Track your consciousness development through Ken Wilber's Integral AQAL framework alongside your sovereignty habits.
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #9ca3af;">
+            🎯 Four Quadrants Development • 🌀 Consciousness Levels • 📈 Lines of Development • 💎 Integral Achievements
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════
 # 🔥 CURRENT STREAKS
