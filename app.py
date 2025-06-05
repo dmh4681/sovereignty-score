@@ -249,16 +249,16 @@ with st.form("tracker_form"):
     meals = st.number_input("Home-cooked meals", min_value=0, max_value=10, value=0, 
                            help="How many meals did you cook at home today?")
     no_junk = st.checkbox("No junk food today?", 
-                         help="Check if you avoided junk food completely today")
+                         help="Avoided processed foods, added sugars, and ultra-processed items")
     mins = st.number_input("Exercise minutes", min_value=0, max_value=300, value=0,
-                          help="Total minutes of exercise today")
-    lift = st.checkbox("Strength training?", 
-                      help="Did you do any strength/resistance training?")
+                          help="Any intentional movement: walking, gym, sports, cycling, etc.")
+    lift = st.checkbox("Strength training / Yoga / HIIT / Calisthenics?", 
+                      help="Strength training, yoga, HIIT, calisthenics, or challenging bodyweight work")
     
     # Financial activities
     st.markdown("#### 💰 Financial")
     spend = st.checkbox("No discretionary spending?",
-                       help="Did you avoid unnecessary purchases today?")
+                       help="Avoided non-essential purchases (food, bills, necessities don't count)")
     
     # Bitcoin investment with improved UX
     btc_usd = st.number_input("Bitcoin investment today (USD)", min_value=0.0, step=1.0, value=0.0,
@@ -276,19 +276,19 @@ with st.form("tracker_form"):
     
     btc = btc_usd > 0  # Set bitcoin investment flag
     
-    # Mental/Spiritual activities
+     # Mental/Spiritual activities
     st.markdown("#### 🧠 Mental & Spiritual")
     med = st.checkbox("Meditated?", 
-                     help="Did you practice meditation or mindfulness?")
+                     help="5+ minutes of formal meditation, breathwork, or mindfulness practice")
     grat = st.checkbox("Gratitude practice?",
-                      help="Did you practice gratitude today?")
+                      help="Intentional gratitude: journaling, reflection, or conscious appreciation")
     learn = st.checkbox("Read or learned something new?",
-                       help="Did you read, study, or learn something today?")
+                       help="20+ minutes of learning: books, educational podcasts, courses, skill practice")
     
     # Environmental
     st.markdown("#### 🌍 Environmental")
     env = st.checkbox("Environmentally friendly action?",
-                     help="Did you take action to help the environment today?")
+                     help="Conscious environmental choice: waste reduction, sustainable transport, local sourcing")
     
     submitted = st.form_submit_button("Submit & Save", type="primary")
 
