@@ -49,7 +49,7 @@ class XPTransactionEngine:
                 conn.execute("""
                     CREATE TABLE xp_transactions (
                         transaction_id VARCHAR PRIMARY KEY,
-                        username VARCHAR NOT NULL,
+                        user_name VARCHAR NOT NULL,
                         xp_amount INTEGER NOT NULL,
                         source VARCHAR NOT NULL,
                         description TEXT,
@@ -63,7 +63,7 @@ class XPTransactionEngine:
                 conn.execute("""
                     CREATE TABLE daily_challenge_completion (
                         completion_id VARCHAR PRIMARY KEY,
-                        username VARCHAR NOT NULL,
+                        user_name VARCHAR NOT NULL,
                         challenge_id VARCHAR NOT NULL,
                         challenge_type VARCHAR NOT NULL,
                         xp_reward INTEGER NOT NULL,
@@ -75,7 +75,7 @@ class XPTransactionEngine:
                 conn.execute("""
                     CREATE TABLE weekly_quest_progress (
                         quest_id VARCHAR PRIMARY KEY,
-                        username VARCHAR NOT NULL,
+                        user_name VARCHAR NOT NULL,
                         week_start DATE NOT NULL,
                         quest_type VARCHAR NOT NULL,
                         progress INTEGER DEFAULT 0,
@@ -90,7 +90,7 @@ class XPTransactionEngine:
                 conn.execute("""
                     CREATE TABLE achievement_unlocks (
                         unlock_id VARCHAR PRIMARY KEY,
-                        username VARCHAR NOT NULL,
+                        user_name VARCHAR NOT NULL,
                         achievement_id VARCHAR NOT NULL,
                         xp_reward INTEGER NOT NULL,
                         unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -103,11 +103,11 @@ class XPTransactionEngine:
             logger.error(f"❌ Error initializing XP tables: {e}")
             raise
     
-    def award_xp(self, username, xp_amount, source, description="", reference_id=None, multiplier=1.0):
+    def award_xp(self, user_name, xp_amount, source, description="", reference_id=None, multiplier=1.0):
         """Award XP to a user with proper ID handling - FIXED VERSION"""
         try:
             # Generate unique transaction_id
-            transaction_id = f"{username}_{source}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+            transaction_id = f"{user_name}_{source}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
             
             # Generate unique reference_id if not provided
             if reference_id is None:
@@ -117,8 +117,8 @@ class XPTransactionEngine:
                 # Check if this reference_id already exists (prevent duplicates)
                 existing = conn.execute("""
                     SELECT COUNT(*) FROM xp_transactions 
-                    WHERE username = ? AND reference_id = ?
-                """, [username, reference_id]).fetchone()[0]
+                    WHERE user_name = ? AND reference_id = ?
+                """, [user_name, reference_id]).fetchone()[0]
                 
                 if existing > 0:
                     logger.warning(f"⚠️ XP already awarded for reference_id: {reference_id}")
@@ -129,11 +129,11 @@ class XPTransactionEngine:
                 
                 conn.execute("""
                     INSERT INTO xp_transactions 
-                    (transaction_id, username, xp_amount, source, description, reference_id, multiplier, timestamp)
+                    (transaction_id, user_name, xp_amount, source, description, reference_id, multiplier, timestamp)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, [
                     transaction_id,
-                    username, 
+                    user_name, 
                     final_xp, 
                     source, 
                     description, 
@@ -142,26 +142,26 @@ class XPTransactionEngine:
                     datetime.now()
                 ])
                 
-                logger.info(f"✅ Awarded {final_xp} XP to {username} (source: {source})")
+                logger.info(f"✅ Awarded {final_xp} XP to {user_name} (source: {source})")
                 return True
                 
         except Exception as e:
             logger.error(f"❌ Error awarding XP: {e}")
             return False
     
-    def complete_daily_challenge(self, username, challenge_id, challenge_type, xp_reward):
+    def complete_daily_challenge(self, user_name, challenge_id, challenge_type, xp_reward):
         """Complete a daily challenge and award XP - FIXED VERSION"""
         try:
             # Generate unique completion_id
-            completion_id = f"{username}_{challenge_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+            completion_id = f"{user_name}_{challenge_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
             
             with duckdb.connect(self.db_path) as conn:
                 # Check if challenge already completed today
                 today = date.today()
                 existing = conn.execute("""
                     SELECT COUNT(*) FROM daily_challenge_completion 
-                    WHERE username = ? AND challenge_id = ? AND DATE(completed_at) = ?
-                """, [username, challenge_id, today]).fetchone()[0]
+                    WHERE user_name = ? AND challenge_id = ? AND DATE(completed_at) = ?
+                """, [user_name, challenge_id, today]).fetchone()[0]
                 
                 if existing > 0:
                     logger.warning(f"⚠️ Challenge already completed today: {challenge_id}")
@@ -170,13 +170,13 @@ class XPTransactionEngine:
                 # Record challenge completion
                 conn.execute("""
                     INSERT INTO daily_challenge_completion 
-                    (completion_id, username, challenge_id, challenge_type, xp_reward, completed_at)
+                    (completion_id, user_name, challenge_id, challenge_type, xp_reward, completed_at)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, [completion_id, username, challenge_id, challenge_type, xp_reward, datetime.now()])
+                """, [completion_id, user_name, challenge_id, challenge_type, xp_reward, datetime.now()])
                 
                 # Award the XP
                 success = self.award_xp(
-                    username=username,
+                    user_name=user_name,
                     xp_amount=xp_reward,
                     source="daily_challenge",
                     description=f"Daily Challenge: {challenge_type}",
@@ -199,7 +199,7 @@ class XPTransactionEngine:
             logger.error(f"❌ Error completing challenge: {e}")
             return False
     
-    def get_user_total_xp(self, username):
+    def get_user_total_xp(self, user_name):
         """Get user's total XP and breakdown - FIXED VERSION"""
         try:
             with duckdb.connect(self.db_path) as conn:
@@ -207,8 +207,8 @@ class XPTransactionEngine:
                 total_result = conn.execute("""
                     SELECT COALESCE(SUM(xp_amount), 0) as total_xp
                     FROM xp_transactions 
-                    WHERE username = ?
-                """, [username]).fetchone()
+                    WHERE user_name = ?
+                """, [user_name]).fetchone()
                 
                 total_xp = total_result[0] if total_result else 0
                 
@@ -216,10 +216,10 @@ class XPTransactionEngine:
                 breakdown_result = conn.execute("""
                     SELECT source, SUM(xp_amount) as xp
                     FROM xp_transactions 
-                    WHERE username = ?
+                    WHERE user_name = ?
                     GROUP BY source
                     ORDER BY xp DESC
-                """, [username]).fetchall()
+                """, [user_name]).fetchall()
                 
                 breakdown = [{"source": row[0], "xp": row[1]} for row in breakdown_result]
                 
@@ -227,10 +227,10 @@ class XPTransactionEngine:
                 recent_result = conn.execute("""
                     SELECT xp_amount, source, description, multiplier, timestamp
                     FROM xp_transactions 
-                    WHERE username = ?
+                    WHERE user_name = ?
                     ORDER BY timestamp DESC
                     LIMIT 10
-                """, [username]).fetchall()
+                """, [user_name]).fetchall()
                 
                 recent_transactions = [
                     {
@@ -253,7 +253,7 @@ class XPTransactionEngine:
             logger.error(f"❌ Error getting user XP: {e}")
             return {"total_xp": 0, "breakdown": [], "recent_transactions": []}
     
-    def get_daily_challenge_status(self, username, target_date=None):
+    def get_daily_challenge_status(self, user_name, target_date=None):
         """Get challenge completion status for a specific date - FIXED VERSION"""
         if target_date is None:
             target_date = date.today()
@@ -264,9 +264,9 @@ class XPTransactionEngine:
                 completed_result = conn.execute("""
                     SELECT challenge_id, challenge_type, xp_reward, completed_at
                     FROM daily_challenge_completion 
-                    WHERE username = ? AND DATE(completed_at) = ?
+                    WHERE user_name = ? AND DATE(completed_at) = ?
                     ORDER BY completed_at DESC
-                """, [username, target_date]).fetchall()
+                """, [user_name, target_date]).fetchall()
                 
                 completed_challenges = [
                     {
@@ -306,13 +306,13 @@ class XPTransactionEngine:
                 
                 query = f"""
                     SELECT 
-                        username,
+                        user_name,
                         SUM(xp_amount) as total_xp,
                         (SUM(xp_amount) / 100) + 1 as level,
                         ROW_NUMBER() OVER (ORDER BY SUM(xp_amount) DESC) as rank
                     FROM xp_transactions 
                     {date_filter}
-                    GROUP BY username
+                    GROUP BY user_name
                     ORDER BY total_xp DESC
                     LIMIT ?
                 """
@@ -322,7 +322,7 @@ class XPTransactionEngine:
                 return [
                     {
                         "rank": row[3],
-                        "username": row[0],
+                        "user_name": row[0],
                         "total_xp": row[1],
                         "level": int(row[2])
                     }
@@ -333,7 +333,7 @@ class XPTransactionEngine:
             logger.error(f"❌ Error getting leaderboard: {e}")
             return []
     
-    def reset_daily_challenges(self, username, target_date=None):
+    def reset_daily_challenges(self, user_name, target_date=None):
         """Reset daily challenges for testing purposes"""
         if target_date is None:
             target_date = date.today()
@@ -343,16 +343,16 @@ class XPTransactionEngine:
                 # Delete challenge completions for the target date
                 conn.execute("""
                     DELETE FROM daily_challenge_completion 
-                    WHERE username = ? AND DATE(completed_at) = ?
-                """, [username, target_date])
+                    WHERE user_name = ? AND DATE(completed_at) = ?
+                """, [user_name, target_date])
                 
                 # Delete related XP transactions
                 conn.execute("""
                     DELETE FROM xp_transactions 
-                    WHERE username = ? AND source = 'daily_challenge' AND DATE(timestamp) = ?
-                """, [username, target_date])
+                    WHERE user_name = ? AND source = 'daily_challenge' AND DATE(timestamp) = ?
+                """, [user_name, target_date])
                 
-                logger.info(f"✅ Reset daily challenges for {username} on {target_date}")
+                logger.info(f"✅ Reset daily challenges for {user_name} on {target_date}")
                 return True
                 
         except Exception as e:
@@ -360,11 +360,11 @@ class XPTransactionEngine:
             return False
 
 # Helper functions for dashboard integration
-def get_gamification_data_real(xp_engine, username):
+def get_gamification_data_real(xp_engine, user_name):
     """Get real gamification data from XP system - FIXED VERSION"""
     
     # Get XP data
-    xp_data = xp_engine.get_user_total_xp(username)
+    xp_data = xp_engine.get_user_total_xp(user_name)
     total_xp = xp_data["total_xp"]
     
     # Calculate level (100 XP per level)
@@ -374,7 +374,7 @@ def get_gamification_data_real(xp_engine, username):
     
     # Get today's XP
     today = date.today()
-    today_challenge_status = xp_engine.get_daily_challenge_status(username, today)
+    today_challenge_status = xp_engine.get_daily_challenge_status(user_name, today)
     today_xp = today_challenge_status["total_xp_earned"]
     
     return {
@@ -387,10 +387,10 @@ def get_gamification_data_real(xp_engine, username):
         "recent_transactions": xp_data["recent_transactions"]
     }
 
-def handle_challenge_completion(xp_engine, username, challenge_data):
+def handle_challenge_completion(xp_engine, user_name, challenge_data):
     """Handle challenge completion - FIXED VERSION"""
     return xp_engine.complete_daily_challenge(
-        username=username,
+        user_name=user_name,
         challenge_id=challenge_data["challenge_id"],
         challenge_type=challenge_data["challenge_type"],
         xp_reward=challenge_data["xp_reward"]
