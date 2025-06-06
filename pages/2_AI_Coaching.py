@@ -317,6 +317,10 @@ if "coaching_thread_id" not in st.session_state:
     st.session_state.coaching_thread_id = thread.id
     st.session_state.coaching_messages = []
 
+# Replace the intake form section in your 2_AI_Coaching.py file
+# Find the section starting with "# Enhanced intake form with sovereignty context"
+# and replace it with this:
+
 # Enhanced intake form with sovereignty context
 if "coaching_started" not in st.session_state:
     
@@ -375,97 +379,186 @@ if "coaching_started" not in st.session_state:
 
     st.markdown("---")
 
-    with st.form("enhanced_coaching_form"):
-        st.subheader("🎯 What would you like coaching on?")
-        
-        # Core challenge/goal with sovereignty context
-        focus_area = st.selectbox("Select your focus area", [
-            "Physical Health & Body Sovereignty", 
-            "Mental Wellbeing & Cognitive Freedom", 
-            "Financial Growth & Economic Independence", 
-            "Environmental Impact & Planetary Stewardship", 
-            "Spiritual Development & Consciousness Evolution",
-            "Overall Sovereignty Integration"
-        ])
-        
-        challenge = st.text_area(
-            "Describe your current challenge or goal", 
-            placeholder="I'm struggling with... or I want to achieve...",
-            help="Be specific about what you're experiencing in your sovereignty journey"
-        )
-        
-        # Time and consistency factors
-        time_commitment = st.selectbox("How much time can you commit daily?", [
-            "5-15 minutes", "15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"])
-        
-        obstacle = st.selectbox("What tends to derail your consistency?", [
-            "Lack of time", "Low motivation", "Mental distraction", "Overwhelm", 
-            "Lack of clarity", "Social pressure", "System resistance", "Other"])
-        
-        # Sovereignty-specific questions
-        st.markdown("---")
-        st.markdown("**🛡️ Sovereignty-Specific Context:**")
-        
-        sovereignty_priority = st.selectbox("Which aspect of sovereignty feels most urgent?", [
-            "Building anti-fragile daily routines",
-            "Breaking free from limiting patterns", 
-            "Developing financial independence",
-            "Strengthening physical resilience",
-            "Expanding consciousness and awareness",
-            "Creating systemic change in my environment"
-        ])
-        
-        current_obstacles = st.multiselect("What systems or patterns are you working to exit?", [
-            "Processed food dependency", "Consumer debt cycles", "Screen addiction", 
-            "Stress and overwhelm", "Social conformity pressure", "Scarcity mindset",
-            "Victim consciousness", "External validation seeking", "Other"
-        ])
-        
-        # Developmental stage indicators (enhanced with sovereignty lens)
-        st.markdown("---")
-        st.markdown("**🧠 Help us understand your approach:**")
-        
-        success_metric = st.selectbox("What does sovereignty success look like to you?", [
-            "Clear metrics, measurable progress, and optimized performance",
-            "Feeling aligned and balanced across all life domains", 
-            "Contributing to collective awakening and systemic change",
-            "Transcending conventional categories through integral practice"
-        ])
-        
-        motivation_style = st.selectbox("What motivates your sovereignty journey?", [
-            "Personal achievement, optimization, and competitive excellence",
-            "Harmony with nature, community healing, and collective wellbeing",
-            "Understanding complex systems and creating adaptive solutions",
-            "Serving the evolution of consciousness and planetary transformation"
-        ])
-        
-        complexity_comfort = st.selectbox("How do you prefer to approach sovereignty challenges?", [
-            "Clear methodologies, proven systems, and step-by-step progression",
-            "Holistic approaches that honor multiple perspectives and values",
-            "Dynamic strategies that adapt to changing conditions and feedback",
-            "Paradoxical solutions that transcend either/or thinking patterns"
-        ])
-        
-        # Context and deeper purpose
-        st.markdown("---")
-        context = st.text_area(
-            "Any additional context about your sovereignty journey?", 
-            placeholder="Share relevant details about your situation, constraints, or what you've already tried..."
-        )
-        
-        why_now = st.text_area(
-            "Why do you want to develop this area of sovereignty now?", 
-            placeholder="What's driving this focus at this point in your journey?"
-        )
-        
-        sovereign_vision = st.text_area(
-            "If this challenge was resolved, what would that unlock for your sovereignty?", 
-            placeholder="Describe your desired future state and what becomes possible..."
-        )
-        
-        submitted = st.form_submit_button("🚀 Get Personalized Sovereignty Coaching")
+    # QUICK ACTION BUTTONS (Add these before the collapsible form)
+    st.markdown("## 🚀 Quick Coaching")
+    
+    quick_col1, quick_col2, quick_col3 = st.columns(3)
+    
+    with quick_col1:
+        if st.button("🎯 Optimize my current streaks", key="quick_optimize_streaks", use_container_width=True):
+            quick_coaching_request = {
+                "focus_area": "Physical Health & Body Sovereignty",
+                "challenge": f"I want to optimize my current streaks: {', '.join([f'{k} ({v} days)' for k, v in active_streaks.items()])}",
+                "time_commitment": "15-30 minutes",
+                "obstacle": "Lack of clarity",
+                "sovereignty_priority": "Building anti-fragile daily routines",
+                "current_obstacles": ["Lack of clarity"],
+                "success_metric": "Clear metrics, measurable progress, and optimized performance",
+                "motivation_style": "Personal achievement, optimization, and competitive excellence",
+                "complexity_comfort": "Clear methodologies, proven systems, and step-by-step progression",
+                "context": "Quick coaching request focused on streak optimization",
+                "why_now": "I want to build on my current momentum",
+                "sovereign_vision": "Maintaining consistent sovereignty practices that compound over time"
+            }
+            st.session_state.quick_coaching_request = quick_coaching_request
+            st.session_state.process_quick_coaching = True
+            st.rerun()
+    
+    with quick_col2:
+        if st.button("📈 Improve my weak areas", key="quick_improve_weak", use_container_width=True):
+            quick_coaching_request = {
+                "focus_area": "Overall Sovereignty Integration",
+                "challenge": "I want to identify and improve my biggest sovereignty weak spots based on my tracking data",
+                "time_commitment": "30-60 minutes",
+                "obstacle": "Lack of clarity",
+                "sovereignty_priority": "Building anti-fragile daily routines",
+                "current_obstacles": ["Lack of clarity"],
+                "success_metric": "Clear metrics, measurable progress, and optimized performance",
+                "motivation_style": "Personal achievement, optimization, and competitive excellence", 
+                "complexity_comfort": "Clear methodologies, proven systems, and step-by-step progression",
+                "context": "Quick coaching request focused on improvement opportunities",
+                "why_now": "I want to shore up my weak areas for stronger overall sovereignty",
+                "sovereign_vision": "A more balanced and robust sovereignty practice across all domains"
+            }
+            st.session_state.quick_coaching_request = quick_coaching_request
+            st.session_state.process_quick_coaching = True
+            st.rerun()
+    
+    with quick_col3:
+        if st.button("🏆 Next achievement strategy", key="quick_next_achievement", use_container_width=True):
+            next_ach = next_achievements[0]['name'] if next_achievements else "next milestone"
+            quick_coaching_request = {
+                "focus_area": "Overall Sovereignty Integration",
+                "challenge": f"I want a strategy to achieve my next milestone: {next_ach}",
+                "time_commitment": "30-60 minutes",
+                "obstacle": "Lack of clarity",
+                "sovereignty_priority": "Building anti-fragile daily routines",
+                "current_obstacles": ["Lack of clarity"],
+                "success_metric": "Clear metrics, measurable progress, and optimized performance",
+                "motivation_style": "Personal achievement, optimization, and competitive excellence",
+                "complexity_comfort": "Clear methodologies, proven systems, and step-by-step progression", 
+                "context": "Quick coaching request focused on achievement strategy",
+                "why_now": "I'm ready to level up my sovereignty practice",
+                "sovereign_vision": "Reaching my next achievement milestone and continuing to advance"
+            }
+            st.session_state.quick_coaching_request = quick_coaching_request
+            st.session_state.process_quick_coaching = True
+            st.rerun()
 
-    if submitted:
+    # COLLAPSIBLE ADVANCED FORM
+    with st.expander("🔧 Custom Coaching Session", expanded=False):
+        with st.form("enhanced_coaching_form"):
+            st.subheader("🎯 What would you like coaching on?")
+            
+            # Core challenge/goal with sovereignty context
+            focus_area = st.selectbox("Select your focus area", [
+                "Physical Health & Body Sovereignty", 
+                "Mental Wellbeing & Cognitive Freedom", 
+                "Financial Growth & Economic Independence", 
+                "Environmental Impact & Planetary Stewardship", 
+                "Spiritual Development & Consciousness Evolution",
+                "Overall Sovereignty Integration"
+            ])
+            
+            challenge = st.text_area(
+                "Describe your current challenge or goal", 
+                placeholder="I'm struggling with... or I want to achieve...",
+                help="Be specific about what you're experiencing in your sovereignty journey"
+            )
+            
+            # Time and consistency factors
+            time_commitment = st.selectbox("How much time can you commit daily?", [
+                "5-15 minutes", "15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"])
+            
+            obstacle = st.selectbox("What tends to derail your consistency?", [
+                "Lack of time", "Low motivation", "Mental distraction", "Overwhelm", 
+                "Lack of clarity", "Social pressure", "System resistance", "Other"])
+            
+            # Sovereignty-specific questions
+            st.markdown("---")
+            st.markdown("**🛡️ Sovereignty-Specific Context:**")
+            
+            sovereignty_priority = st.selectbox("Which aspect of sovereignty feels most urgent?", [
+                "Building anti-fragile daily routines",
+                "Breaking free from limiting patterns", 
+                "Developing financial independence",
+                "Strengthening physical resilience",
+                "Expanding consciousness and awareness",
+                "Creating systemic change in my environment"
+            ])
+            
+            current_obstacles = st.multiselect("What systems or patterns are you working to exit?", [
+                "Processed food dependency", "Consumer debt cycles", "Screen addiction", 
+                "Stress and overwhelm", "Social conformity pressure", "Scarcity mindset",
+                "Victim consciousness", "External validation seeking", "Other"
+            ])
+            
+            # Developmental stage indicators (enhanced with sovereignty lens)
+            st.markdown("---")
+            st.markdown("**🧠 Help us understand your approach:**")
+            
+            success_metric = st.selectbox("What does sovereignty success look like to you?", [
+                "Clear metrics, measurable progress, and optimized performance",
+                "Feeling aligned and balanced across all life domains", 
+                "Contributing to collective awakening and systemic change",
+                "Transcending conventional categories through integral practice"
+            ])
+            
+            motivation_style = st.selectbox("What motivates your sovereignty journey?", [
+                "Personal achievement, optimization, and competitive excellence",
+                "Harmony with nature, community healing, and collective wellbeing",
+                "Understanding complex systems and creating adaptive solutions",
+                "Serving the evolution of consciousness and planetary transformation"
+            ])
+            
+            complexity_comfort = st.selectbox("How do you prefer to approach sovereignty challenges?", [
+                "Clear methodologies, proven systems, and step-by-step progression",
+                "Holistic approaches that honor multiple perspectives and values",
+                "Dynamic strategies that adapt to changing conditions and feedback",
+                "Paradoxical solutions that transcend either/or thinking patterns"
+            ])
+            
+            # Context and deeper purpose
+            st.markdown("---")
+            context = st.text_area(
+                "Any additional context about your sovereignty journey?", 
+                placeholder="Share relevant details about your situation, constraints, or what you've already tried..."
+            )
+            
+            why_now = st.text_area(
+                "Why do you want to develop this area of sovereignty now?", 
+                placeholder="What's driving this focus at this point in your journey?"
+            )
+            
+            sovereign_vision = st.text_area(
+                "If this challenge was resolved, what would that unlock for your sovereignty?", 
+                placeholder="Describe your desired future state and what becomes possible..."
+            )
+            
+            submitted = st.form_submit_button("🚀 Get Custom Sovereignty Coaching")
+
+        if submitted:
+            custom_coaching_request = {
+                "focus_area": focus_area,
+                "challenge": challenge,
+                "time_commitment": time_commitment,
+                "obstacle": obstacle,
+                "sovereignty_priority": sovereignty_priority,
+                "current_obstacles": current_obstacles,
+                "success_metric": success_metric,
+                "motivation_style": motivation_style,
+                "complexity_comfort": complexity_comfort,
+                "context": context,
+                "why_now": why_now,
+                "sovereign_vision": sovereign_vision
+            }
+            st.session_state.quick_coaching_request = custom_coaching_request
+            st.session_state.process_quick_coaching = True
+    
+    # Process coaching request (from quick buttons or form)
+    if st.session_state.get("process_quick_coaching", False):
+        coaching_request = st.session_state.get("quick_coaching_request", {})
+        
         st.info("🤖 AI Coach is analyzing your complete sovereignty profile...")
 
         # Enhanced developmental stage mapping
@@ -493,7 +586,11 @@ if "coaching_started" not in st.session_state:
         }
         
         # Determine developmental center of gravity
-        user_responses = [success_metric, motivation_style, complexity_comfort]
+        user_responses = [
+            coaching_request.get("success_metric", ""),
+            coaching_request.get("motivation_style", ""),
+            coaching_request.get("complexity_comfort", "")
+        ]
         stage_scores = {stage: 0 for stage in stage_indicators.keys()}
         
         for response in user_responses:
@@ -535,19 +632,19 @@ if "coaching_started" not in st.session_state:
         - Home cooking: {sum(row[2] for row in recent_tracking if row[2]) if recent_tracking else 0} meals in 30 days
         
         COACHING REQUEST:
-        Focus Area: {focus_area}
-        Current Challenge: {challenge}
-        Time Available: {time_commitment}
-        Main Obstacle: {obstacle}
-        Sovereignty Priority: {sovereignty_priority}
-        Systems to Exit: {current_obstacles}
-        Why Now: {why_now}
-        Vision: {sovereign_vision}
-        Context: {context}
+        Focus Area: {coaching_request.get('focus_area', 'General')}
+        Current Challenge: {coaching_request.get('challenge', 'General coaching')}
+        Time Available: {coaching_request.get('time_commitment', '30-60 minutes')}
+        Main Obstacle: {coaching_request.get('obstacle', 'Unknown')}
+        Sovereignty Priority: {coaching_request.get('sovereignty_priority', 'Building anti-fragile daily routines')}
+        Systems to Exit: {coaching_request.get('current_obstacles', [])}
+        Why Now: {coaching_request.get('why_now', 'Ready for growth')}
+        Vision: {coaching_request.get('sovereign_vision', 'Enhanced sovereignty')}
+        Context: {coaching_request.get('context', 'Standard coaching request')}
         
-        Success Definition: {success_metric}
-        Motivation Style: {motivation_style}
-        Complexity Comfort: {complexity_comfort}
+        Success Definition: {coaching_request.get('success_metric', 'Clear metrics and progress')}
+        Motivation Style: {coaching_request.get('motivation_style', 'Personal achievement and optimization')}
+        Complexity Comfort: {coaching_request.get('complexity_comfort', 'Clear methodologies and systems')}
 
         COACHING REQUIREMENTS:
         1. PERSONALIZATION: Reference their specific achievements, streaks, and performance data
@@ -582,6 +679,10 @@ if "coaching_started" not in st.session_state:
         reply = messages.data[0].content[0].text.value
         st.session_state.coaching_messages.append({"role": "assistant", "content": reply})
         st.session_state.coaching_started = True
+        
+        # Clean up session state
+        st.session_state.pop("process_quick_coaching", None)
+        st.session_state.pop("quick_coaching_request", None)
 
         with st.chat_message("assistant"):
             st.markdown(reply)
