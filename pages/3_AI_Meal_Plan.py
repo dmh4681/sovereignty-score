@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Advanced AI Meal Planning Agent - Sovereignty-Aligned Nutrition with Developmental Intelligence
-Generates personalized meal plans based on user's sovereignty path, behavioral data, and consciousness level
+Enhanced AI Meal Planning Agent - Sovereignty-Aligned Nutrition with Sidebar Profile
+Now includes comprehensive sovereignty profile sidebar matching the AI Coaching page
 """
 
 import streamlit as st
@@ -38,16 +38,33 @@ if not OPENAI_API_KEY:
     st.error("❌ OpenAI API key not found. Please check your .env file.")
     st.stop()
 
-# Custom CSS for meal planning interface
+# Enhanced CSS matching the coaching page style
 st.markdown("""
 <style>
-    .meal-plan-card {
+    .meal-plan-hero {
         background: linear-gradient(135deg, #1f2937, #374151);
-        border: 2px solid #10b981;
+        border: 3px solid #10b981;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 16px 0;
+        text-align: center;
+        color: white;
+    }
+    
+    .sovereignty-data-card {
+        background: rgba(16, 185, 129, 0.1);
+        border: 2px solid rgba(16, 185, 129, 0.3);
         border-radius: 12px;
-        padding: 20px;
-        margin: 10px 0;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        padding: 16px;
+        margin: 8px 0;
+    }
+    
+    .nutrition-insight {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border-left: 4px solid #10b981;
+        padding: 16px;
+        margin: 12px 0;
+        border-radius: 0 8px 8px 0;
     }
     
     .nutrition-metric {
@@ -85,6 +102,25 @@ st.markdown("""
         margin: 5px 0;
         font-size: 0.9em;
         text-align: center;
+    }
+    
+    .achievement-highlight {
+        background: linear-gradient(45deg, #f59e0b, #fbbf24);
+        color: #1f2937;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 4px 0;
+        font-weight: bold;
+        text-align: center;
+    }
+    
+    .meal-plan-card {
+        background: linear-gradient(135deg, #1f2937, #374151);
+        border: 2px solid #10b981;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px 0;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -358,14 +394,150 @@ def main():
         st.error("🚨 Please log in through the main page to access AI Meal Planning.")
         st.stop()
 
-    # Header
+    # Load comprehensive user data for sidebar (matching coaching page)
+    @st.cache_data(ttl=300)  # Cache for 5 minutes
+    def load_comprehensive_user_data(username):
+        """Load all user data for enhanced meal planning sidebar"""
+        try:
+            # Get achievement data
+            engine = SovereigntyAchievementEngine()
+            achievements_data = engine.calculate_user_achievements(username)
+            
+            # Get recent tracking data
+            with get_db_connection() as conn:
+                # Last 30 days of tracking
+                recent_data = conn.execute("""
+                    SELECT timestamp, score, home_cooked_meals, junk_food, exercise_minutes,
+                           strength_training, no_spending, invested_bitcoin, btc_usd, btc_sats,
+                           meditation, gratitude, read_or_learned, environmental_action
+                    FROM sovereignty 
+                    WHERE username = ? AND timestamp >= ?
+                    ORDER BY timestamp DESC
+                    LIMIT 30
+                """, [username, datetime.now() - timedelta(days=30)]).fetchall()
+                
+                # All-time summary
+                all_time_data = conn.execute("""
+                    SELECT COUNT(*) as total_days,
+                           AVG(score) as avg_score,
+                           MAX(score) as best_score,
+                           MIN(score) as worst_score,
+                           SUM(btc_sats) as total_sats,
+                           SUM(home_cooked_meals) as total_meals,
+                           SUM(CASE WHEN meditation = 1 THEN 1 ELSE 0 END) as meditation_days,
+                           SUM(CASE WHEN strength_training = 1 THEN 1 ELSE 0 END) as strength_days
+                    FROM sovereignty 
+                    WHERE username = ?
+                """, [username]).fetchone()
+            
+            return {
+                "achievements": achievements_data,
+                "recent_tracking": recent_data,
+                "all_time_stats": all_time_data,
+                "loaded_at": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            st.error(f"Error loading user data: {e}")
+            return None
+
+    # Load user data
+    with st.spinner("🔍 Analyzing your sovereignty profile for personalized nutrition..."):
+        user_data = load_comprehensive_user_data(username)
+
+    if not user_data or "error" in user_data.get("achievements", {}):
+        st.error("❌ Unable to load your sovereignty data. Please ensure you have tracking history.")
+        st.stop()
+
+    # Extract key insights for meal planning
+    achievements = user_data["achievements"]
+    recent_tracking = user_data["recent_tracking"]
+    all_time_stats = user_data["all_time_stats"]
+
+    sovereignty_level = achievements.get("sovereignty_level", {})
+    earned_achievements = achievements.get("achievements_earned", [])
+    progress_metrics = achievements.get("progress_metrics", {})
+    next_achievements = achievements.get("next_achievements", [])
+
+    # Enhanced header with sovereignty branding
     st.markdown(f"""
-    <div style="text-align: center; padding: 20px 0;">
-        <h1 style="color: #10b981; margin: 0;">🍽️ AI Meal Planning</h1>
-        <h3 style="color: #9ca3af; margin: 5px 0;">Sovereignty-Aligned Nutrition</h3>
-        <p style="color: #6b7280; margin: 0;">Welcome back, {username} | Path: {path.replace('_', ' ').title()}</p>
+    <div class="meal-plan-hero">
+        <h1>🍽️ Sovereignty Meal Planning</h1>
+        <h3>Nutrition as the foundation of freedom</h3>
+        <p style="margin: 8px 0; opacity: 0.9;">AI-powered meal plans aligned with your sovereignty path</p>
+        <p style="margin: 0; font-size: 14px; opacity: 0.7;">Path: {path.replace('_', ' ').title()} • User: {username}</p>
     </div>
     """, unsafe_allow_html=True)
+
+    # Enhanced Sidebar: Sovereignty Profile Summary (matching coaching page)
+    if st.sidebar.button("🔄 Reset Meal Plan"):
+        st.session_state.pop("current_meal_plan", None)
+        st.session_state.pop("meal_preferences", None)
+        st.session_state.pop("generate_meal_plan", None)
+        st.session_state.pop("meal_preferences_hash", None)
+        st.session_state.pop("consciousness_level", None)
+        st.rerun()
+
+    st.sidebar.markdown("### 🛡️ Your Sovereignty Profile")
+    st.sidebar.markdown(f"**Level:** {sovereignty_level.get('name', 'Unknown')}")
+    st.sidebar.markdown(f"**Avg Score:** {sovereignty_level.get('avg_score', 0):.1f}")
+    st.sidebar.markdown(f"**Total Days:** {sovereignty_level.get('total_days', 0)}")
+    st.sidebar.markdown(f"**Achievements:** {len(earned_achievements)}")
+
+    # Show nutrition-specific insights
+    total_meals = progress_metrics.get("total_meals_cooked", 0)
+    if total_meals > 0:
+        st.sidebar.markdown("### 🍳 Cooking Profile")
+        st.sidebar.markdown(f"**Total Meals Cooked:** {total_meals}")
+        
+        # Calculate cooking frequency if we have recent data
+        if recent_tracking:
+            recent_meals = sum(row[2] for row in recent_tracking if row[2])
+            cooking_days = len([row for row in recent_tracking if row[2] and row[2] > 0])
+            if cooking_days > 0:
+                avg_meals_per_day = recent_meals / len(recent_tracking) if recent_tracking else 0
+                st.sidebar.markdown(f"**Recent Cooking Days:** {cooking_days}/30")
+                st.sidebar.markdown(f"**Avg Meals/Day:** {avg_meals_per_day:.1f}")
+
+    # Show current streaks (matching coaching page)
+    current_streaks = progress_metrics.get("current_streaks", {})
+    active_streaks = {k: v for k, v in current_streaks.items() if v > 0}
+
+    if active_streaks:
+        st.sidebar.markdown("### 🔥 Active Streaks")
+        for activity, days in list(active_streaks.items())[:3]:
+            emoji = {"meditation": "🧘‍♂️", "strength_training": "💪", "invested_bitcoin": "₿", 
+                    "gratitude": "🙏", "environmental_action": "🌍", "cooking": "🍳"}.get(activity, "⚡")
+            st.sidebar.markdown(f"{emoji} **{days}** {activity.replace('_', ' ').title()}")
+
+    # Show recent performance (matching coaching page)
+    if recent_tracking:
+        recent_scores = [row[1] for row in recent_tracking if row[1] is not None]
+        if recent_scores:
+            recent_avg = sum(recent_scores) / len(recent_scores)
+            st.sidebar.markdown(f"### 📈 Recent Performance")
+            st.sidebar.markdown(f"**Last 7 days avg:** {recent_avg:.1f}")
+            
+            # Performance trend
+            if len(recent_scores) >= 7:
+                early_week = sum(recent_scores[:3]) / 3
+                late_week = sum(recent_scores[-3:]) / 3
+                trend = "📈 Improving" if late_week > early_week else "📉 Declining" if late_week < early_week else "➡️ Stable"
+                st.sidebar.markdown(f"**Trend:** {trend}")
+
+    # Show path-specific nutrition insights
+    st.sidebar.markdown("### 🎯 Path Focus")
+    path_nutrition_tips = {
+        "financial_path": "Focus on cost-effective, bulk-prep meals",
+        "physical_optimization": "Prioritize high-protein, performance nutrition",
+        "spiritual_growth": "Emphasize plant-forward, mindful eating",
+        "mental_resilience": "Choose brain-boosting, anti-inflammatory foods",
+        "planetary_stewardship": "Select regenerative, locally-sourced ingredients",
+        "default": "Balanced nutrition across all sovereignty domains"
+    }
+    
+    nutrition_tip = path_nutrition_tips.get(path, "Balanced sovereignty nutrition")
+    st.sidebar.markdown(f"*{nutrition_tip}*")
 
     # Initialize meal planning agent
     @st.cache_resource
@@ -378,22 +550,63 @@ def main():
         st.error("❌ Could not initialize meal planning agent")
         st.stop()
 
-    # Load user achievements for context
-    @st.cache_data(ttl=300)
-    def get_user_context(username):
-        """Get user context including achievements"""
-        try:
-            engine = SovereigntyAchievementEngine()
-            achievements = engine.calculate_user_achievements(username)
-            return {
-                "username": username,
-                "path": path,
-                "achievements": achievements
-            }
-        except Exception as e:
-            return {"username": username, "path": path, "achievements": {}}
+    # Prepare user data for meal planning
+    user_meal_data = {
+        "username": username,
+        "path": path,
+        "achievements": achievements
+    }
 
-    user_data = get_user_context(username)
+    # Show sovereignty insights before meal planning (matching coaching insights)
+    st.markdown("### 🔍 Your Nutrition Sovereignty Analysis")
+    
+    insights_col1, insights_col2, insights_col3 = st.columns(3)
+    
+    with insights_col1:
+        st.markdown(f"""
+        <div class="sovereignty-data-card">
+            <h4>🏆 Culinary Achievement</h4>
+            <p><strong>Level:</strong> {sovereignty_level.get('name', 'Unknown')}</p>
+            <p><strong>Meals Cooked:</strong> {total_meals}</p>
+            <p><strong>Next Goal:</strong> {next_achievements[0]['name'] if next_achievements else 'Keep cooking!'}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with insights_col2:
+        # Calculate nutritional sovereignty score
+        nutrition_score = min(100, (total_meals / 100) * 40 + sovereignty_level.get('avg_score', 0) * 0.6)
+        
+        st.markdown(f"""
+        <div class="sovereignty-data-card">
+            <h4>🥗 Nutrition Sovereignty</h4>
+            <p><strong>Score:</strong> {nutrition_score:.0f}/100</p>
+            <p><strong>Path:</strong> {path.replace('_', ' ').title()}</p>
+            <p><strong>Focus:</strong> {"Home cooking" if total_meals > 50 else "Building habits"}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with insights_col3:
+        if active_streaks and "cooking" in current_streaks:
+            cooking_streak = current_streaks["cooking"]
+            st.markdown(f"""
+            <div class="sovereignty-data-card">
+                <h4>🔥 Cooking Momentum</h4>
+                <p><strong>Current Streak:</strong> {cooking_streak} days</p>
+                <p><strong>Status:</strong> {"Strong" if cooking_streak > 7 else "Building"}</p>
+                <p><strong>Potential:</strong> High</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div class="sovereignty-data-card">
+                <h4>💡 Opportunity</h4>
+                <p><strong>Cooking Streak:</strong> Not active</p>
+                <p><strong>Potential:</strong> High</p>
+                <p><strong>Focus:</strong> Consistency</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
 
     # Enhanced Meal Plan Generation Form with Developmental Intelligence
     st.markdown("## 📋 Meal Plan Preferences")
@@ -537,7 +750,7 @@ def main():
             """, unsafe_allow_html=True)
             
             with st.spinner("🧠 AI Chef is crafting your consciousness-aligned meal plan..."):
-                meal_plan = meal_agent.generate_meal_plan(user_data, user_preferences)
+                meal_plan = meal_agent.generate_meal_plan(user_meal_data, user_preferences)
                 
                 if meal_plan:
                     st.session_state.current_meal_plan = meal_plan
@@ -580,9 +793,14 @@ def display_meal_plan(meal_plan, preferences, consciousness_level):
         overview = meal_plan["meal_plan"]
         
         st.markdown("### 📖 Plan Overview")
-        st.markdown(f"**Philosophy:** {overview.get('overview', 'Custom sovereignty nutrition approach')}")
-        st.markdown(f"**Structure:** {overview.get('daily_structure', 'Optimized for your preferences')}")
-        st.markdown(f"**Consciousness Approach:** {overview.get('consciousness_approach', 'Aligned with your developmental level')}")
+        st.markdown(f"""
+        <div class="nutrition-insight">
+            <h4>🛡️ Sovereignty Alignment</h4>
+            <p><strong>Philosophy:</strong> {overview.get('overview', 'Custom sovereignty nutrition approach')}</p>
+            <p><strong>Structure:</strong> {overview.get('daily_structure', 'Optimized for your preferences')}</p>
+            <p><strong>Consciousness Approach:</strong> {overview.get('consciousness_approach', 'Aligned with your developmental level')}</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Sovereignty alignment score
         if "nutrition_analysis" in meal_plan:
@@ -693,9 +911,14 @@ def display_meal_plan(meal_plan, preferences, consciousness_level):
         st.markdown("### 🛡️ Sovereignty Path Optimization")
         optimization = meal_plan["path_optimization"]
         
-        st.markdown(f"**🎯 Path Benefits:** {optimization.get('specific_benefits', 'Optimized for your sovereignty journey')}")
-        st.markdown(f"**🔄 Habit Integration:** {optimization.get('habit_integration', 'Seamlessly integrates with your current habits')}")
-        st.markdown(f"**📈 Progression:** {optimization.get('progression_suggestions', 'Strategies for advancing your nutrition sovereignty')}")
+        st.markdown(f"""
+        <div class="nutrition-insight">
+            <h4>🎯 Path-Specific Benefits</h4>
+            <p><strong>Benefits:</strong> {optimization.get('specific_benefits', 'Optimized for your sovereignty journey')}</p>
+            <p><strong>Habit Integration:</strong> {optimization.get('habit_integration', 'Seamlessly integrates with your current habits')}</p>
+            <p><strong>Progression:</strong> {optimization.get('progression_suggestions', 'Strategies for advancing your nutrition sovereignty')}</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Download options with consciousness level in filename
     st.markdown("### 📥 Export Options")
@@ -787,6 +1010,18 @@ def display_meal_plan(meal_plan, preferences, consciousness_level):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
+
+# Footer with sovereignty motivation (matching coaching page)
+st.markdown("---")
+st.markdown("""
+<div style="text-align: center; padding: 20px; color: #6b7280;">
+    <p>🛡️ <strong>Nutrition is the foundation of sovereignty.</strong></p>
+    <p><em>Every meal you cook builds your independence from industrial food systems.</em></p>
+    <p style="font-size: 12px; margin-top: 12px;">
+        "Food sovereignty is freedom sovereignty" - Build your nutrition independence
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
