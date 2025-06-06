@@ -300,7 +300,7 @@ with cta_col2:
     """, unsafe_allow_html=True)
     
     if st.button("🛡️ Begin Your Sovereignty Path", type="primary", use_container_width=True):
-        st.switch_page("pages/2_Paths.py")
+        st.switch_page("pages/5_Paths.py")
 
 st.markdown("---")
 
