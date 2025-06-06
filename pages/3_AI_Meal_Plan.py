@@ -384,7 +384,9 @@ Adjust the complexity, language, and philosophical depth to match their developm
         
         return prompt
 
-# Main Streamlit Interface
+# Replace the main interface section in your 3_AI_Meal_Plan.py 
+# (after the class definitions, around line 200-400)
+
 def main():
     # Get user info
     username = st.session_state.get("username", None)
@@ -394,18 +396,15 @@ def main():
         st.error("🚨 Please log in through the main page to access AI Meal Planning.")
         st.stop()
 
-    # Load comprehensive user data for sidebar (matching coaching page)
-    @st.cache_data(ttl=300)  # Cache for 5 minutes
+    # Load comprehensive user data for sidebar
+    @st.cache_data(ttl=300)
     def load_comprehensive_user_data(username):
         """Load all user data for enhanced meal planning sidebar"""
         try:
-            # Get achievement data
             engine = SovereigntyAchievementEngine()
             achievements_data = engine.calculate_user_achievements(username)
             
-            # Get recent tracking data
             with get_db_connection() as conn:
-                # Last 30 days of tracking
                 recent_data = conn.execute("""
                     SELECT timestamp, score, home_cooked_meals, junk_food, exercise_minutes,
                            strength_training, no_spending, invested_bitcoin, btc_usd, btc_sats,
@@ -416,7 +415,6 @@ def main():
                     LIMIT 30
                 """, [username, datetime.now() - timedelta(days=30)]).fetchall()
                 
-                # All-time summary
                 all_time_data = conn.execute("""
                     SELECT COUNT(*) as total_days,
                            AVG(score) as avg_score,
@@ -442,34 +440,33 @@ def main():
             return None
 
     # Load user data
-    with st.spinner("🔍 Analyzing your sovereignty profile for personalized nutrition..."):
+    with st.spinner("🔍 Loading your nutrition profile..."):
         user_data = load_comprehensive_user_data(username)
 
     if not user_data or "error" in user_data.get("achievements", {}):
         st.error("❌ Unable to load your sovereignty data. Please ensure you have tracking history.")
         st.stop()
 
-    # Extract key insights for meal planning
+    # Extract key insights
     achievements = user_data["achievements"]
     recent_tracking = user_data["recent_tracking"]
-    all_time_stats = user_data["all_time_stats"]
-
     sovereignty_level = achievements.get("sovereignty_level", {})
     earned_achievements = achievements.get("achievements_earned", [])
     progress_metrics = achievements.get("progress_metrics", {})
     next_achievements = achievements.get("next_achievements", [])
+    current_streaks = progress_metrics.get("current_streaks", {})
+    active_streaks = {k: v for k, v in current_streaks.items() if v > 0}
 
-    # Enhanced header with sovereignty branding
+    # CONDENSED HEADER - Combined the two sections
     st.markdown(f"""
     <div class="meal-plan-hero">
         <h1>🍽️ Sovereignty Meal Planning</h1>
-        <h3>Nutrition as the foundation of freedom</h3>
-        <p style="margin: 8px 0; opacity: 0.9;">AI-powered meal plans aligned with your sovereignty path</p>
+        <p style="margin: 8px 0; opacity: 0.9;">Nutrition as the foundation of freedom</p>
         <p style="margin: 0; font-size: 14px; opacity: 0.7;">Path: {path.replace('_', ' ').title()} • User: {username}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Enhanced Sidebar: Sovereignty Profile Summary (matching coaching page)
+    # Enhanced Sidebar
     if st.sidebar.button("🔄 Reset Meal Plan"):
         st.session_state.pop("current_meal_plan", None)
         st.session_state.pop("meal_preferences", None)
@@ -484,13 +481,12 @@ def main():
     st.sidebar.markdown(f"**Total Days:** {sovereignty_level.get('total_days', 0)}")
     st.sidebar.markdown(f"**Achievements:** {len(earned_achievements)}")
 
-    # Show nutrition-specific insights
+    # Cooking profile in sidebar
     total_meals = progress_metrics.get("total_meals_cooked", 0)
     if total_meals > 0:
         st.sidebar.markdown("### 🍳 Cooking Profile")
         st.sidebar.markdown(f"**Total Meals Cooked:** {total_meals}")
         
-        # Calculate cooking frequency if we have recent data
         if recent_tracking:
             recent_meals = sum(row[2] for row in recent_tracking if row[2])
             cooking_days = len([row for row in recent_tracking if row[2] and row[2] > 0])
@@ -499,10 +495,7 @@ def main():
                 st.sidebar.markdown(f"**Recent Cooking Days:** {cooking_days}/30")
                 st.sidebar.markdown(f"**Avg Meals/Day:** {avg_meals_per_day:.1f}")
 
-    # Show current streaks (matching coaching page)
-    current_streaks = progress_metrics.get("current_streaks", {})
-    active_streaks = {k: v for k, v in current_streaks.items() if v > 0}
-
+    # Active streaks in sidebar
     if active_streaks:
         st.sidebar.markdown("### 🔥 Active Streaks")
         for activity, days in list(active_streaks.items())[:3]:
@@ -510,7 +503,7 @@ def main():
                     "gratitude": "🙏", "environmental_action": "🌍", "cooking": "🍳"}.get(activity, "⚡")
             st.sidebar.markdown(f"{emoji} **{days}** {activity.replace('_', ' ').title()}")
 
-    # Show recent performance (matching coaching page)
+    # Recent performance in sidebar
     if recent_tracking:
         recent_scores = [row[1] for row in recent_tracking if row[1] is not None]
         if recent_scores:
@@ -518,14 +511,13 @@ def main():
             st.sidebar.markdown(f"### 📈 Recent Performance")
             st.sidebar.markdown(f"**Last 7 days avg:** {recent_avg:.1f}")
             
-            # Performance trend
             if len(recent_scores) >= 7:
                 early_week = sum(recent_scores[:3]) / 3
                 late_week = sum(recent_scores[-3:]) / 3
                 trend = "📈 Improving" if late_week > early_week else "📉 Declining" if late_week < early_week else "➡️ Stable"
                 st.sidebar.markdown(f"**Trend:** {trend}")
 
-    # Show path-specific nutrition insights
+    # Path-specific tip in sidebar
     st.sidebar.markdown("### 🎯 Path Focus")
     path_nutrition_tips = {
         "financial_path": "Focus on cost-effective, bulk-prep meals",
@@ -557,166 +549,264 @@ def main():
         "achievements": achievements
     }
 
-    # Show sovereignty insights before meal planning (matching coaching insights)
-    st.markdown("### 🔍 Your Nutrition Sovereignty Analysis")
+    # QUICK ACTION BUTTONS (The Magic!)
+    st.markdown("## 🚀 Quick Meal Planning")
     
-    insights_col1, insights_col2, insights_col3 = st.columns(3)
+    quick_col1, quick_col2, quick_col3 = st.columns(3)
     
-    with insights_col1:
-        st.markdown(f"""
-        <div class="sovereignty-data-card">
-            <h4>🏆 Culinary Achievement</h4>
-            <p><strong>Level:</strong> {sovereignty_level.get('name', 'Unknown')}</p>
-            <p><strong>Meals Cooked:</strong> {total_meals}</p>
-            <p><strong>Next Goal:</strong> {next_achievements[0]['name'] if next_achievements else 'Keep cooking!'}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    with quick_col1:
+        if st.button("🍽️ Quick meal plan for my path", key="quick_path_plan", use_container_width=True):
+            # Generate path-optimized preferences automatically
+            path_defaults = {
+                "financial_path": {
+                    "diet_type": "Omnivore",
+                    "meals_per_day": "3 meals (standard)",
+                    "cooking_time": "Weekend warrior (batch prep)",
+                    "restrictions": ["None"],
+                    "goals": ["Budget optimization", "Time efficiency"],
+                    "fasting_window": "16:8 Intermittent Fasting",
+                    "budget_level": "High (optimize for cost)",
+                    "prep_style": "Weekly batch prep",
+                    "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                    "preferences": "Focus on cost-effective, bulk ingredients for maximum Bitcoin stacking efficiency",
+                    "food_relationship": "Precise nutrition and measurable results",
+                    "decision_style": "Based on data, macros, and proven science"
+                },
+                "physical_optimization": {
+                    "diet_type": "Omnivore",
+                    "meals_per_day": "4 meals (frequent)",
+                    "cooking_time": "Moderate (15-45 mins)",
+                    "restrictions": ["None"],
+                    "goals": ["Muscle gain", "Athletic performance", "Energy optimization"],
+                    "fasting_window": "No restrictions",
+                    "budget_level": "Moderate (balance cost/quality)",
+                    "prep_style": "Weekly batch prep",
+                    "calorie_tier": "High (2,200-2,800 kcal) - Active lifestyle",
+                    "preferences": "High-protein focus for strength and performance optimization",
+                    "food_relationship": "Precise nutrition and measurable results",
+                    "decision_style": "Based on data, macros, and proven science"
+                },
+                "spiritual_growth": {
+                    "diet_type": "Plant-Based",
+                    "meals_per_day": "3 meals (standard)",
+                    "cooking_time": "Moderate (15-45 mins)",
+                    "restrictions": ["None"],
+                    "goals": ["Digestive health", "Anti-inflammatory", "Energy optimization"],
+                    "fasting_window": "14:10 Time-restricted",
+                    "budget_level": "Moderate (balance cost/quality)",
+                    "prep_style": "Daily fresh cooking",
+                    "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                    "preferences": "Plant-forward, mindful eating with seasonal, local ingredients",
+                    "food_relationship": "Food as medicine and spiritual nourishment",
+                    "decision_style": "Intuitive eating with mindful awareness"
+                },
+                "mental_resilience": {
+                    "diet_type": "Mediterranean",
+                    "meals_per_day": "3 meals (standard)",
+                    "cooking_time": "Moderate (15-45 mins)",
+                    "restrictions": ["None"],
+                    "goals": ["Cognitive performance", "Anti-inflammatory", "Energy optimization"],
+                    "fasting_window": "16:8 Intermittent Fasting",
+                    "budget_level": "Moderate (balance cost/quality)",
+                    "prep_style": "Hybrid (some prep)",
+                    "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                    "preferences": "Brain-boosting nutrients, steady energy, anti-inflammatory foods",
+                    "food_relationship": "Precise nutrition and measurable results",
+                    "decision_style": "Systems thinking about long-term impacts"
+                },
+                "planetary_stewardship": {
+                    "diet_type": "Plant-Based",
+                    "meals_per_day": "3 meals (standard)",
+                    "cooking_time": "Extensive (45+ mins)",
+                    "restrictions": ["None"],
+                    "goals": ["Anti-inflammatory", "Longevity", "Digestive health"],
+                    "fasting_window": "14:10 Time-restricted",
+                    "budget_level": "Low (premium ingredients okay)",
+                    "prep_style": "Daily fresh cooking",
+                    "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                    "preferences": "Regenerative, locally-sourced, minimal environmental impact",
+                    "food_relationship": "Understanding food systems and sustainability",
+                    "decision_style": "Systems thinking about long-term impacts"
+                },
+                "default": {
+                    "diet_type": "Omnivore",
+                    "meals_per_day": "3 meals (standard)",
+                    "cooking_time": "Moderate (15-45 mins)",
+                    "restrictions": ["None"],
+                    "goals": ["Energy optimization", "Digestive health"],
+                    "fasting_window": "16:8 Intermittent Fasting",
+                    "budget_level": "Moderate (balance cost/quality)",
+                    "prep_style": "Weekly batch prep",
+                    "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                    "preferences": "Balanced approach across all sovereignty domains",
+                    "food_relationship": "Precise nutrition and measurable results",
+                    "decision_style": "Based on data, macros, and proven science"
+                }
+            }
+            
+            quick_preferences = path_defaults.get(path, path_defaults["default"])
+            st.session_state.meal_preferences = quick_preferences
+            st.session_state.generate_meal_plan = True
+            st.session_state.quick_plan_generated = True
+            st.rerun()
     
-    with insights_col2:
-        # Calculate nutritional sovereignty score
-        nutrition_score = min(100, (total_meals / 100) * 40 + sovereignty_level.get('avg_score', 0) * 0.6)
-        
-        st.markdown(f"""
-        <div class="sovereignty-data-card">
-            <h4>🥗 Nutrition Sovereignty</h4>
-            <p><strong>Score:</strong> {nutrition_score:.0f}/100</p>
-            <p><strong>Path:</strong> {path.replace('_', ' ').title()}</p>
-            <p><strong>Focus:</strong> {"Home cooking" if total_meals > 50 else "Building habits"}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    with quick_col2:
+        if st.button("🎯 Optimize my cooking streak", key="optimize_cooking", use_container_width=True):
+            cooking_streak = current_streaks.get("cooking", 0)
+            streak_preferences = {
+                "diet_type": "Omnivore",
+                "meals_per_day": "4 meals (frequent)",
+                "cooking_time": "Minimal (< 15 mins)",
+                "restrictions": ["None"],
+                "goals": ["Time efficiency", "Energy optimization"],
+                "fasting_window": "No restrictions",
+                "budget_level": "Moderate (balance cost/quality)",
+                "prep_style": "Weekly batch prep",
+                "calorie_tier": "Moderate (1,600-2,200 kcal) - Maintenance",
+                "preferences": f"Quick, easy meals to maintain my {cooking_streak}-day cooking streak. Focus on simple prep and consistent habits.",
+                "food_relationship": "Precise nutrition and measurable results",
+                "decision_style": "Based on data, macros, and proven science"
+            }
+            
+            st.session_state.meal_preferences = streak_preferences
+            st.session_state.generate_meal_plan = True
+            st.session_state.quick_plan_generated = True
+            st.rerun()
     
-    with insights_col3:
-        if active_streaks and "cooking" in current_streaks:
-            cooking_streak = current_streaks["cooking"]
-            st.markdown(f"""
-            <div class="sovereignty-data-card">
-                <h4>🔥 Cooking Momentum</h4>
-                <p><strong>Current Streak:</strong> {cooking_streak} days</p>
-                <p><strong>Status:</strong> {"Strong" if cooking_streak > 7 else "Building"}</p>
-                <p><strong>Potential:</strong> High</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div class="sovereignty-data-card">
-                <h4>💡 Opportunity</h4>
-                <p><strong>Cooking Streak:</strong> Not active</p>
-                <p><strong>Potential:</strong> High</p>
-                <p><strong>Focus:</strong> Consistency</p>
-            </div>
-            """, unsafe_allow_html=True)
+    with quick_col3:
+        if st.button("⚡ High-performance nutrition", key="performance_nutrition", use_container_width=True):
+            performance_preferences = {
+                "diet_type": "Omnivore",
+                "meals_per_day": "5+ meals (athlete/bulk)",
+                "cooking_time": "Weekend warrior (batch prep)",
+                "restrictions": ["None"],
+                "goals": ["Muscle gain", "Athletic performance", "Cognitive performance"],
+                "fasting_window": "No restrictions",
+                "budget_level": "Low (premium ingredients okay)",
+                "prep_style": "Weekly batch prep",
+                "calorie_tier": "Very High (2,800-3,500+ kcal) - Athlete/bulking",
+                "preferences": "Maximum performance nutrition based on Huberman and Cavaliere principles. High protein, optimized timing.",
+                "food_relationship": "Precise nutrition and measurable results",
+                "decision_style": "Based on data, macros, and proven science"
+            }
+            
+            st.session_state.meal_preferences = performance_preferences
+            st.session_state.generate_meal_plan = True
+            st.session_state.quick_plan_generated = True
+            st.rerun()
 
-    st.markdown("---")
+    # Show if quick plan was generated
+    if st.session_state.get("quick_plan_generated", False):
+        st.success("🚀 Quick meal plan generated! Check below for your personalized nutrition plan.")
+        del st.session_state["quick_plan_generated"]
 
-    # Enhanced Meal Plan Generation Form with Developmental Intelligence
-    st.markdown("## 📋 Meal Plan Preferences")
-    
-    with st.form("advanced_meal_plan_form"):
-        col1, col2 = st.columns(2)
+    # COLLAPSIBLE ADVANCED FORM
+    with st.expander("🔧 Advanced Meal Plan Options", expanded=False):
+        st.markdown("### 📋 Custom Meal Plan Preferences")
         
-        with col1:
-            st.markdown("### 🥘 Dietary Preferences")
-            diet_type = st.selectbox("Diet Type", [
-                "Omnivore", "Vegetarian", "Vegan", "Paleo", "Keto", 
-                "Mediterranean", "Carnivore", "Plant-Based", "Other"
+        with st.form("advanced_meal_plan_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("### 🥘 Dietary Preferences")
+                diet_type = st.selectbox("Diet Type", [
+                    "Omnivore", "Vegetarian", "Vegan", "Paleo", "Keto", 
+                    "Mediterranean", "Carnivore", "Plant-Based", "Other"
+                ])
+                
+                meals_per_day = st.selectbox("Meals Per Day", [
+                    "2 meals (OMAD/IF)", "3 meals (standard)", "4 meals (frequent)", 
+                    "5+ meals (athlete/bulk)"
+                ])
+                
+                cooking_time = st.selectbox("Available Cooking Time", [
+                    "Minimal (< 15 mins)", "Moderate (15-45 mins)", 
+                    "Extensive (45+ mins)", "Weekend warrior (batch prep)"
+                ])
+                
+                restrictions = st.multiselect("Dietary Restrictions", [
+                    "Gluten-free", "Dairy-free", "Nut allergies", "Shellfish allergies",
+                    "Egg-free", "Soy-free", "Low-sodium", "Low-FODMAP", "None"
+                ])
+            
+            with col2:
+                st.markdown("### 🎯 Goals & Optimization")
+                goals = st.multiselect("Primary Goals", [
+                    "Fat loss", "Muscle gain", "Energy optimization", "Cognitive performance",
+                    "Digestive health", "Anti-inflammatory", "Longevity", "Athletic performance",
+                    "Budget optimization", "Time efficiency"
+                ])
+                
+                fasting_window = st.selectbox("Eating Window", [
+                    "No restrictions", "16:8 Intermittent Fasting", "14:10 Time-restricted",
+                    "20:4 (One meal + snack)", "OMAD (One meal a day)", "Custom schedule"
+                ])
+                
+                budget_level = st.selectbox("Budget Priority", [
+                    "High (optimize for cost)", "Moderate (balance cost/quality)", 
+                    "Low (premium ingredients okay)"
+                ])
+                
+                prep_style = st.selectbox("Meal Prep Approach", [
+                    "Daily fresh cooking", "Weekly batch prep", "Hybrid (some prep)",
+                    "Minimal prep (simple assembly)"
+                ])
+                
+                # Developmental assessment questions
+                st.markdown("### 🧠 Food Philosophy")
+                food_relationship = st.selectbox("What's most important to you about food?", [
+                    "Precise nutrition and measurable results",
+                    "Connection to nature and seasonal eating", 
+                    "Understanding food systems and sustainability",
+                    "Food as medicine and spiritual nourishment"
+                ])
+                
+                decision_style = st.selectbox("How do you prefer to make food choices?", [
+                    "Based on data, macros, and proven science",
+                    "Intuitive eating with mindful awareness",
+                    "Systems thinking about long-term impacts", 
+                    "Holistic integration of body, mind, and spirit"
+                ])
+            
+            st.markdown("### 📊 Caloric & Performance Needs")
+            calorie_tier = st.selectbox("Caloric Needs", [
+                "Low (1,200-1,600 kcal) - Fat loss focus",
+                "Moderate (1,600-2,200 kcal) - Maintenance", 
+                "High (2,200-2,800 kcal) - Active lifestyle",
+                "Very High (2,800-3,500+ kcal) - Athlete/bulking"
             ])
             
-            meals_per_day = st.selectbox("Meals Per Day", [
-                "2 meals (OMAD/IF)", "3 meals (standard)", "4 meals (frequent)", 
-                "5+ meals (athlete/bulk)"
-            ])
+            preferences = st.text_area(
+                "Additional Preferences & Context",
+                placeholder="Share any specific foods you love/hate, cultural preferences, health conditions, sovereignty goals, or other relevant context...",
+                height=100
+            )
             
-            cooking_time = st.selectbox("Available Cooking Time", [
-                "Minimal (< 15 mins)", "Moderate (15-45 mins)", 
-                "Extensive (45+ mins)", "Weekend warrior (batch prep)"
-            ])
-            
-            restrictions = st.multiselect("Dietary Restrictions", [
-                "Gluten-free", "Dairy-free", "Nut allergies", "Shellfish allergies",
-                "Egg-free", "Soy-free", "Low-sodium", "Low-FODMAP", "None"
-            ])
-        
-        with col2:
-            st.markdown("### 🎯 Goals & Optimization")
-            goals = st.multiselect("Primary Goals", [
-                "Fat loss", "Muscle gain", "Energy optimization", "Cognitive performance",
-                "Digestive health", "Anti-inflammatory", "Longevity", "Athletic performance",
-                "Budget optimization", "Time efficiency"
-            ])
-            
-            fasting_window = st.selectbox("Eating Window", [
-                "No restrictions", "16:8 Intermittent Fasting", "14:10 Time-restricted",
-                "20:4 (One meal + snack)", "OMAD (One meal a day)", "Custom schedule"
-            ])
-            
-            budget_level = st.selectbox("Budget Priority", [
-                "High (optimize for cost)", "Moderate (balance cost/quality)", 
-                "Low (premium ingredients okay)"
-            ])
-            
-            prep_style = st.selectbox("Meal Prep Approach", [
-                "Daily fresh cooking", "Weekly batch prep", "Hybrid (some prep)",
-                "Minimal prep (simple assembly)"
-            ])
-            
-            # Subtle developmental assessment questions
-            st.markdown("### 🧠 Food Philosophy")
-            food_relationship = st.selectbox("What's most important to you about food?", [
-                "Precise nutrition and measurable results",
-                "Connection to nature and seasonal eating", 
-                "Understanding food systems and sustainability",
-                "Food as medicine and spiritual nourishment"
-            ])
-            
-            decision_style = st.selectbox("How do you prefer to make food choices?", [
-                "Based on data, macros, and proven science",
-                "Intuitive eating with mindful awareness",
-                "Systems thinking about long-term impacts", 
-                "Holistic integration of body, mind, and spirit"
-            ])
-        
-        st.markdown("### 📊 Caloric & Performance Needs")
-        calorie_tier = st.selectbox("Caloric Needs", [
-            "Low (1,200-1,600 kcal) - Fat loss focus",
-            "Moderate (1,600-2,200 kcal) - Maintenance", 
-            "High (2,200-2,800 kcal) - Active lifestyle",
-            "Very High (2,800-3,500+ kcal) - Athlete/bulking"
-        ])
-        
-        preferences = st.text_area(
-            "Additional Preferences & Context",
-            placeholder="Share any specific foods you love/hate, cultural preferences, health conditions, sovereignty goals, or other relevant context...",
-            height=100
-        )
-        
-        submitted = st.form_submit_button("🚀 Generate Sovereignty Meal Plan", type="primary")
+            submitted = st.form_submit_button("🚀 Generate Custom Meal Plan", type="primary")
 
-    if submitted:
-        # Collect preferences including developmental indicators
-        user_preferences = {
-            "diet_type": diet_type,
-            "meals_per_day": meals_per_day,
-            "cooking_time": cooking_time,
-            "restrictions": restrictions,
-            "goals": goals,
-            "fasting_window": fasting_window,
-            "budget_level": budget_level,
-            "prep_style": prep_style,
-            "calorie_tier": calorie_tier,
-            "preferences": preferences,
-            "food_relationship": food_relationship,
-            "decision_style": decision_style
-        }
-        
-        # Store preferences in session state to persist after downloads
-        st.session_state.meal_preferences = user_preferences
-        st.session_state.generate_meal_plan = True
+        if submitted:
+            user_preferences = {
+                "diet_type": diet_type,
+                "meals_per_day": meals_per_day,
+                "cooking_time": cooking_time,
+                "restrictions": restrictions,
+                "goals": goals,
+                "fasting_window": fasting_window,
+                "budget_level": budget_level,
+                "prep_style": prep_style,
+                "calorie_tier": calorie_tier,
+                "preferences": preferences,
+                "food_relationship": food_relationship,
+                "decision_style": decision_style
+            }
+            
+            st.session_state.meal_preferences = user_preferences
+            st.session_state.generate_meal_plan = True
 
-    # Generate meal plan (either from form submission or session state)
+    # Generate meal plan (from quick buttons or form)
     if st.session_state.get("generate_meal_plan", False):
         user_preferences = st.session_state.get("meal_preferences", {})
         
-        # Only generate if we don't already have a plan for these preferences
         if "current_meal_plan" not in st.session_state or st.session_state.get("meal_preferences_hash") != hash(str(user_preferences)):
             
             # Show consciousness level detection
@@ -761,12 +851,21 @@ def main():
                     st.session_state.generate_meal_plan = False
                     st.stop()
         
-        # Display the meal plan from session state
+        # Display the meal plan
         meal_plan = st.session_state.get("current_meal_plan")
         consciousness_level = st.session_state.get("consciousness_level", "Orange")
         
         if meal_plan:
             display_meal_plan(meal_plan, user_preferences, consciousness_level)
+
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; padding: 20px; color: #6b7280;">
+        <p>🛡️ <strong>Nutrition is the foundation of sovereignty.</strong></p>
+        <p><em>Every meal you cook builds your independence from industrial food systems.</em></p>
+    </div>
+    """, unsafe_allow_html=True)
 
 def display_meal_plan(meal_plan, preferences, consciousness_level):
     """Display the generated meal plan with consciousness level integration"""
@@ -1010,18 +1109,6 @@ def display_meal_plan(meal_plan, preferences, consciousness_level):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
-
-# Footer with sovereignty motivation (matching coaching page)
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; padding: 20px; color: #6b7280;">
-    <p>🛡️ <strong>Nutrition is the foundation of sovereignty.</strong></p>
-    <p><em>Every meal you cook builds your independence from industrial food systems.</em></p>
-    <p style="font-size: 12px; margin-top: 12px;">
-        "Food sovereignty is freedom sovereignty" - Build your nutrition independence
-    </p>
-</div>
-""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
