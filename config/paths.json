@@ -2,7 +2,7 @@
   "default": {
     "description": "A well-rounded balance of physical, mental, and financial habits - perfect for getting started on the Sovereign Path.",
     "home_cooked_meals": {
-      "points_per_unit": 6.6667,
+      "points_per_unit": 6,
       "max_units": 3
     },
     "no_junk_food": 10,
@@ -12,7 +12,7 @@
     },
     "strength_training": 10,
     "no_spending": 5,
-    "invested_bitcoin": 5,
+    "invested_bitcoin": 6,
     "meditation": 10,
     "gratitude": 5,
     "read_or_learned": 10,
@@ -42,11 +42,11 @@
   "mental_resilience": {
     "description": "Strengthen your inner world through meditation, learning, and daily gratitude - build a mind that bends but never breaks.",
     "meditation": 15,
-    "gratitude": 15,
+    "gratitude": 10,
     "read_or_learned": 15,
     "exercise_minutes": {
-      "points_per_unit": 0.25,
-      "max_units": 40
+      "points_per_unit": 0.5,
+      "max_units": 30
     },
     "no_junk_food": 10,
     "home_cooked_meals": {
@@ -62,7 +62,7 @@
   "physical_optimization": {
     "description": "Train like a machine. Fuel like a pro. Designed for high-output humans focused on athleticism and longevity.",
     "home_cooked_meals": {
-      "points_per_unit": 8,
+      "points_per_unit": 6,
       "max_units": 3
     },
     "no_junk_food": 10,
@@ -71,11 +71,11 @@
       "max_units": 40
     },
     "strength_training": 15,
-    "no_spending": 5,
-    "read_or_learned": 5,
-    "gratitude": 5,
-    "meditation": 6,
-    "invested_bitcoin": 5,
+    "no_spending": 6,
+    "read_or_learned": 6,
+    "gratitude": 6,
+    "meditation": 8,
+    "invested_bitcoin": 6,
     "environmental_action": 5,
     "max_score": 100
   },
@@ -90,12 +90,12 @@
       "max_units": 40
     },
     "home_cooked_meals": {
-      "points_per_unit": 3.333,
+      "points_per_unit": 3,
       "max_units": 3
     },
     "no_spending": 5,
     "strength_training": 5,
-    "invested_bitcoin": 5,
+    "invested_bitcoin": 6,
     "environmental_action": 10,
     "max_score": 100
   },
