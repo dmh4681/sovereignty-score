@@ -70,53 +70,12 @@ def render_family_emergency_dashboard(username, path):
     with tab4:
         render_family_planning_tools(username, path)
 
+# Import the real data calculator
+from real_emergency_calculator import get_real_emergency_dashboard_data
+
 def calculate_emergency_metrics(username, path):
-    """Calculate emergency preparedness metrics from existing sovereignty data"""
-    try:
-        with get_db_connection() as conn:
-            # Get recent sovereignty data
-            recent_data = conn.execute("""
-                SELECT timestamp, score, btc_usd, btc_sats, home_cooked_meals, 
-                       no_spending, invested_bitcoin, meditation, gratitude
-                FROM sovereignty 
-                WHERE username = ? 
-                ORDER BY timestamp DESC 
-                LIMIT 90
-            """, [username]).fetchall()
-            
-            if not recent_data:
-                return {"error": "No sovereignty data found. Track some habits first!"}
-            
-            # Calculate metrics
-            total_btc_invested = sum(row[2] for row in recent_data if row[2])
-            total_sats = sum(row[3] for row in recent_data if row[3])
-            avg_score = sum(row[1] for row in recent_data if row[1]) / len(recent_data)
-            
-            # Estimate portfolio value (using your PowerBI as reference)
-            estimated_crypto_value = total_sats * 0.001 + total_btc_invested  # Rough estimate
-            estimated_total_portfolio = estimated_crypto_value * 2.7  # Based on your 40% crypto allocation
-            
-            # Emergency calculations
-            monthly_expenses = 5000  # Based on your PowerBI budget
-            emergency_runway_months = estimated_total_portfolio / monthly_expenses
-            
-            return {
-                "username": username,
-                "path": path,
-                "emergency_runway_months": emergency_runway_months,
-                "estimated_portfolio_value": estimated_total_portfolio,
-                "estimated_crypto_value": estimated_crypto_value,
-                "avg_sovereignty_score": avg_score,
-                "total_btc_invested": total_btc_invested,
-                "total_sats": total_sats,
-                "monthly_expenses": monthly_expenses,
-                "immediate_access_estimate": estimated_total_portfolio * 0.15,  # Joint accounts
-                "short_term_access_estimate": estimated_crypto_value,  # Crypto recovery
-                "sovereignty_status": get_sovereignty_status(emergency_runway_months)
-            }
-            
-    except Exception as e:
-        return {"error": f"Database error: {str(e)}"}
+    """Calculate emergency preparedness metrics from real sovereignty data"""
+    return get_real_emergency_dashboard_data(username, path)
 
 def get_sovereignty_status(runway_months):
     """Convert runway months to sovereignty status"""
@@ -256,28 +215,34 @@ def render_emergency_status_detailed(data, username, path):
         """)
 
 def render_account_access_matrix(data, username):
-    """Account access priority matrix"""
+    """Account access priority matrix with real data"""
     
     st.markdown("## 💳 Account Access Priority Matrix")
     st.markdown("*Accounts listed by speed of access in emergency situations*")
     
-    # Create sample account data based on user's situation
+    # Get real account estimates
+    accounts = data.get("detailed_accounts", {})
+    immediate = accounts.get("immediate_access", {})
+    short_term = accounts.get("short_term_access", {})
+    long_term = accounts.get("long_term_access", {})
+    
+    # Create account tables with real data
     immediate_accounts = [
-        {"Account": "Joint Checking", "Balance": "$12,530", "Access": "Existing debit card/online", "Time": "Immediate"},
-        {"Account": "Joint Savings", "Balance": "$35,000", "Access": "Online banking", "Time": "Immediate"},
-        {"Account": "Emergency Fund CD", "Balance": "$15,000", "Access": "Bank visit", "Time": "1-2 days"}
+        {"Account": "Joint Checking", "Balance": f"${immediate.get('joint_checking', 0):,.0f}", "Access": "Existing debit card/online", "Time": "Immediate"},
+        {"Account": "Joint Savings", "Balance": f"${immediate.get('joint_savings', 0):,.0f}", "Access": "Online banking", "Time": "Immediate"},
+        {"Account": "Emergency Fund CD", "Balance": f"${immediate.get('emergency_fund_cd', 0):,.0f}", "Access": "Bank visit", "Time": "1-2 days"}
     ]
     
     short_term_accounts = [
-        {"Account": "Crypto Portfolio", "Balance": f"${data['estimated_crypto_value']:,.0f}", "Access": "Hardware wallet recovery", "Time": "2-7 days"},
-        {"Account": "Investment Account", "Balance": "$45,000", "Access": "Brokerage call", "Time": "3-5 days"},
-        {"Account": "Life Insurance", "Balance": "$250,000", "Access": "Policy claim", "Time": "7-14 days"}
+        {"Account": "Crypto Portfolio", "Balance": f"${short_term.get('crypto_portfolio', 0):,.0f}", "Access": "Hardware wallet recovery", "Time": "2-7 days"},
+        {"Account": "Investment Account", "Balance": f"${short_term.get('investment_account', 0):,.0f}", "Access": "Brokerage call", "Time": "3-5 days"},
+        {"Account": "Life Insurance", "Balance": f"${short_term.get('life_insurance', 0):,.0f}", "Access": "Policy claim", "Time": "7-14 days"}
     ]
     
     long_term_accounts = [
-        {"Account": "401k/IRA", "Balance": "$150,000", "Access": "HR/Plan admin", "Time": "14-30 days"},
-        {"Account": "Home Equity", "Balance": "$200,000", "Access": "HELOC/Sale", "Time": "30+ days"},
-        {"Account": "Other Investments", "Balance": "$50,000", "Access": "Estate process", "Time": "30+ days"}
+        {"Account": "401k/IRA", "Balance": f"${long_term.get('retirement_401k', 0):,.0f}", "Access": "HR/Plan admin", "Time": "14-30 days"},
+        {"Account": "Home Equity", "Balance": f"${long_term.get('home_equity', 0):,.0f}", "Access": "HELOC/Sale", "Time": "30+ days"},
+        {"Account": "Other Investments", "Balance": f"${long_term.get('other_investments', 0):,.0f}", "Access": "Estate process", "Time": "30+ days"}
     ]
     
     # Display tables
@@ -315,6 +280,52 @@ def render_account_access_matrix(data, username):
         family_contact = st.text_input("Trusted Family Member", 
                                       value=st.session_state.get("family_contact", ""),
                                       placeholder="Name, Phone, Relationship")
+    
+    # Add data quality insights
+    st.markdown("---")
+    st.markdown("### 📊 Emergency Calculation Accuracy")
+    
+    if "data_quality" in data:
+        quality = data["data_quality"]
+        quality_score = quality.get("data_quality_score", 0) * 100
+        
+        quality_color = "#10b981" if quality_score >= 80 else "#eab308" if quality_score >= 60 else "#dc2626"
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, {quality_color}20, {quality_color}10); 
+                        border: 2px solid {quality_color}; 
+                        border-radius: 10px; 
+                        padding: 15px; 
+                        text-align: center;">
+                <h3 style="margin: 0; color: {quality_color};">{quality_score:.0f}%</h3>
+                <p style="margin: 5px 0 0 0; color: #6b7280;">Data Accuracy</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"**Tracking Days:** {quality.get('total_days', 0)}")
+            st.markdown(f"**Bitcoin Tracking:** {quality.get('btc_tracking_frequency', 0)*100:.0f}% of days")
+        
+        with col2:
+            st.markdown("**Recommendations:**")
+            for rec in quality.get("recommendations", [])[:3]:
+                st.markdown(f"• {rec}")
+    
+    # Real expense insights
+    if "expense_breakdown" in data:
+        expense_data = data["expense_breakdown"]
+        st.markdown("### 💰 Expense Analysis Based on Your Habits")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Monthly Cooking Savings", f"${expense_data.get('estimated_cooking_savings', 0):,.0f}")
+            st.metric("Avg Meals Cooked/Day", f"{expense_data.get('cooking_frequency', 0):.1f}")
+        
+        with col2:
+            st.metric("Spending Discipline", f"{expense_data.get('spending_discipline', 0)*100:.0f}%")
+            st.metric("Discretionary Savings", f"${expense_data.get('estimated_discretionary_savings', 0):,.0f}")
     
     if st.session_state.get("emergency_contacts_saved"):
         st.success("✅ Emergency contacts saved to session (will be permanent once database schema is added)")
