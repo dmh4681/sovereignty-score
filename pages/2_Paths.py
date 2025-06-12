@@ -438,51 +438,50 @@ awareness. Focuses on sustainable practices that benefit both personal and plane
 st.markdown("---")
 st.markdown("## 🎯 Path Comparison Overview")
 
-st.markdown("""
-<div class="path-comparison">
-    <div class="comparison-card">
-        <h4>⚖️ Default</h4>
-        <p><strong>Best for:</strong> Beginners</p>
-        <p><strong>Focus:</strong> Balance</p>
-        <p><strong>Top Priority:</strong> Foundation building</p>
-    </div>
+# Using Streamlit columns instead of HTML grid
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    with st.container():
+        st.markdown("### ⚖️ Default")
+        st.markdown("**Best for:** Beginners")
+        st.markdown("**Focus:** Balance")
+        st.markdown("**Top Priority:** Foundation building")
+        st.markdown("---")
     
-    <div class="comparison-card">
-        <h4>💰 Financial</h4>
-        <p><strong>Best for:</strong> Bitcoin enthusiasts</p>
-        <p><strong>Focus:</strong> Economic freedom</p>
-        <p><strong>Top Priority:</strong> Savings & investment</p>
-    </div>
+    with st.container():
+        st.markdown("### 🏋️ Physical")
+        st.markdown("**Best for:** Athletes")
+        st.markdown("**Focus:** Body optimization")
+        st.markdown("**Top Priority:** Strength & nutrition")
+
+with col2:
+    with st.container():
+        st.markdown("### 💰 Financial")
+        st.markdown("**Best for:** Bitcoin enthusiasts")
+        st.markdown("**Focus:** Economic freedom")
+        st.markdown("**Top Priority:** Savings & investment")
+        st.markdown("---")
     
-    <div class="comparison-card">
-        <h4>🧠 Mental Resilience</h4>
-        <p><strong>Best for:</strong> Stress management</p>
-        <p><strong>Focus:</strong> Cognitive strength</p>
-        <p><strong>Top Priority:</strong> Inner stability</p>
-    </div>
+    with st.container():
+        st.markdown("### 🧘 Spiritual")
+        st.markdown("**Best for:** Seekers")
+        st.markdown("**Focus:** Consciousness")
+        st.markdown("**Top Priority:** Presence & meaning")
+
+with col3:
+    with st.container():
+        st.markdown("### 🧠 Mental Resilience")
+        st.markdown("**Best for:** Stress management")
+        st.markdown("**Focus:** Cognitive strength")
+        st.markdown("**Top Priority:** Inner stability")
+        st.markdown("---")
     
-    <div class="comparison-card">
-        <h4>🏋️ Physical</h4>
-        <p><strong>Best for:</strong> Athletes</p>
-        <p><strong>Focus:</strong> Body optimization</p>
-        <p><strong>Top Priority:</strong> Strength & nutrition</p>
-    </div>
-    
-    <div class="comparison-card">
-        <h4>🧘 Spiritual</h4>
-        <p><strong>Best for:</strong> Seekers</p>
-        <p><strong>Focus:</strong> Consciousness</p>
-        <p><strong>Top Priority:</strong> Presence & meaning</p>
-    </div>
-    
-    <div class="comparison-card">
-        <h4>🌍 Planetary</h4>
-        <p><strong>Best for:</strong> Environmentalists</p>
-        <p><strong>Focus:</strong> Sustainability</p>
-        <p><strong>Top Priority:</strong> Earth healing</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    with st.container():
+        st.markdown("### 🌍 Planetary")
+        st.markdown("**Best for:** Environmentalists")
+        st.markdown("**Focus:** Sustainability")
+        st.markdown("**Top Priority:** Earth healing")
 
 # Choosing Your Path
 st.markdown("---")
