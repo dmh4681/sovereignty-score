@@ -64,4 +64,45 @@ def init_db():
             score                INTEGER
         );
         """)
-        logger.info("Database tables initialized") 
+        
+        # Create btc_price_history table
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS btc_price_history (
+            date           DATE PRIMARY KEY,
+            closing_price  REAL NOT NULL,
+            volume         REAL,
+            market_cap     REAL,
+            created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+        
+        # Create sovereignty_snapshot table (note: singular, not plural)
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS sovereignty_snapshot (
+            username                    TEXT NOT NULL,
+            snapshot_date              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            total_assets               REAL,
+            total_crypto               REAL,
+            total_traditional          REAL,
+            monthly_expenses           REAL,
+            annual_expenses            REAL,
+            sovereignty_ratio          REAL,
+            full_sovereignty_ratio     REAL,
+            sovereignty_status         TEXT,
+            emergency_runway_months    REAL,
+            btc_price_at_snapshot      REAL,
+            PRIMARY KEY (username, snapshot_date)
+        );
+        """)
+        
+        # Check if btc_price_history has any data, if not add a default entry
+        result = conn.execute("SELECT COUNT(*) FROM btc_price_history").fetchone()
+        if result[0] == 0:
+            # Insert a default price (current approximate market price)
+            conn.execute("""
+                INSERT INTO btc_price_history (date, closing_price, volume, market_cap)
+                VALUES (CURRENT_DATE, 95000.0, 0, 0)
+            """)
+            logger.info("Inserted default BTC price for initialization")
+        
+        logger.info("Database tables initialized")

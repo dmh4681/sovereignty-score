@@ -10,20 +10,27 @@ from typing import Dict, Optional
 import pandas as pd
 from family_finance_database import FamilyFinanceDB
 from db import get_db_connection
+import btc_price_utils
 
 def get_current_btc_price() -> float:
     """Get current BTC price from database"""
     try:
-        conn = get_db_connection()
-        result = conn.execute("""
-            SELECT closing_price 
-            FROM btc_price_history 
-            ORDER BY date DESC 
-            LIMIT 1
-        """).fetchone()
-        return result[0] if result else 50000.0
+        # Use context manager for database connection
+        with get_db_connection() as conn:
+            result = conn.execute("""
+                SELECT closing_price 
+                FROM btc_price_history 
+                ORDER BY date DESC 
+                LIMIT 1
+            """).fetchone()
+            return float(result[0]) if result and result[0] else 95000.0
     except:
-        return 50000.0
+        # Use the btc_price_utils as fallback
+        price, _ = btc_price_utils.get_current_btc_price()
+        return price
+
+# Fixed render_financial_setup_wizard function
+# Replace the navigation section in family_finance_forms.py with this:
 
 def render_financial_setup_wizard(username: str, db: FamilyFinanceDB):
     """Main setup wizard for initial financial data input"""
@@ -45,6 +52,10 @@ def render_financial_setup_wizard(username: str, db: FamilyFinanceDB):
     # Progress tracking
     if 'setup_step' not in st.session_state:
         st.session_state.setup_step = 1
+    
+    # Prevent wizard from closing prematurely
+    if 'wizard_complete' not in st.session_state:
+        st.session_state.wizard_complete = False
     
     # Step indicators
     steps = ['Accounts', 'Crypto', 'Expenses', 'Contacts', 'Documents']
@@ -77,50 +88,63 @@ def render_financial_setup_wizard(username: str, db: FamilyFinanceDB):
     elif st.session_state.setup_step == 5:
         render_documents_form(username, db)
     
-    # Navigation
+    # Navigation buttons
+    st.markdown("---")
     col1, col2, col3 = st.columns([1, 2, 1])
+    
     with col1:
         if st.session_state.setup_step > 1:
-            if st.button("⬅️ Previous"):
+            if st.button("⬅️ Previous", use_container_width=True):
                 st.session_state.setup_step -= 1
                 st.rerun()
     
     with col3:
         if st.session_state.setup_step < len(steps):
-            if st.button("Next ➡️"):
+            # Show different text based on step
+            button_text = "Skip to Next ➡️" if st.session_state.setup_step < 3 else "Next ➡️"
+            if st.button(button_text, use_container_width=True, type="primary"):
                 st.session_state.setup_step += 1
                 st.rerun()
         else:
-            if st.button("🎉 Complete Setup"):
-                # Calculate and display sovereignty metrics
-                try:
-                    btc_price = get_current_btc_price()
-                    metrics = db.calculate_sovereignty_metrics(username, btc_price)
-                    
-                    st.session_state.setup_complete = True
-                    st.session_state.show_metrics = True
-                    st.session_state.metrics = metrics
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error calculating metrics: {e}")
+            # Only on the last step
+            if st.button("🎉 Complete Setup", use_container_width=True, type="primary"):
+                st.session_state.wizard_complete = True
+                st.rerun()
     
-    # Show metrics after setup complete
-    if st.session_state.get('show_metrics') and st.session_state.get('metrics'):
-        metrics = st.session_state.metrics
+    # Show completion message
+    if st.session_state.wizard_complete:
         st.markdown("---")
         st.success("✅ Financial setup complete!")
         st.balloons()
         
-        st.markdown(f"""
-        ### 🎉 Your Sovereignty Status: {metrics['sovereignty_status']}
-        
-        - **Sovereignty Ratio:** {metrics['sovereignty_ratio']:.2f} years
-        - **Emergency Runway:** {metrics['emergency_runway_months']:.1f} months
-        - **Total Portfolio:** ${metrics['total_assets']:,.0f}
-        - **Crypto Value:** ${metrics['total_crypto_value']:,.0f}
-        
-        You can now return to the main dashboard to see your complete financial picture!
-        """)
+        # Calculate and display metrics
+        try:
+            btc_price = get_current_btc_price()
+            metrics = db.calculate_sovereignty_metrics(username, btc_price)
+            
+            st.markdown(f"""
+            ### 🎉 Your Sovereignty Status: {metrics['sovereignty_status']}
+            
+            - **Sovereignty Ratio:** {metrics['sovereignty_ratio']:.2f} years
+            - **Emergency Runway:** {metrics['emergency_runway_months']:.1f} months
+            - **Total Portfolio:** ${metrics['total_assets']:,.0f}
+            - **Crypto Value:** ${metrics['total_crypto_value']:,.0f}
+            
+            Click below to return to your dashboard!
+            """)
+            
+            if st.button("📊 View Full Dashboard", type="primary", use_container_width=True):
+                # Clear setup state and mark as complete
+                st.session_state.setup_step = 1
+                st.session_state.wizard_complete = False
+                st.session_state.skip_setup = True
+                st.rerun()
+                
+        except Exception as e:
+            st.error(f"Error calculating metrics: {e}")
+            if st.button("Return to Dashboard"):
+                st.session_state.skip_setup = True
+                st.rerun()
 
 def render_accounts_form(username: str, db: FamilyFinanceDB):
     """Form for inputting financial accounts"""
@@ -236,6 +260,9 @@ def render_accounts_form(username: str, db: FamilyFinanceDB):
     
     st.markdown(f"### 💰 Total Portfolio Value: ${total_value:,.0f}")
 
+# Fixed render_crypto_form function
+# Replace the existing render_crypto_form function in family_finance_forms.py with this version
+
 def render_crypto_form(username: str, db: FamilyFinanceDB):
     """Form for inputting crypto holdings"""
     
@@ -337,19 +364,41 @@ def render_crypto_form(username: str, db: FamilyFinanceDB):
     crypto_summary = db.get_crypto_summary(username)
     
     if crypto_summary:
+        # Get current BTC price for value calculations
+        btc_price = get_current_btc_price()
+        
         for crypto, data in crypto_summary.items():
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.metric(crypto, f"{data['total_amount']:.8f}")
             with col2:
-                if data['avg_acquisition_price']:
-                    st.metric("Avg Price", f"${data['avg_acquisition_price']:,.2f}")
+                # Fixed: use 'avg_price' instead of 'avg_acquisition_price'
+                if data.get('avg_price') and data['avg_price'] > 0:
+                    st.metric("Avg Price", f"${data['avg_price']:,.2f}")
+                else:
+                    st.metric("Avg Price", "N/A")
             with col3:
-                st.write("Storage:")
-                for method in data['storage_methods']:
-                    st.caption(f"• {method}")
+                # Calculate current value (only for BTC for now)
+                if crypto == 'BTC':
+                    current_value = data['total_amount'] * btc_price
+                    st.metric("Current Value", f"${current_value:,.0f}")
+                else:
+                    st.metric("Current Value", "N/A")
+            with col4:
+                # Show wallet count
+                st.metric("Wallets", data.get('wallet_count', 1))
+        
+        # Navigation to next step
+        if st.button("Continue to Expenses →", type="primary"):
+            st.session_state.setup_step = 3
+            st.rerun()
     else:
         st.info("No crypto holdings added yet")
+        
+        # Allow navigation even without crypto
+        if st.button("Skip for now →"):
+            st.session_state.setup_step = 3
+            st.rerun()
 
 def render_expenses_form(username: str, db: FamilyFinanceDB):
     """Form for inputting monthly expenses"""
@@ -523,6 +572,18 @@ def render_expenses_form(username: str, db: FamilyFinanceDB):
                 st.rerun()
     else:
         st.info("No expenses added yet. Start with the standard categories above!")
+
+    # Navigation helper at the bottom of expenses form
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if expense_summary['total_monthly'] > 0:
+            st.success(f"✅ Monthly expenses configured: ${expense_summary['total_monthly']:,.0f}")
+            st.info("Click 'Next' in the navigation below to continue to Contacts")
+        else:
+            st.warning("💡 Add at least one expense to calculate your sovereignty runway")
+            st.info("You can also skip this step and add expenses later")
 
 def render_contacts_form(username: str, db: FamilyFinanceDB):
     """Form for emergency contacts"""

@@ -367,48 +367,167 @@ class FamilyFinanceDB:
         }
     
     # Sovereignty Calculations
+    # family_finance_database.py (updated calculate_sovereignty_metrics method)
+    """
+    Fixed sovereignty calculation method for FamilyFinanceDB class
+    Replace the existing calculate_sovereignty_metrics method with this version
+    """
+
+    # family_finance_database.py (updated calculate_sovereignty_metrics method)
+    """
+    Fixed sovereignty calculation method for FamilyFinanceDB class
+    Replace the existing calculate_sovereignty_metrics method with this version
+    """
+
     def calculate_sovereignty_metrics(self, username: str, btc_price: float) -> Dict:
-        """Calculate all sovereignty metrics"""
+        """Calculate all sovereignty metrics with no hardcoded values"""
         
-        # Get account totals
+        # Get account totals by priority
         accounts = self.get_accounts_by_priority(username)
-        total_assets = sum(acc['balance'] for priority in accounts.values() 
-                         for acc in priority)
         
-        # Get crypto value
+        # Calculate total assets from all accounts
+        total_assets = 0
+        immediate_access = 0
+        
+        for priority, account_list in accounts.items():
+            for acc in account_list:
+                total_assets += acc['balance']
+                if priority == 'immediate':
+                    immediate_access += acc['balance']
+        
+        # Get crypto holdings and calculate value
         crypto_summary = self.get_crypto_summary(username)
         total_crypto_value = 0
-        if 'BTC' in crypto_summary:
-            total_crypto_value = crypto_summary['BTC']['total_amount'] * btc_price
         
-        # Get expenses
+        for crypto_type, crypto_data in crypto_summary.items():
+            if isinstance(crypto_data, dict) and 'total_amount' in crypto_data:
+                # For now, only calculate BTC value. You can add other crypto prices later
+                if crypto_type == 'BTC':
+                    crypto_value = crypto_data['total_amount'] * btc_price
+                    total_crypto_value += crypto_value
+                # Add other crypto calculations here as needed
+        
+        # Add crypto value to total assets
+        total_assets += total_crypto_value
+        
+        # Get expense data
         expense_summary = self.get_expense_summary(username)
-        annual_fixed = expense_summary['fixed_total'] * 12
-        annual_total = expense_summary['total_annual']
-        
-        # Calculate ratios
-        sovereignty_ratio = total_crypto_value / annual_fixed if annual_fixed > 0 else 0
-        full_sovereignty_ratio = total_assets / annual_total if annual_total > 0 else 0
-        
-        # Determine status
-        status = self._get_sovereignty_status(sovereignty_ratio)
-        
-        # Emergency runway
         monthly_expenses = expense_summary['total_monthly']
-        immediate_access = sum(acc['balance'] for acc in accounts['immediate'])
-        emergency_runway = immediate_access / monthly_expenses if monthly_expenses > 0 else 0
+        annual_expenses = expense_summary['total_annual']
+        
+        # Prevent division by zero
+        if monthly_expenses <= 0:
+            monthly_expenses = 1
+        if annual_expenses <= 0:
+            annual_expenses = 12
+        
+        # Calculate emergency runway (immediate access only)
+        emergency_runway_months = immediate_access / monthly_expenses if monthly_expenses > 0 else 0
+        
+        # Calculate sovereignty ratios
+        # Crypto Sovereignty Ratio: crypto value / annual fixed expenses
+        fixed_annual = expense_summary['fixed_total'] * 12
+        sovereignty_ratio = total_crypto_value / fixed_annual if fixed_annual > 0 else 0
+        
+        # Full Sovereignty Ratio: total assets / annual total expenses
+        full_sovereignty_ratio = total_assets / annual_expenses if annual_expenses > 0 else 0
+        
+        # Determine sovereignty status based on ratio
+        if sovereignty_ratio < 1:
+            sovereignty_status = "Vulnerable"
+        elif sovereignty_ratio < 3:
+            sovereignty_status = "Fragile"
+        elif sovereignty_ratio < 6:
+            sovereignty_status = "Robust"
+        elif sovereignty_ratio < 20:
+            sovereignty_status = "Antifragile"
+        else:
+            sovereignty_status = "Generationally Sovereign"
         
         return {
             'total_assets': total_assets,
             'total_crypto_value': total_crypto_value,
             'monthly_expenses': monthly_expenses,
-            'annual_expenses': annual_total,
+            'annual_expenses': annual_expenses,
+            'emergency_runway_months': emergency_runway_months,
             'sovereignty_ratio': sovereignty_ratio,
             'full_sovereignty_ratio': full_sovereignty_ratio,
-            'sovereignty_status': status,
-            'emergency_runway_months': emergency_runway,
+            'sovereignty_status': sovereignty_status,
+            'immediate_access_total': immediate_access,
             'btc_price': btc_price
         }
+
+    def get_crypto_summary(self, username: str) -> Dict:
+        """Get detailed crypto holdings summary with proper aggregation"""
+        result = self.conn.execute("""
+            SELECT 
+                crypto_type,
+                SUM(amount) as total_amount,
+                AVG(CASE WHEN acquisition_price > 0 THEN acquisition_price ELSE NULL END) as avg_price,
+                COUNT(DISTINCT wallet_label) as wallet_count,
+                COUNT(DISTINCT storage_method) as storage_method_count,
+                MIN(acquisition_date) as first_purchase,
+                MAX(acquisition_date) as last_purchase,
+                GROUP_CONCAT(DISTINCT storage_method) as storage_methods
+            FROM crypto_holdings
+            WHERE username = ?
+            GROUP BY crypto_type
+            ORDER BY total_amount DESC
+        """, [username]).fetchall()
+        
+        summary = {}
+        for row in result:
+            crypto_type = row[0]
+            summary[crypto_type] = {
+                'crypto_type': crypto_type,
+                'total_amount': float(row[1]) if row[1] else 0.0,
+                'avg_price': float(row[2]) if row[2] else 0.0,
+                'wallet_count': int(row[3]) if row[3] else 0,
+                'storage_method_count': int(row[4]) if row[4] else 0,
+                'first_purchase': row[5],
+                'last_purchase': row[6],
+                'storage_methods': row[7].split(',') if row[7] else []
+            }
+        
+        return summary
+
+    def get_all_accounts(self, username: str) -> List[Dict]:
+        """Get all accounts for a user"""
+        result = self.conn.execute("""
+            SELECT 
+                account_name,
+                account_type,
+                institution,
+                balance,
+                currency,
+                access_priority,
+                access_method,
+                days_to_access,
+                is_joint,
+                notes,
+                last_updated
+            FROM financial_accounts
+            WHERE username = ?
+            ORDER BY balance DESC
+        """, [username]).fetchall()
+        
+        accounts = []
+        for row in result:
+            accounts.append({
+                'account_name': row[0],
+                'account_type': row[1],
+                'institution': row[2],
+                'balance': float(row[3]) if row[3] else 0.0,
+                'currency': row[4],
+                'access_priority': row[5],
+                'access_method': row[6],
+                'days_to_access': row[7],
+                'is_joint': bool(row[8]),
+                'notes': row[9],
+                'last_updated': row[10]
+            })
+        
+        return accounts
     
     def _get_sovereignty_status(self, ratio: float) -> str:
         """Determine sovereignty status based on ratio"""
