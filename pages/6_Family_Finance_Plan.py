@@ -368,7 +368,7 @@ def render_sovereignty_reports(username: str, data: dict):
     for scenario, price in scenarios.items():
         btc_value = btc_amount * price
         total_portfolio = data['estimated_portfolio_value'] - data['estimated_crypto_value'] + btc_value
-        sovereignty_ratio = btc_value / data['expense_breakdown']['annual_expenses']
+        sovereignty_ratio = btc_value / data['expense_breakdown']['total_annual'] if data['expense_breakdown']['total_annual'] > 0 else 0
         
         scenario_data.append({
             "Scenario": scenario,
