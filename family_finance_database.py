@@ -21,7 +21,6 @@ class FamilyFinanceDB:
         # Financial accounts table - stores all account details
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS financial_accounts (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 account_name TEXT NOT NULL,
                 account_type TEXT NOT NULL, -- checking, savings, investment, crypto, retirement, etc.
@@ -34,14 +33,13 @@ class FamilyFinanceDB:
                 is_joint BOOLEAN DEFAULT FALSE,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 notes TEXT,
-                UNIQUE(username, account_name)
+                PRIMARY KEY (username, account_name)
             )
         """)
         
         # Crypto holdings - separate table for detailed crypto tracking
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS crypto_holdings (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 crypto_type TEXT NOT NULL, -- BTC, ETH, etc.
                 amount REAL NOT NULL,
@@ -50,28 +48,28 @@ class FamilyFinanceDB:
                 storage_method TEXT, -- hardware_wallet, exchange, etc.
                 wallet_label TEXT,
                 is_staking BOOLEAN DEFAULT FALSE,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (username, crypto_type, wallet_label)
             )
         """)
         
         # Monthly expenses tracking
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS monthly_expenses (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 expense_category TEXT NOT NULL, -- housing, food, transport, etc.
                 amount REAL NOT NULL,
                 is_fixed BOOLEAN DEFAULT TRUE,
                 frequency TEXT DEFAULT 'monthly', -- monthly, annual, quarterly
                 notes TEXT,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (username, expense_category)
             )
         """)
         
         # Emergency contacts
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS emergency_contacts (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 contact_type TEXT NOT NULL, -- financial_advisor, attorney, crypto_mentor, etc.
                 contact_name TEXT NOT NULL,
@@ -80,42 +78,42 @@ class FamilyFinanceDB:
                 company TEXT,
                 notes TEXT,
                 priority INTEGER DEFAULT 1,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (username, contact_name)
             )
         """)
         
         # Document locations
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS document_locations (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 document_type TEXT NOT NULL, -- will, insurance, seed_phrase, etc.
                 location TEXT NOT NULL,
                 access_instructions TEXT,
                 last_verified DATE,
                 backup_location TEXT,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (username, document_type)
             )
         """)
         
         # Family training progress
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS family_training (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 training_topic TEXT NOT NULL,
                 family_member TEXT,
                 completion_date DATE,
                 comfort_level INTEGER CHECK (comfort_level >= 1 AND comfort_level <= 10),
                 notes TEXT,
-                next_review_date DATE
+                next_review_date DATE,
+                PRIMARY KEY (username, training_topic, family_member)
             )
         """)
         
         # Sovereignty calculations snapshot
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS sovereignty_snapshot (
-                id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL,
                 snapshot_date DATE DEFAULT CURRENT_DATE,
                 total_assets REAL,
@@ -128,7 +126,8 @@ class FamilyFinanceDB:
                 sovereignty_status TEXT,
                 emergency_runway_months REAL,
                 btc_price_at_snapshot REAL,
-                notes TEXT
+                notes TEXT,
+                PRIMARY KEY (username, snapshot_date)
             )
         """)
     
@@ -136,37 +135,61 @@ class FamilyFinanceDB:
     def upsert_account(self, username: str, account_data: Dict) -> bool:
         """Insert or update financial account"""
         try:
-            self.conn.execute("""
-                INSERT INTO financial_accounts 
-                (username, account_name, account_type, institution, balance, 
-                 currency, access_priority, access_method, days_to_access, 
-                 is_joint, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (username, account_name) 
-                DO UPDATE SET
-                    account_type = EXCLUDED.account_type,
-                    institution = EXCLUDED.institution,
-                    balance = EXCLUDED.balance,
-                    currency = EXCLUDED.currency,
-                    access_priority = EXCLUDED.access_priority,
-                    access_method = EXCLUDED.access_method,
-                    days_to_access = EXCLUDED.days_to_access,
-                    is_joint = EXCLUDED.is_joint,
-                    notes = EXCLUDED.notes,
-                    last_updated = CURRENT_TIMESTAMP
-            """, [
-                username,
-                account_data['account_name'],
-                account_data['account_type'],
-                account_data.get('institution', ''),
-                account_data['balance'],
-                account_data.get('currency', 'USD'),
-                account_data['access_priority'],
-                account_data.get('access_method', ''),
-                account_data.get('days_to_access', 0),
-                account_data.get('is_joint', False),
-                account_data.get('notes', '')
-            ])
+            # Check if account exists
+            existing = self.conn.execute("""
+                SELECT account_name FROM financial_accounts 
+                WHERE username = ? AND account_name = ?
+            """, [username, account_data['account_name']]).fetchone()
+            
+            if existing:
+                # Update existing account
+                self.conn.execute("""
+                    UPDATE financial_accounts 
+                    SET account_type = ?,
+                        institution = ?,
+                        balance = ?,
+                        currency = ?,
+                        access_priority = ?,
+                        access_method = ?,
+                        days_to_access = ?,
+                        is_joint = ?,
+                        notes = ?,
+                        last_updated = CURRENT_TIMESTAMP
+                    WHERE username = ? AND account_name = ?
+                """, [
+                    account_data['account_type'],
+                    account_data.get('institution', ''),
+                    account_data['balance'],
+                    account_data.get('currency', 'USD'),
+                    account_data['access_priority'],
+                    account_data.get('access_method', ''),
+                    account_data.get('days_to_access', 0),
+                    account_data.get('is_joint', False),
+                    account_data.get('notes', ''),
+                    username,
+                    account_data['account_name']
+                ])
+            else:
+                # Insert new account
+                self.conn.execute("""
+                    INSERT INTO financial_accounts 
+                    (username, account_name, account_type, institution, balance, 
+                     currency, access_priority, access_method, days_to_access, 
+                     is_joint, notes)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, [
+                    username,
+                    account_data['account_name'],
+                    account_data['account_type'],
+                    account_data.get('institution', ''),
+                    account_data['balance'],
+                    account_data.get('currency', 'USD'),
+                    account_data['access_priority'],
+                    account_data.get('access_method', ''),
+                    account_data.get('days_to_access', 0),
+                    account_data.get('is_joint', False),
+                    account_data.get('notes', '')
+                ])
             return True
         except Exception as e:
             print(f"Error upserting account: {e}")
@@ -189,17 +212,17 @@ class FamilyFinanceDB:
         
         for row in result:
             account = {
-                'account_name': row[2],
-                'account_type': row[3],
-                'institution': row[4],
-                'balance': row[5],
-                'currency': row[6],
-                'access_method': row[8],
-                'days_to_access': row[9],
-                'is_joint': row[10],
-                'notes': row[12]
+                'account_name': row[1],
+                'account_type': row[2],
+                'institution': row[3],
+                'balance': row[4],
+                'currency': row[5],
+                'access_method': row[7],
+                'days_to_access': row[8],
+                'is_joint': row[9],
+                'notes': row[11]
             }
-            priority = row[7]
+            priority = row[6]
             if priority in accounts:
                 accounts[priority].append(account)
         
@@ -266,7 +289,7 @@ class FamilyFinanceDB:
             
             # First check if expense exists
             existing = self.conn.execute("""
-                SELECT id FROM monthly_expenses 
+                SELECT expense_category FROM monthly_expenses 
                 WHERE username = ? AND expense_category = ?
             """, [username, expense_data['category']]).fetchone()
             
